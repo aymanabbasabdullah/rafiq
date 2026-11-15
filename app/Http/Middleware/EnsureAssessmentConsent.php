@@ -34,8 +34,7 @@ class EnsureAssessmentConsent
      */
     private function journeyFor(Request $request): Journey
     {
-        $routeName = (string) $request->route()?->getName();
-        $journey = Journey::tryFrom(str_replace('journeys.', '', $routeName));
+        $journey = Journey::fromRouteName($request->route()?->getName());
 
         return $journey !== null && $journey->requiresAssessmentConsent() ? $journey : Journey::Concern;
     }

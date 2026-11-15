@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Enums\Journey;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -19,6 +20,7 @@ class GateRedirects
      */
     public const INTENDED_ROUTES = [
         'public.landing',
+        'journeys.index',
         'journeys.learn',
         'journeys.concern',
         'journeys.conception',
@@ -31,6 +33,12 @@ class GateRedirects
     public static function allowed(?string $routeName): ?string
     {
         if ($routeName === null || ! in_array($routeName, self::INTENDED_ROUTES, true) || ! Route::has($routeName)) {
+            return null;
+        }
+
+        $journey = Journey::fromRouteName($routeName);
+
+        if ($journey !== null && ! $journey->isEnabled()) {
             return null;
         }
 

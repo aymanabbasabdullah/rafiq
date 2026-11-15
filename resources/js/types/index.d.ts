@@ -24,6 +24,7 @@ export interface SharedProps {
     quickExitUrl: string;
     links: {
         home: string;
+        journeys: string;
         privacy: string;
         terms: string;
         limits: string;

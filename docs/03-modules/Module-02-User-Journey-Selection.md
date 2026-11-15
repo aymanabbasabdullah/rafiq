@@ -86,3 +86,23 @@ Feature: كل مسار × حالات البوابة؛ العداد مرة لكل
 
 ## 19. Open Questions
 هل نعرض "اختبار سريع لمعرفة المسار المناسب"؟ (مقترح: لا في الـ MVP — يخالف PP-7). هل J3 مناسب للشريكة كمستخدمة؟ (OQ-020).
+
+---
+
+## 20. ملاحظات التنفيذ (2026-11-15)
+
+**الحالة: منفذ** على الفرع `feature/m00-foundation` (دون commit).
+
+| البند | ما نُفذ | ملاحظة |
+|---|---|---|
+| صفحة اختيار الرحلة (M02-FR-01) | `GET /{locale}/journeys` (`journeys.index`) تعرض البطاقات الأربع مع العنوان، الوصف، ما ستحصل عليه، الوقت التقديري، وما نسألك/لا نسألك، مع جملة "لست مضطراً للإجابة عن أي أسئلة لتتعلّم" وصندوق تنبيه طوارئ بارز ورابط مباشر لفحص علامات الخطر (J2) | بطاقات الـ Landing أصبحت تعمل كروابط مباشرة للمسارات، وزر الـ Hero الرئيسي ينقل إلى `/{locale}/journeys`. |
+| نقاط دخول المسارات والمصفوفة (M02-FR-02, §12) | `/{locale}/learn` (`age`)، `/{locale}/concern` (`age`, `consent`, `no-store`, `encrypt-history`)، `/{locale}/conception` (`age`, `consent`, `no-store`, `encrypt-history`)، `/{locale}/doctor-prep` (`age`, `no-store`, `encrypt-history`) | بعد اجتياز الموافقة ينتقل الزائر مباشرة إلى المسار الذي اختاره (`concern` أو `conception`)، وخيار "ليس الآن — أفضّل التعلّم فقط" يوجه إلى `/{locale}/learn`. |
+| إشعار J4 المحلي (M03-FR-08, FR-092) | تنبيه خصوصية سياقي في صفحة دخول `doctor-prep`: ما تكتبه يبقى على جهازك فقط ولا يُرسل لأي خادم | عرض فقط، بلا تخزين. |
+| تذكير علامات الخطر (M02-FR-06) | مكوّن `RedFlagReminder` دائم في صفحتي دخول J1 (`learn`) وJ4 (`doctor_prep`) يعرض توجيه الطوارئ ورابطاً مباشراً إلى مسار J2 (`concern`) | يُخفى الرابط إذا كان مسار `concern` معطلاً بالـ flag. |
+| تغيير المسار (M02-FR-03/04) | مكوّن `ChangeJourney` دائم أسفل كل صفحة مسار يعرض المسارات الأخرى المفعلة مع تنبيه أن الانتقال لا ينقل أي إجابات سابقة | — |
+| التحكم بالمسارات (`rafiq.journeys.enabled`) | `Journey::isEnabled()` و`Journey::cards()`؛ تعطيل مسار يخفيه من Landing و`/{locale}/journeys` و`ChangeJourney` ويعيد `404` قبل البوابات وبعدها ويرفضه في `intended` | — |
+| العداد المجمع (M02-FR-05) | `journey_selected:{learn\|concern\|conception\|doctor_prep}` يُسجل مرة واحدة لكل مسار في الجلسة (`journeys_selected.{key}`) | أضيف `journeys_selected` إلى `rafiq.public_session_keys` (مفاتيح منطقية للمسارات التي دُخلت في الجلسة فقط). |
+| الخصوصية ومحركات البحث (PRIV-021) | صفحات دخول المسارات (`Public/JourneyEntry`) وصفحات البوابات تحمل `<meta name="robots" content="noindex">` وعنوان تبويب محايداً | صفحة `/{locale}/journeys` العامة تحتفظ بروابط `canonical` و`hreflang`. |
+| خلل اكتُشف وأُصلح | `EncryptedStore` في جلسات Laravel لا يملك الدالة `boolean()` التي يملكها `Request` ⇒ استُبدلت بمقارنة صريحة `=== true` في `JourneyController` | كشفته اختبارات الـ Feature فوراً. |
+| الاختبارات | 102 اختباراً ناجحاً (1,155 assertion) — منها 14 اختباراً جديداً (مع حالات DataProvider = 20 حالة) في `JourneysTest` | تغطي مصفوفة المسارات × البوابات، العداد مرة لكل جلسة، تعطيل المسار بالـ flag، ترويسات `no-store` و`encryptHistory` و`noindex`، تبديل اللغة، ومفاتيح الجلسة. |
+

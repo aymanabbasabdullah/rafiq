@@ -1,7 +1,10 @@
 @php
     $rafiqLocale = \App\Enums\Locale::tryFrom(app()->getLocale()) ?? \App\Enums\Locale::default();
     $rafiqUrls = \App\Support\LocalizedUrls::forRequest(request());
-    $rafiqIsErrorPage = str_starts_with((string) ($page['component'] ?? ''), 'Errors/');
+    $rafiqComponent = (string) ($page['component'] ?? '');
+    $rafiqNoIndex = str_starts_with($rafiqComponent, 'Errors/')
+        || str_starts_with($rafiqComponent, 'Public/Gate/')
+        || in_array($rafiqComponent, ['Public/Under18', 'Public/JourneyEntry'], true);
 @endphp
 <!DOCTYPE html>
 <html lang="{{ $rafiqLocale->value }}" dir="{{ $rafiqLocale->direction() }}">
@@ -12,7 +15,7 @@
         <title>{{ config('app.name', 'Rafiq') }}</title>
         <meta name="description" content="{{ __('meta.description') }}">
 
-        @if ($rafiqIsErrorPage)
+        @if ($rafiqNoIndex)
             <meta name="robots" content="noindex">
         @else
             <link rel="canonical" href="{{ $rafiqUrls[$rafiqLocale->value] }}">

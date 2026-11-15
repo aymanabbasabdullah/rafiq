@@ -71,7 +71,10 @@ class HandleInertiaRequests extends Middleware
      */
     private function links(Locale $locale): array
     {
-        $links = ['home' => route('public.landing', ['locale' => $locale->value])];
+        $links = [
+            'home' => route('public.landing', ['locale' => $locale->value]),
+            'journeys' => route('journeys.index', ['locale' => $locale->value]),
+        ];
 
         foreach (LegalPageController::PAGES as $page) {
             $links[$page] = route('public.legal', ['locale' => $locale->value, 'page' => $page]);

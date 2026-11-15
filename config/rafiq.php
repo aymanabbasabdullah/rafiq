@@ -31,6 +31,25 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | User Journeys (Module-02 §13)
+    |--------------------------------------------------------------------------
+    |
+    | Controls which journeys (J1–J4) are visible on selection cards and
+    | reachable by URL. Disabling a journey hides its card and returns 404.
+    |
+    */
+
+    'journeys' => [
+        'enabled' => [
+            'learn' => (bool) env('RAFIQ_JOURNEY_LEARN_ENABLED', true),
+            'concern' => (bool) env('RAFIQ_JOURNEY_CONCERN_ENABLED', true),
+            'conception' => (bool) env('RAFIQ_JOURNEY_CONCEPTION_ENABLED', true),
+            'doctor_prep' => (bool) env('RAFIQ_JOURNEY_DOCTOR_PREP_ENABLED', true),
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Emergency contact (OQ-008)
     |--------------------------------------------------------------------------
     |
@@ -113,6 +132,7 @@ return [
         'age_confirmed',
         'assessment_consent',
         'ai_notice_ack',
+        'journeys_selected',
         // Inertia's one-shot flags (e.g. clear_history after "Clear everything").
         'inertia',
     ],

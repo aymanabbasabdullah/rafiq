@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { ArrowRight, BookOpen, CalendarCheck, HeartPulse, Sprout, type LucideIcon } from 'lucide-react';
+import { AlertTriangle, ArrowRight, BookOpen, CalendarCheck, HeartPulse, Sprout, type LucideIcon } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import type { JourneyKey } from '@/types';
 
@@ -11,12 +11,14 @@ const ICONS: Record<JourneyKey, LucideIcon> = {
 };
 
 /**
- * A journey choice (FR-003). Journeys whose entry page is not built yet show "coming soon" (Module-02 adds the links).
+ * A journey choice (FR-003, M02-FR-01). Shows title, description, what you get, estimated time,
+ * what we ask/don't ask, and the urgent warning callout on J2.
  */
 export function JourneyCard({ journey, url }: { journey: JourneyKey; url: string | null }) {
     const t = useT();
     const Icon = ICONS[journey];
     const titleId = `journey-${journey}-title`;
+    const isConcern = journey === 'concern';
 
     const content = (
         <>
@@ -30,9 +32,22 @@ export function JourneyCard({ journey, url }: { journey: JourneyKey; url: string
                 {t(`journey.${journey}.title`)}
             </h3>
             <p className="mt-2 text-sm text-ink-muted">{t(`journey.${journey}.description`)}</p>
-            <p className="mt-3 text-sm text-ink">
-                <span className="font-medium">{t('journey.you_get')}</span> {t(`journey.${journey}.gets`)}
-            </p>
+            <dl className="mt-4 space-y-2 border-t border-line pt-3 text-sm">
+                <div>
+                    <dt className="inline font-medium text-ink">{t('journey.you_get')}</dt>{' '}
+                    <dd className="inline text-ink-muted">{t(`journey.${journey}.gets`)}</dd>
+                </div>
+                <div>
+                    <dt className="inline font-medium text-ink">{t('journey.we_ask')}</dt>{' '}
+                    <dd className="inline text-ink-muted">{t(`journey.${journey}.asks`)}</dd>
+                </div>
+            </dl>
+            {isConcern ? (
+                <p className="mt-4 flex items-start gap-2 rounded-lg border border-danger/30 bg-danger/5 px-3 py-2 text-xs font-medium text-danger">
+                    <AlertTriangle aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
+                    <span>{t('journey.concern.urgent_note')}</span>
+                </p>
+            ) : null}
             <span className="mt-auto inline-flex items-center gap-1 pt-5 text-sm font-semibold text-brand">
                 {url !== null ? t('journey.start') : t('journey.coming_soon')}
                 {url !== null ? <ArrowRight aria-hidden="true" className="size-4 rtl:-scale-x-100" /> : null}
@@ -40,7 +55,8 @@ export function JourneyCard({ journey, url }: { journey: JourneyKey; url: string
         </>
     );
 
-    const cardClasses = 'flex h-full flex-col rounded-xl border border-line bg-surface-raised p-5';
+    const borderClasses = isConcern ? 'border-danger/40' : 'border-line';
+    const cardClasses = `flex h-full flex-col rounded-xl border ${borderClasses} bg-surface-raised p-5`;
 
     if (url === null) {
         return (

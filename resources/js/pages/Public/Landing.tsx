@@ -1,3 +1,4 @@
+import { Link, usePage } from '@inertiajs/react';
 import { Bot, ClipboardList, Compass, LibraryBig, Lock, type LucideIcon } from 'lucide-react';
 import { CheckList } from '@/components/public/CheckList';
 import { EmergencyStrip } from '@/components/public/EmergencyStrip';
@@ -27,6 +28,7 @@ const FAQ = ['1', '2', '3', '4'];
  * limits (never collapsed — BR-01-1), the four journeys and short FAQs.
  */
 export default function Landing({ journeys }: LandingProps) {
+    const { links } = usePage().props;
     const t = useT();
 
     return (
@@ -38,9 +40,12 @@ export default function Landing({ journeys }: LandingProps) {
                 </h1>
                 <p className="mt-4 max-w-2xl text-lg text-ink-muted">{t('landing.hero.subtitle')}</p>
                 <div className="mt-8 flex flex-wrap gap-3">
-                    <a href="#journeys" className="inline-flex min-h-11 items-center rounded-md bg-brand px-5 py-3 font-semibold text-brand-ink">
+                    <Link
+                        href={links.journeys}
+                        className="inline-flex min-h-11 items-center rounded-md bg-brand px-5 py-3 font-semibold text-brand-ink"
+                    >
                         {t('landing.hero.cta_primary')}
-                    </a>
+                    </Link>
                     <a
                         href="#limits"
                         className="inline-flex min-h-11 items-center rounded-md border border-line bg-surface-raised px-5 py-3 font-semibold text-ink"
@@ -152,6 +157,6 @@ export default function Landing({ journeys }: LandingProps) {
                     ))}
                 </div>
             </Section>
-        </PublicLayout>
+        </PublicLayout >
     );
 }

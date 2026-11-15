@@ -2,6 +2,7 @@
 
 use App\Enums\Locale;
 use App\Http\Controllers\Public\GateController;
+use App\Http\Controllers\Public\JourneyController;
 use App\Http\Controllers\Public\LandingController;
 use App\Http\Controllers\Public\LegalPageController;
 use App\Http\Controllers\Public\RootRedirectController;
@@ -19,6 +20,22 @@ Route::prefix('{locale}')
     ->group(function (): void {
         Route::get('/', LandingController::class)->name('public.landing');
         Route::get('/welcome', WelcomeController::class)->name('public.welcome');
+
+        // Journeys (Module-02)
+        Route::get('/journeys', [JourneyController::class, 'index'])->name('journeys.index');
+
+        Route::middleware('age')->group(function (): void {
+            Route::get('/learn', [JourneyController::class, 'enter'])->name('journeys.learn');
+
+            Route::middleware(['no-store', 'encrypt-history'])->group(function (): void {
+                Route::get('/doctor-prep', [JourneyController::class, 'enter'])->name('journeys.doctor_prep');
+
+                Route::middleware('consent')->group(function (): void {
+                    Route::get('/concern', [JourneyController::class, 'enter'])->name('journeys.concern');
+                    Route::get('/conception', [JourneyController::class, 'enter'])->name('journeys.conception');
+                });
+            });
+        });
 
         // Gates (Module-03)
         Route::middleware('throttle:30,1')->group(function (): void {

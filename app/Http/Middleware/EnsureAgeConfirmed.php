@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Enums\Journey;
 use App\Support\GateRedirects;
 use Closure;
 use Illuminate\Http\Request;
@@ -16,6 +17,12 @@ class EnsureAgeConfirmed
 {
     public function handle(Request $request, Closure $next): Response
     {
+        $journey = Journey::fromRouteName($request->route()?->getName());
+
+        if ($journey !== null && ! $journey->isEnabled()) {
+            abort(404);
+        }
+
         $ageConfirmed = $request->session()->get('age_confirmed');
 
         if ($ageConfirmed === true) {

@@ -9,7 +9,6 @@ use App\Http\Controllers\Controller;
 use App\Services\Analytics\MetricsRecorder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -26,20 +25,7 @@ class LandingController extends Controller
         $metrics->increment('locale_used', App::getLocale());
 
         return Inertia::render('Public/Landing', [
-            'journeys' => array_map(fn (Journey $journey): array => [
-                'key' => $journey->value,
-                'url' => $this->journeyUrl($journey),
-            ], Journey::cases()),
+            'journeys' => Journey::cards(),
         ]);
-    }
-
-    /**
-     * Journey entry pages are built in Module-02; until then the card shows "coming soon".
-     */
-    private function journeyUrl(Journey $journey): ?string
-    {
-        $routeName = "journeys.{$journey->value}";
-
-        return Route::has($routeName) ? route($routeName) : null;
     }
 }

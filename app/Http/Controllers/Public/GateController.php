@@ -13,7 +13,6 @@ use App\Support\GateRedirects;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -66,7 +65,7 @@ class GateController extends Controller
 
         $destination = 'journeys.'.$request->validated('journey');
 
-        return redirect()->to(Route::has($destination) ? route($destination) : route('public.landing'));
+        return redirect()->to(GateRedirects::urlFor($destination));
     }
 
     public function storeAiNotice(Request $request): JsonResponse

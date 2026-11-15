@@ -39,15 +39,15 @@ class WelcomeAndLandingTest extends TestCase
         $this->get('/')->assertRedirect(route('public.landing', ['locale' => 'ar']));
     }
 
-    public function test_landing_page_lists_the_four_journeys_as_coming_soon_until_module_two(): void
+    public function test_landing_page_lists_the_four_journeys_with_their_entry_links(): void
     {
         $this->get('/ar')->assertInertia(fn (AssertableInertia $page) => $page
             ->component('Public/Landing')
             ->has('journeys', 4)
-            ->where('journeys.0', ['key' => 'learn', 'url' => null])
-            ->where('journeys.1.key', 'concern')
-            ->where('journeys.2.key', 'conception')
-            ->where('journeys.3.key', 'doctor_prep'));
+            ->where('journeys.0', ['key' => 'learn', 'url' => route('journeys.learn', ['locale' => 'ar'])])
+            ->where('journeys.1', ['key' => 'concern', 'url' => route('journeys.concern', ['locale' => 'ar'])])
+            ->where('journeys.2', ['key' => 'conception', 'url' => route('journeys.conception', ['locale' => 'ar'])])
+            ->where('journeys.3', ['key' => 'doctor_prep', 'url' => route('journeys.doctor_prep', ['locale' => 'ar'])]));
     }
 
     public function test_landing_page_shares_quick_exit_and_public_page_links(): void
