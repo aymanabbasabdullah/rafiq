@@ -127,3 +127,27 @@ SEC-001..004, 011, 012, 013, 015؛ PRIV-005, 006, 009. مراجعة: لا سكر
 
 ## 19. Open Questions
 OQ-007 (اللغة الافتراضية)، OQ-011 (الاستضافة ⇒ Redis متاح؟)، OQ-015 (الخطوط والهوية)، OQ-018 (موافقة Boost)، اختيار أداة CI (GitHub Actions مفترض).
+
+---
+
+## 20. ملاحظات التنفيذ (2026-11-15)
+
+**الحالة: منفذ** على الفرع `feature/m00-foundation` (غير مدموج، غير مُرسل في commit).
+
+| البند | ما نُفذ فعلياً | ملاحظة / انحراف عن الخطة |
+|---|---|---|
+| Laravel Boost | `laravel/boost ^2.10` + `boost:install` (guidelines, skills, MCP) | أضاف `.claude/skills/*` و`.mcp.json` و`boost.json` وأعاد توليد `CLAUDE.md`؛ ملفات `.claude/` الأصلية لم تتغير. أنشأ أيضاً `.cursor/` (مُتجاهل في Git). |
+| Inertia | `inertiajs/inertia-laravel` **v3.7** + `@inertiajs/react` **v3.11** | v3: لا Axios؛ عميل XHR مدمج (`lib/http.ts`). **DevTools في v3 تسجّل الطلبات على القرص افتراضياً في `local`** ⇒ عُطّلت افتراضياً في `config/inertia.php` (PRIV-009). SSR معطّل افتراضياً. `useHttp` يحفظ البيانات في التاريخ ما لم يُستخدم `dontRemember` — يجب مراعاته في M05. `encryptHistory` يتطلب HTTPS (يهم M03). |
+| React / TS | React 19.3، TypeScript **6.0** (strict) | ثُبّت TS على `~6.0` لأن `typescript-eslint` لا يدعم TS 7 بعد؛ ESLint على `^9` لتوافق `eslint-plugin-react`. |
+| قاعدة البيانات | MySQL 8.4 (`rafiq`، `rafiq_testing`) utf8mb4، `ngram_token_size=2` | الاختبارات: SQLite افتراضياً + MySQL في CI. |
+| الجلسات | `SESSION_DRIVER=file`، مشفرة، 30 دقيقة | امتداد phpredis غير مثبت في Laragon ⇒ استُخدم `file` محلياً (لا يخزن IP/UA — مُختبر). Redis يبقى خيار الإنتاج (يتطلب phpredis أو `predis/predis`). |
+| اللغة | `/{locale}` (`ar` افتراضي)، `lang/{ar,en}.json`، `useT()`، `DirectionProvider` | الـ props المعتمدة على اللغة تُحسب بشكل كسول لأن `HandleInertiaRequests` يعمل قبل `SetLocale`. |
+| الأمن | `SecurityHeaders` (CSP بـ nonce، self فقط)، `NoStoreCache`، Boot checks | CSP لا يُرسل لصفحة أخطاء Laravel التصحيحية (debug + 5xx) محلياً فقط. |
+| الأخطاء | صفحات Inertia ثنائية اللغة 403/404/419/429/500/503 | 500 تبقى صفحة Laravel التصحيحية عند `APP_DEBUG=true`. |
+| السجلات | `ScrubSensitiveData` tap على `single` و`daily` + `dontFlash` | — |
+| الإحصاءات | `daily_metrics` + `MetricsRecorder` (upsert ذري، يرفض النص الحر) | — |
+| الخطوط | Instrument Sans + IBM Plex Sans Arabic (مؤقت — OQ-015) مستضافة ذاتياً عند البناء | Tailwind مقيد بمصادر التطبيق (`source(none)`) لأن الفحص التلقائي كان يشمل آلاف ملفات `.claude/`. |
+| الجودة | ESLint (منع النصوص الحرفية `react/jsx-no-literals`)، Prettier، Pint، اختبار تطابق مفاتيح اللغة، اختبار منع أصناف CSS الفيزيائية | الفحوص كاختبارات PHPUnit بدل سكربتات في مجلد جديد. |
+| CI | `.github/workflows/ci.yml` (frontend + backend × SQLite/MySQL + audits + فحص GEMINI في الحزمة) | لم يُشغَّل على GitHub بعد (لا push). |
+| الاختبارات | 45 اختباراً / 251 assertion ناجحة على SQLite وMySQL | `ExampleTest` عُدّل لأن `/` أصبح يعيد التوجيه. |
+| المعاينة | `.claude/launch.json` (`php artisan serve`) | `rafiq.test` لا يُحل محلياً (Virtual host في Laragon غير مفعّل). |

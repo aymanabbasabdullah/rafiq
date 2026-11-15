@@ -1,9 +1,46 @@
-@import 'tailwindcss';
+@import 'tailwindcss' source(none);
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
+@source '../js';
+@source '../views';
 
+/*
+ * Interim design tokens (Module-00). The final visual identity is decided in Module-01 (OQ-015).
+ * Colors are checked for WCAG AA contrast against their paired background.
+ */
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans:
+        var(--font-instrument-sans, 'Instrument Sans'), ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-arabic: var(--font-ibm-plex-sans-arabic, 'IBM Plex Sans Arabic'), 'Segoe UI', Tahoma, sans-serif;
+
+    --color-surface: #f8faf9;
+    --color-surface-raised: #ffffff;
+    --color-ink: #1f2a2e;
+    --color-ink-muted: #4b5a60;
+    --color-brand: #0f6b62;
+    --color-brand-ink: #ffffff;
+    --color-line: #d6dedb;
+    --color-notice: #fff4d6;
+    --color-notice-ink: #5c3d00;
+    --color-danger: #b42318;
+    --color-danger-ink: #ffffff;
+}
+
+/* Arabic typography: native typeface, comfortable line height, no letter spacing (L10N-007). */
+[dir='rtl'] body {
+    font-family: var(--font-arabic);
+    line-height: 1.7;
+    letter-spacing: 0;
+}
+
+[dir='rtl'] :is(h1, h2, h3, h4) {
+    line-height: 1.3;
+    letter-spacing: 0;
+}
+
+:focus-visible {
+    outline: 3px solid var(--color-brand);
+    outline-offset: 2px;
 }
