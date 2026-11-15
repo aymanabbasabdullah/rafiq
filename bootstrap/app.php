@@ -1,12 +1,15 @@
 <?php
 
 use App\Http\Middleware\EncryptSensitiveHistory;
+use App\Http\Middleware\EnsureAdminActive;
 use App\Http\Middleware\EnsureAgeConfirmed;
 use App\Http\Middleware\EnsureAiNoticeAcknowledged;
 use App\Http\Middleware\EnsureAssessmentConsent;
+use App\Http\Middleware\EnsureTwoFactorEnabled;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\NoStoreCache;
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\SetAdminLocale;
 use App\Http\Middleware\SetLocale;
 use App\Support\InertiaErrorPage;
 use Illuminate\Foundation\Application;
@@ -22,6 +25,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->redirectGuestsTo(fn (): string => route('admin.login'));
+        $middleware->redirectUsersTo(fn (): string => route('admin.dashboard'));
+
         $middleware->web(append: [
             SecurityHeaders::class,
             HandleInertiaRequests::class,
@@ -29,6 +35,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'locale' => SetLocale::class,
+            'admin.locale' => SetAdminLocale::class,
+            'admin.active' => EnsureAdminActive::class,
+            '2fa' => EnsureTwoFactorEnabled::class,
             'no-store' => NoStoreCache::class,
             'age' => EnsureAgeConfirmed::class,
             'consent' => EnsureAssessmentConsent::class,

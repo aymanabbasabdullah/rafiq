@@ -6,6 +6,8 @@ namespace App\Http\Middleware;
 
 use App\Enums\Locale;
 use App\Http\Controllers\Public\LegalPageController;
+use App\Models\AuditLog;
+use App\Models\User;
 use App\Support\LocalizedUrls;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
@@ -60,6 +62,40 @@ class HandleInertiaRequests extends Middleware
                 'ageConfirmed' => $this->sessionFlag($request, 'age_confirmed'),
                 'assessmentConsent' => $this->sessionFlag($request, 'assessment_consent'),
                 'aiNoticeAcknowledged' => $this->sessionFlag($request, 'ai_notice_ack'),
+            ],
+            'admin' => fn (): ?array => $this->adminProps($request),
+        ];
+    }
+
+    /**
+     * Shared admin context for `/admin/*` pages. Null on public pages.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function adminProps(Request $request): ?array
+    {
+        if (! $request->is('admin*')) {
+            return null;
+        }
+
+        $user = $request->user();
+
+        return [
+            'user' => $user instanceof User ? [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'preferredLocale' => $user->preferred_locale,
+                'roles' => $user->activeRoleKeys(),
+                'canManageUsers' => $user->can('viewAny', User::class),
+                'canViewAuditLog' => $user->can('viewAny', AuditLog::class),
+            ] : null,
+            'links' => [
+                'dashboard' => route('admin.dashboard'),
+                'users' => route('admin.users.index'),
+                'auditLog' => route('admin.audit.index'),
+                'logout' => route('admin.logout'),
+                'locale' => route('admin.locale.update'),
             ],
         ];
     }

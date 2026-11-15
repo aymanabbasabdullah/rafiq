@@ -158,3 +158,20 @@ SEC-007..009؛ T-08..T-11؛ جلسة 30 دقيقة؛ لا كاش؛ CSP؛ audit �
 
 ## 19. Open Questions
 OQ-003 (المراجعون)، OQ-013 (احتفاظ السجلات)، OQ-021 (إظهار اسم المراجع للعامة)، OQ-029 (مراجع ثانٍ للغة)، OQ-032 (تنبيهات الدخول للأدمن بالبريد)، هل نحتاج Rich text editor (Tiptap) أم Markdown كافٍ؟ (مقترح: Markdown في الـ MVP).
+
+---
+
+## 20. ملاحظات التنفيذ — 11-A (2026-11-15)
+
+**الحالة: 11-A منفذة** على الفرع `feature/m00-foundation` (دون commit). الفرعيات `11-B..11-E` تُنفذ في مواضعها حسب خارطة الطريق (`Implementation-Roadmap.md`).
+
+| البند | ما نُفذ | ملاحظة |
+|---|---|---|
+| جداول قاعدة البيانات (Database-Design §3.1) | تهجير `2026_11_15_190000_create_admin_roles_and_audit_logs_tables.php`: إضافة حقول `two_factor_secret`، `two_factor_recovery_codes`، `two_factor_confirmed_at`، `preferred_locale`، `is_active`، `last_login_at` لجدول `users`؛ وإنشاء جداول `roles`، `role_user` (مع `granted_by`، `credential_verified_at`، `credential_reference`، `revoked_at`)، و`audit_logs` | أسرار التحقق الثنائي وأكواد الاسترداد مشفرة عبر `encrypted` و`encrypted:array` في نموذج `User`. |
+| المصادقة والتحقق الثنائي الإلزامي (M11A-FR-01, M11A-FR-02, SEC-007) | `AuthController`، `TwoFactorController`، `TotpService` (RFC 6238 TOTP متوافق مع تطبيقات المصادقة مع نافذة ±1 خطوة و8 أكواد استرداد أحادية الاستخدام)، والوسيطان `EnsureTwoFactorEnabled` (`2fa`) و`EnsureAdminActive` (`admin.active`) | نُفذ التحقق الثنائي ومصادقة الأدمن دون إضافة حزم خارجية التزاماً بقاعدة عدم تغيير الاعتماديات دون إذن، مع مطابقة كاملة لعموديات Fortify في التصميم. |
+| إنشاء الحساب الأولي عبر CLI (SEC-007) | الأمر `php artisan rafiq:admin:create --name= --email= --password= --locale=ar` يتحقق من قوة كلمة المرور (12 حرفاً فأكثر) وينشئ حساب `super_admin` ويسجل الحدث في `audit_logs` دون أي كلمات مرور ثابتة في الـ seeders | — |
+| الأدوار والصلاحيات ومبدأ العينين الأربع (M11A-FR-03, M11A-FR-04, BR-11-1, BR-11-4, BR-11-5) | `AdminUserController`، `UserPolicy`، وبوابة `Gate::define('four-eyes', ...)`: تمنع تعديل المستخدم لأدواره بنفسه، وتمنع تعطيل الذات أو تعطيل/سحب صلاحية آخر `super_admin` نشط، وتشترط `credential_reference` لتوثيق `credential_verified_at` عند منح دور `medical_reviewer`، وترفض في `four-eyes` أي مراجع غير موثق أو يراجع عملاً شارك في تأليفه أو تحريره (حتى لو كان يحمل `super_admin`) | كل مسارات `/admin/users*` محمية بـ `password.confirm:admin.password.confirm`. |
+| سجل التدقيق غير القابل للتعديل (M11A-FR-05, ADM-004) | `AuditLog` يرفض التعديل برمياً (`LogicException` عند `updating`)؛ `AuditLogger` ينقّي `summary` تلقائياً من جميع مفاتيح `rafiq.sensitive_keys` وأسرار 2FA ويخزن بصمة `ip_hash` عبر `HMAC-SHA256` بمفتاح التطبيق؛ `AuditLogController` يعرض السجل كاملاً لـ `Super Admin` ويقصره على عمليات الاعتماد والمراجعة الطبية للمراجع الطبي الموثق | — |
+| تخطيط لوحة التحكم ثنائي اللغة والصفحات (M11A-FR-06, M11A-FR-07) | `AdminLayout` مع تبديل فوري للغة الواجهة (`PATCH /admin/locale`)، وشريط تنبيه وضع العرض التجريبي (`DemoBanner`)، وصفحات Inertia: `Admin/Auth/*` (6 صفحات)، `Admin/Dashboard`، `Admin/Users/Index`، و`Admin/AuditLog/Index`؛ مع وسم `<meta name="robots" content="noindex">` وترويسة `Cache-Control: no-store` وتشفير تاريخ المتصفح على السياقات الآمنة | لا تُشارك أي بيانات من `admin` في الجلسات أو الصفحات العامة (`admin: null` خارج `/admin*`). |
+| الاختبارات | 114 اختباراً ناجحاً (1,489 assertion) على SQLite وMySQL — منها 10 اختبارات شاملة جديدة في `AdminAuthAndRolesTest` | تغطي إعداد وتحدي 2FA وأكواد الاسترداد، الحد من المحاولات (`429`)، الحسابات المعطلة، أمر CLI، مصفوفة الصلاحيات وتأكيد كلمة المرور، حماية آخر Super Admin، بوابة `four-eyes`، تنقية وعدم قابلية تعديل `audit_logs`، واستعادة كلمة المرور وتبديل اللغة. |
+

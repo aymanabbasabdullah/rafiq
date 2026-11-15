@@ -38,7 +38,27 @@ export interface SharedProps {
         assessmentConsent: boolean;
         aiNoticeAcknowledged: boolean;
     };
+    admin: {
+        user: {
+            id: number;
+            name: string;
+            email: string;
+            preferredLocale: LocaleCode;
+            roles: AdminRoleKey[];
+            canManageUsers: boolean;
+            canViewAuditLog: boolean;
+        } | null;
+        links: {
+            dashboard: string;
+            users: string;
+            auditLog: string;
+            logout: string;
+            locale: string;
+        };
+    } | null;
 }
+
+export type AdminRoleKey = 'super_admin' | 'content_editor' | 'medical_reviewer';
 
 export type JourneyKey = 'learn' | 'concern' | 'conception' | 'doctor_prep';
 

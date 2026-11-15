@@ -3,6 +3,7 @@
     $rafiqUrls = \App\Support\LocalizedUrls::forRequest(request());
     $rafiqComponent = (string) ($page['component'] ?? '');
     $rafiqNoIndex = str_starts_with($rafiqComponent, 'Errors/')
+        || str_starts_with($rafiqComponent, 'Admin/')
         || str_starts_with($rafiqComponent, 'Public/Gate/')
         || in_array($rafiqComponent, ['Public/Under18', 'Public/JourneyEntry'], true);
 @endphp
