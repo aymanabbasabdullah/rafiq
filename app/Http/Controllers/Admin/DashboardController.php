@@ -38,7 +38,30 @@ class DashboardController extends Controller
                     ? AuditLog::query()->where('created_at', '>=', now()->subDay())->count()
                     : null,
             ],
+            'recentActivity' => $user->isSuperAdmin() ? $this->recentActivity() : [],
         ]);
+    }
+
+    /**
+     * Latest administrative actions for the Super Admin overview. Admin activity only — never visitor data.
+     *
+     * @return list<array{id: int, action: string, actor: string|null, createdAt: string|null}>
+     */
+    private function recentActivity(): array
+    {
+        return AuditLog::query()
+            ->with('actor:id,name')
+            ->orderByDesc('id')
+            ->limit(6)
+            ->get()
+            ->map(fn (AuditLog $log): array => [
+                'id' => $log->id,
+                'action' => $log->action,
+                'actor' => $log->actor?->name,
+                'createdAt' => $log->created_at?->toIso8601String(),
+            ])
+            ->values()
+            ->all();
     }
 
     public function updateLocale(Request $request): RedirectResponse

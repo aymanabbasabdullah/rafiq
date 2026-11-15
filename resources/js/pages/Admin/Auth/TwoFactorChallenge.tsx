@@ -1,70 +1,81 @@
 import { useForm } from '@inertiajs/react';
-import type { FormEvent } from 'react';
-import { AdminLayout } from '@/layouts/AdminLayout';
+import { ShieldCheck } from 'lucide-react';
+import { type FormEvent, useState } from 'react';
+import { Button } from '@/components/ui/Button';
+import { Field, TextInput } from '@/components/ui/Field';
+import { AdminAuthLayout } from '@/layouts/AdminAuthLayout';
 import { useT } from '@/lib/i18n';
 
 export default function TwoFactorChallenge({ submitUrl }: { submitUrl: string }) {
     const t = useT();
-    const { data, setData, post, processing, errors } = useForm({
-        code: '',
-        recovery_code: '',
-    });
+    const [useRecovery, setUseRecovery] = useState(false);
+    const { data, setData, post, processing, errors, reset } = useForm({ code: '', recovery_code: '' });
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
         post(submitUrl);
     };
 
+    const toggleMode = () => {
+        reset();
+        setUseRecovery((current) => !current);
+    };
+
     return (
-        <AdminLayout>
-            <section
-                aria-labelledby="two-factor-challenge-title"
-                className="mx-auto max-w-md rounded-xl border border-line bg-surface-raised p-6"
-            >
-                <h1 id="two-factor-challenge-title" className="text-2xl font-semibold text-ink">
-                    {t('admin.two_factor.challenge_title')}
-                </h1>
-                <p className="mt-2 text-sm text-ink-muted">{t('admin.two_factor.challenge_body')}</p>
-
-                <form onSubmit={submit} className="mt-6 space-y-4">
-                    <div>
-                        <label htmlFor="challenge-code" className="block text-sm font-medium text-ink">
-                            {t('admin.two_factor.code_label')}
-                        </label>
-                        <input
-                            id="challenge-code"
-                            type="text"
-                            inputMode="numeric"
-                            autoComplete="one-time-code"
-                            value={data.code}
-                            onChange={(event) => setData('code', event.target.value)}
-                            className="mt-1 w-full rounded-md border border-line bg-surface px-3 py-2 font-mono text-ink"
-                        />
-                        {errors.code ? <p className="mt-1 text-xs text-danger">{errors.code}</p> : null}
-                    </div>
-
-                    <div>
-                        <label htmlFor="recovery-code" className="block text-sm font-medium text-ink">
-                            {t('admin.two_factor.recovery_label')}
-                        </label>
-                        <input
+        <AdminAuthLayout
+            title={t('admin.two_factor.challenge_title')}
+            subtitle={t('admin.two_factor.challenge_body')}
+            icon={ShieldCheck}
+        >
+            <form onSubmit={submit} className="space-y-5" noValidate>
+                {useRecovery ? (
+                    <Field
+                        id="recovery-code"
+                        label={t('admin.two_factor.recovery_label')}
+                        error={errors.recovery_code ?? errors.code}
+                    >
+                        <TextInput
                             id="recovery-code"
-                            type="text"
+                            dir="ltr"
+                            autoComplete="off"
+                            autoFocus
+                            className="text-center font-mono tracking-widest"
                             value={data.recovery_code}
                             onChange={(event) => setData('recovery_code', event.target.value)}
-                            className="mt-1 w-full rounded-md border border-line bg-surface px-3 py-2 font-mono text-ink"
                         />
-                    </div>
+                    </Field>
+                ) : (
+                    <Field id="challenge-code" label={t('admin.two_factor.code_label')} error={errors.code}>
+                        <TextInput
+                            id="challenge-code"
+                            inputMode="numeric"
+                            autoComplete="one-time-code"
+                            autoFocus
+                            dir="ltr"
+                            maxLength={6}
+                            placeholder="000000"
+                            className="text-center font-mono text-lg tracking-[0.5em]"
+                            value={data.code}
+                            invalid={errors.code !== undefined}
+                            onChange={(event) => setData('code', event.target.value.replace(/\D/g, ''))}
+                        />
+                    </Field>
+                )}
 
+                <Button type="submit" disabled={processing} className="w-full">
+                    {t('admin.two_factor.verify_button')}
+                </Button>
+
+                <p className="text-center text-sm">
                     <button
-                        type="submit"
-                        disabled={processing}
-                        className="inline-flex min-h-10 w-full items-center justify-center rounded-md bg-brand px-5 py-2 text-sm font-semibold text-brand-ink disabled:opacity-50"
+                        type="button"
+                        onClick={toggleMode}
+                        className="cursor-pointer font-medium text-brand underline-offset-4 hover:underline"
                     >
-                        {t('admin.two_factor.verify_button')}
+                        {useRecovery ? t('admin.two_factor.use_app_code') : t('admin.two_factor.use_recovery_code')}
                     </button>
-                </form>
-            </section>
-        </AdminLayout>
+                </p>
+            </form>
+        </AdminAuthLayout>
     );
 }

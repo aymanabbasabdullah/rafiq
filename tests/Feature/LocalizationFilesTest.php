@@ -25,6 +25,28 @@ class LocalizationFilesTest extends TestCase
         }
     }
 
+    public function test_every_literal_translation_key_used_in_the_frontend_exists(): void
+    {
+        $keys = array_flip($this->translationKeys('en'));
+        $missing = [];
+
+        foreach (File::allFiles(resource_path('js')) as $file) {
+            if (! in_array($file->getExtension(), ['ts', 'tsx'], true)) {
+                continue;
+            }
+
+            preg_match_all("/\\bt\\(\\s*'([a-z0-9_.]+)'/", $file->getContents(), $matches);
+
+            foreach ($matches[1] as $key) {
+                if (! isset($keys[$key])) {
+                    $missing[] = $file->getRelativePathname().' uses '.$key;
+                }
+            }
+        }
+
+        $this->assertSame([], array_values(array_unique($missing)), 'Add the missing keys to lang/ar.json and lang/en.json.');
+    }
+
     public function test_frontend_uses_logical_css_properties_only(): void
     {
         $physicalClass = '/(?<![\w-])-?(ml|mr|pl|pr|left|right|border-l|border-r|rounded-l|rounded-r|rounded-tl|rounded-tr|rounded-bl|rounded-br|text-left|text-right|float-left|float-right|scroll-ml|scroll-mr|scroll-pl|scroll-pr)-[\w\[\].\/%-]+|(?<![\w-])(text-left|text-right|float-left|float-right)(?![\w-])/';

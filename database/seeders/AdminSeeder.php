@@ -34,7 +34,8 @@ class AdminSeeder extends Seeder
     {
         Role::ensureAllExist();
 
-        if (! app()->environment(['local', 'testing']) && ! config('rafiq.demo_mode')) {
+        // Known demo credentials must never exist on a reachable server, including the demo/staging site.
+        if (! app()->environment(['local', 'testing'])) {
             return;
         }
 

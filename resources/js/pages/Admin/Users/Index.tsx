@@ -1,5 +1,12 @@
 import { Head, router, useForm } from '@inertiajs/react';
+import { KeyRound, Power, Save, ShieldCheck, ShieldOff, UserPlus, Users } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { Field, PillCheckbox, SelectInput, TextInput } from '@/components/ui/Field';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { useT } from '@/lib/i18n';
 import type { AdminRoleKey, LocaleCode } from '@/types';
@@ -29,10 +36,17 @@ interface UsersIndexProps {
     createUrl: string;
 }
 
-function UserRowCard({ user, availableRoles }: { user: AdminUserRow; availableRoles: AdminRoleKey[] }) {
+function initialOf(name: string): string {
+    return name.replace('[SYNTHETIC]', '').trim().charAt(0).toUpperCase();
+}
+
+function UserCard({ user, availableRoles }: { user: AdminUserRow; availableRoles: AdminRoleKey[] }) {
     const t = useT();
     const [selectedRoles, setSelectedRoles] = useState<AdminRoleKey[]>(user.roles);
     const [credentialRef, setCredentialRef] = useState<string>(user.credentialReference ?? '');
+    const changed =
+        selectedRoles.slice().sort().join() !== user.roles.slice().sort().join() ||
+        credentialRef !== (user.credentialReference ?? '');
 
     const toggleRole = (role: AdminRoleKey) => {
         setSelectedRoles((current) => (current.includes(role) ? current.filter((item) => item !== role) : [...current, role]));
@@ -42,117 +56,116 @@ function UserRowCard({ user, availableRoles }: { user: AdminUserRow; availableRo
         event.preventDefault();
         router.put(
             user.updateRolesUrl,
-            {
-                roles: selectedRoles,
-                credential_reference: selectedRoles.includes('medical_reviewer') ? credentialRef : null,
-            },
+            { roles: selectedRoles, credential_reference: selectedRoles.includes('medical_reviewer') ? credentialRef : null },
             { preserveScroll: true },
         );
     };
 
     return (
-        <article className="rounded-xl border border-line bg-surface-raised p-5">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                    <h3 className="text-base font-bold text-ink">{user.name}</h3>
-                    <p className="text-sm text-ink-muted" dir="ltr">
+        <Card as="article" className={`hover-lift p-5 ${user.isActive ? '' : 'opacity-75'}`}>
+            <div className="flex flex-wrap items-start gap-4">
+                <span
+                    className={`inline-flex size-11 shrink-0 items-center justify-center rounded-full text-base font-semibold ${
+                        user.isActive ? 'bg-brand-soft text-brand' : 'bg-surface-sunken text-ink-subtle'
+                    }`}
+                >
+                    {initialOf(user.name)}
+                </span>
+                <div className="min-w-0 flex-1">
+                    <h3 className="truncate font-semibold text-ink">{user.name}</h3>
+                    <p className="truncate text-sm text-ink-muted" dir="ltr">
                         {user.email}
                     </p>
                 </div>
-
-                <div className="flex flex-wrap items-center gap-2">
-                    <span
-                        className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                            user.isActive ? 'bg-brand/10 text-brand' : 'bg-danger/10 text-danger'
-                        }`}
-                    >
+                <div className="flex flex-wrap gap-1.5">
+                    <Badge tone={user.isActive ? 'success' : 'danger'} dot>
                         {user.isActive ? t('admin.users.status_active') : t('admin.users.status_inactive')}
-                    </span>
-                    <span className="rounded-full border border-line bg-surface px-2.5 py-0.5 text-xs font-medium text-ink-muted">
+                    </Badge>
+                    <Badge tone={user.twoFactorEnabled ? 'brand' : 'warning'}>
                         {user.twoFactorEnabled ? t('admin.users.two_factor_on') : t('admin.users.two_factor_off')}
-                    </span>
+                    </Badge>
                 </div>
             </div>
 
+            {user.credentialVerifiedAt !== null && user.credentialReference !== null ? (
+                <p className="mt-3 flex items-center gap-1.5 text-xs text-ink-muted">
+                    <ShieldCheck aria-hidden="true" className="size-3.5 text-success" />
+                    {t('admin.users.verified_badge')} <bdi className="font-mono">{user.credentialReference}</bdi>
+                </p>
+            ) : null}
+
             {user.canUpdateRoles ? (
-                <form onSubmit={submitRoles} className="mt-4 space-y-3 border-t border-line pt-4">
+                <form onSubmit={submitRoles} className="mt-5 space-y-4 border-t border-line pt-4">
                     <fieldset>
-                        <legend className="text-xs font-semibold text-ink-muted">{t('admin.users.roles')}</legend>
-                        <div className="mt-2 flex flex-wrap gap-3">
+                        <legend className="text-xs font-semibold text-ink-subtle">{t('admin.users.roles_label')}</legend>
+                        <div className="mt-2 flex flex-wrap gap-2">
                             {availableRoles.map((role) => (
-                                <label key={role} className="inline-flex items-center gap-2 text-sm text-ink">
-                                    <input
-                                        type="checkbox"
-                                        checked={selectedRoles.includes(role)}
-                                        onChange={() => toggleRole(role)}
-                                        className="size-4 rounded-xs border-line text-brand focus:ring-brand"
-                                    />
-                                    <span>{t(`admin.role.${role}`)}</span>
-                                </label>
+                                <PillCheckbox
+                                    key={role}
+                                    checked={selectedRoles.includes(role)}
+                                    onChange={() => toggleRole(role)}
+                                    label={t(`admin.role.${role}`)}
+                                />
                             ))}
                         </div>
                     </fieldset>
 
                     {selectedRoles.includes('medical_reviewer') ? (
-                        <div>
-                            <label htmlFor={`credential-${user.id}`} className="block text-xs font-medium text-ink">
-                                {t('admin.users.credential_ref')}
-                            </label>
-                            <input
+                        <Field
+                            id={`credential-${user.id}`}
+                            label={t('admin.users.credential_reference')}
+                            help={t('admin.users.credential_help')}
+                        >
+                            <TextInput
                                 id={`credential-${user.id}`}
-                                type="text"
                                 value={credentialRef}
                                 onChange={(e) => setCredentialRef(e.target.value)}
-                                className="mt-1 block w-full rounded-lg border border-line bg-surface px-3 py-1.5 text-sm text-ink focus:border-brand focus:outline-hidden"
                             />
-                            <p className="mt-1 text-xs text-ink-muted">{t('admin.users.credential_help')}</p>
-                        </div>
+                        </Field>
                     ) : null}
 
-                    <div className="flex flex-wrap items-center gap-2 pt-1">
-                        <button
-                            type="submit"
-                            className="inline-flex min-h-9 items-center rounded-lg bg-brand px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-brand-strong"
-                        >
+                    <div className="flex flex-wrap items-center gap-2">
+                        <Button type="submit" size="sm" disabled={!changed}>
+                            <Save aria-hidden="true" className="size-4" />
                             {t('admin.users.save_roles')}
-                        </button>
-
+                        </Button>
                         {user.canToggleActive ? (
-                            <button
-                                type="button"
+                            <Button
+                                size="sm"
+                                variant={user.isActive ? 'danger' : 'secondary'}
                                 onClick={() => router.patch(user.toggleActiveUrl, {}, { preserveScroll: true })}
-                                className="inline-flex min-h-9 items-center rounded-lg border border-line bg-surface px-3.5 py-1.5 text-xs font-medium text-ink hover:border-brand"
                             >
+                                <Power aria-hidden="true" className="size-4" />
                                 {user.isActive ? t('admin.users.deactivate') : t('admin.users.activate')}
-                            </button>
+                            </Button>
                         ) : null}
-
                         {user.canResetTwoFactor ? (
-                            <button
-                                type="button"
+                            <Button
+                                size="sm"
+                                variant="ghost"
                                 onClick={() => router.post(user.resetTwoFactorUrl, {}, { preserveScroll: true })}
-                                className="inline-flex min-h-9 items-center rounded-lg border border-line bg-surface px-3.5 py-1.5 text-xs font-medium text-ink hover:border-danger hover:text-danger"
                             >
+                                <ShieldOff aria-hidden="true" className="size-4" />
                                 {t('admin.users.reset_2fa')}
-                            </button>
+                            </Button>
                         ) : null}
                     </div>
                 </form>
             ) : (
-                <div className="mt-4 flex flex-wrap gap-1.5 border-t border-line pt-3">
+                <div className="mt-4 flex flex-wrap gap-1.5 border-t border-line pt-4">
                     {user.roles.map((role) => (
-                        <span key={role} className="rounded-full bg-brand/10 px-2.5 py-0.5 text-xs font-medium text-brand">
+                        <Badge key={role} tone="brand">
                             {t(`admin.role.${role}`)}
-                        </span>
+                        </Badge>
                     ))}
                 </div>
             )}
-        </article>
+        </Card>
     );
 }
 
 /**
- * Super Admin user & role management page (Module-11 §14.2, M11A-FR-03, M11A-FR-04).
+ * Super Admin account and role management (M11A-FR-03, M11A-FR-04).
  */
 export default function UsersIndex({ users, availableRoles, createUrl }: UsersIndexProps) {
     const t = useT();
@@ -163,14 +176,7 @@ export default function UsersIndex({ users, availableRoles, createUrl }: UsersIn
         password: string;
         roles: AdminRoleKey[];
         credential_reference: string;
-    }>({
-        name: '',
-        email: '',
-        preferred_locale: 'ar',
-        password: '',
-        roles: ['content_editor'],
-        credential_reference: '',
-    });
+    }>({ name: '', email: '', preferred_locale: 'ar', password: '', roles: ['content_editor'], credential_reference: '' });
 
     const toggleNewRole = (role: AdminRoleKey) => {
         setData('roles', data.roles.includes(role) ? data.roles.filter((item) => item !== role) : [...data.roles, role]);
@@ -178,165 +184,140 @@ export default function UsersIndex({ users, availableRoles, createUrl }: UsersIn
 
     const submitCreate = (event: FormEvent) => {
         event.preventDefault();
-        post(createUrl, {
-            onSuccess: () => reset('name', 'email', 'password', 'credential_reference'),
-        });
+        post(createUrl, { preserveScroll: true, onSuccess: () => reset('name', 'email', 'password', 'credential_reference') });
     };
+
+    const activeCount = users.filter((user) => user.isActive).length;
 
     return (
         <AdminLayout>
             <Head title={t('admin.users.title')} />
 
             <div className="space-y-8">
-                <div>
-                    <h1 className="text-2xl font-bold text-ink">{t('admin.users.title')}</h1>
-                    <p className="mt-1 text-sm text-ink-muted">{t('admin.users.subtitle')}</p>
+                <div className="animate-fade-up">
+                    <PageHeader
+                        title={t('admin.users.title')}
+                        description={t('admin.users.subtitle')}
+                        actions={
+                            <div className="flex gap-2">
+                                <Badge tone="brand">{t('admin.users.count_total', { count: users.length })}</Badge>
+                                <Badge tone="success">{t('admin.users.count_active', { count: activeCount })}</Badge>
+                            </div>
+                        }
+                    />
                 </div>
 
-                <section aria-labelledby="create-user-title" className="rounded-xl border border-line bg-surface-raised p-6">
-                    <h2 id="create-user-title" className="text-lg font-bold text-ink">
-                        {t('admin.users.create_title')}
-                    </h2>
+                <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
+                    <section aria-labelledby="existing-users-title" className="order-2 space-y-4 xl:order-1">
+                        <h2 id="existing-users-title" className="flex items-center gap-2 text-base font-semibold text-ink">
+                            <Users aria-hidden="true" className="size-5 text-brand" />
+                            {t('admin.users.list_title')}
+                        </h2>
+                        {users.length === 0 ? (
+                            <EmptyState icon={Users} title={t('admin.users.empty')} />
+                        ) : (
+                            <div className="stagger grid gap-4 2xl:grid-cols-2">
+                                {users.map((user) => (
+                                    <UserCard key={user.id} user={user} availableRoles={availableRoles} />
+                                ))}
+                            </div>
+                        )}
+                    </section>
 
-                    <form onSubmit={submitCreate} className="mt-4 space-y-4" noValidate>
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            <div>
-                                <label htmlFor="new-name" className="block text-sm font-medium text-ink">
-                                    {t('admin.users.name')}
-                                </label>
-                                <input
+                    <Card as="section" className="order-1 animate-fade-up p-5 xl:sticky xl:top-24 xl:order-2">
+                        <h2 className="flex items-center gap-2 text-base font-semibold text-ink">
+                            <span className="inline-flex size-9 items-center justify-center rounded-xl bg-brand-soft text-brand">
+                                <UserPlus aria-hidden="true" className="size-[18px]" />
+                            </span>
+                            {t('admin.users.create_title')}
+                        </h2>
+
+                        <form onSubmit={submitCreate} className="mt-5 space-y-4" noValidate>
+                            <Field id="new-name" label={t('admin.users.name')} error={errors.name}>
+                                <TextInput
                                     id="new-name"
-                                    type="text"
                                     required
                                     value={data.name}
+                                    invalid={errors.name !== undefined}
                                     onChange={(e) => setData('name', e.target.value)}
-                                    className="mt-1.5 block w-full rounded-lg border border-line bg-surface px-3.5 py-2 text-sm text-ink focus:border-brand focus:outline-hidden"
                                 />
-                                {errors.name ? (
-                                    <p role="alert" className="mt-1 text-xs text-danger">
-                                        {errors.name}
-                                    </p>
-                                ) : null}
-                            </div>
-
-                            <div>
-                                <label htmlFor="new-email" className="block text-sm font-medium text-ink">
-                                    {t('admin.users.email')}
-                                </label>
-                                <input
+                            </Field>
+                            <Field id="new-email" label={t('admin.auth.email')} error={errors.email}>
+                                <TextInput
                                     id="new-email"
                                     type="email"
                                     required
                                     dir="ltr"
+                                    autoComplete="off"
                                     value={data.email}
+                                    invalid={errors.email !== undefined}
                                     onChange={(e) => setData('email', e.target.value)}
-                                    className="mt-1.5 block w-full rounded-lg border border-line bg-surface px-3.5 py-2 text-sm text-ink focus:border-brand focus:outline-hidden"
                                 />
-                                {errors.email ? (
-                                    <p role="alert" className="mt-1 text-xs text-danger">
-                                        {errors.email}
-                                    </p>
-                                ) : null}
-                            </div>
-
-                            <div>
-                                <label htmlFor="new-locale" className="block text-sm font-medium text-ink">
-                                    {t('admin.users.preferred_locale')}
-                                </label>
-                                <select
+                            </Field>
+                            <Field id="new-locale" label={t('admin.users.preferred_locale')}>
+                                <SelectInput
                                     id="new-locale"
                                     value={data.preferred_locale}
                                     onChange={(e) => setData('preferred_locale', e.target.value as LocaleCode)}
-                                    className="mt-1.5 block w-full rounded-lg border border-line bg-surface px-3.5 py-2 text-sm text-ink focus:border-brand focus:outline-hidden"
                                 >
-                                    <option value="ar">{t('locale.ar')}</option>
-                                    <option value="en">{t('locale.en')}</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label htmlFor="new-password" className="block text-sm font-medium text-ink">
-                                    {t('admin.users.password_optional')}
-                                </label>
-                                <input
+                                    <option value="ar">{t('admin.locale.ar')}</option>
+                                    <option value="en">{t('admin.locale.en')}</option>
+                                </SelectInput>
+                            </Field>
+                            <Field id="new-password" label={t('admin.users.initial_password')} error={errors.password}>
+                                <TextInput
                                     id="new-password"
                                     type="password"
                                     dir="ltr"
+                                    autoComplete="new-password"
                                     value={data.password}
+                                    invalid={errors.password !== undefined}
                                     onChange={(e) => setData('password', e.target.value)}
-                                    className="mt-1.5 block w-full rounded-lg border border-line bg-surface px-3.5 py-2 text-sm text-ink focus:border-brand focus:outline-hidden"
                                 />
-                                {errors.password ? (
-                                    <p role="alert" className="mt-1 text-xs text-danger">
-                                        {errors.password}
-                                    </p>
-                                ) : null}
-                            </div>
-                        </div>
+                            </Field>
 
-                        <fieldset>
-                            <legend className="text-sm font-medium text-ink">{t('admin.users.roles')}</legend>
-                            <div className="mt-2 flex flex-wrap gap-4">
-                                {availableRoles.map((role) => (
-                                    <label key={role} className="inline-flex items-center gap-2 text-sm text-ink">
-                                        <input
-                                            type="checkbox"
+                            <fieldset>
+                                <legend className="text-sm font-medium text-ink">{t('admin.users.roles_label')}</legend>
+                                <div className="mt-2 flex flex-wrap gap-2">
+                                    {availableRoles.map((role) => (
+                                        <PillCheckbox
+                                            key={role}
                                             checked={data.roles.includes(role)}
                                             onChange={() => toggleNewRole(role)}
-                                            className="size-4 rounded-xs border-line text-brand focus:ring-brand"
+                                            label={t(`admin.role.${role}`)}
                                         />
-                                        <span>{t(`admin.role.${role}`)}</span>
-                                    </label>
-                                ))}
-                            </div>
-                            {errors.roles ? (
-                                <p role="alert" className="mt-1 text-xs text-danger">
-                                    {errors.roles}
-                                </p>
-                            ) : null}
-                        </fieldset>
-
-                        {data.roles.includes('medical_reviewer') ? (
-                            <div>
-                                <label htmlFor="new-credential" className="block text-sm font-medium text-ink">
-                                    {t('admin.users.credential_ref')}
-                                </label>
-                                <input
-                                    id="new-credential"
-                                    type="text"
-                                    value={data.credential_reference}
-                                    onChange={(e) => setData('credential_reference', e.target.value)}
-                                    className="mt-1.5 block w-full rounded-lg border border-line bg-surface px-3.5 py-2 text-sm text-ink focus:border-brand focus:outline-hidden"
-                                />
-                                <p className="mt-1 text-xs text-ink-muted">{t('admin.users.credential_help')}</p>
-                                {errors.credential_reference ? (
-                                    <p role="alert" className="mt-1 text-xs text-danger">
-                                        {errors.credential_reference}
+                                    ))}
+                                </div>
+                                {errors.roles !== undefined ? (
+                                    <p role="alert" className="mt-1.5 text-xs font-medium text-danger">
+                                        {errors.roles}
                                     </p>
                                 ) : null}
-                            </div>
-                        ) : null}
+                            </fieldset>
 
-                        <button
-                            type="submit"
-                            disabled={processing}
-                            className="inline-flex min-h-10 items-center rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-strong disabled:opacity-50"
-                        >
-                            {t('admin.users.create_submit')}
-                        </button>
-                    </form>
-                </section>
+                            {data.roles.includes('medical_reviewer') ? (
+                                <Field
+                                    id="new-credential"
+                                    label={t('admin.users.credential_reference')}
+                                    help={t('admin.users.credential_help')}
+                                    error={errors.credential_reference}
+                                >
+                                    <TextInput
+                                        id="new-credential"
+                                        value={data.credential_reference}
+                                        invalid={errors.credential_reference !== undefined}
+                                        onChange={(e) => setData('credential_reference', e.target.value)}
+                                    />
+                                </Field>
+                            ) : null}
 
-                <section aria-labelledby="existing-users-title" className="space-y-4">
-                    <h2 id="existing-users-title" className="text-lg font-bold text-ink">
-                        {t('admin.users.list_title')}
-                    </h2>
-                    <div className="grid gap-4">
-                        {users.map((user) => (
-                            <UserRowCard key={user.id} user={user} availableRoles={availableRoles} />
-                        ))}
-                    </div>
-                </section>
+                            <Button type="submit" disabled={processing} className="w-full">
+                                <KeyRound aria-hidden="true" className="size-4" />
+                                {t('admin.users.create_button')}
+                            </Button>
+                        </form>
+                    </Card>
+                </div>
             </div>
         </AdminLayout>
     );

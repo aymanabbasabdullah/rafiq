@@ -6,8 +6,9 @@
 @source '../views';
 
 /*
- * Interim design tokens (Module-00). The final visual identity is decided in Module-01 (OQ-015).
- * Colors are checked for WCAG AA contrast against their paired background.
+ * Rafiq design tokens.
+ * Interim visual identity (OQ-015): calm teal brand, warm neutrals, soft depth.
+ * Text/background pairs are chosen for WCAG AA contrast (ui-ux-pro-max checklist).
  */
 @theme {
     --font-sans:
@@ -15,17 +16,76 @@
         'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
     --font-arabic: var(--font-ibm-plex-sans-arabic, 'IBM Plex Sans Arabic'), 'Segoe UI', Tahoma, sans-serif;
 
-    --color-surface: #f8faf9;
+    /* Neutrals */
+    --color-surface: #f6f8f7;
     --color-surface-raised: #ffffff;
-    --color-ink: #1f2a2e;
+    --color-surface-sunken: #eef2f0;
+    --color-ink: #1b2629;
     --color-ink-muted: #4b5a60;
+    --color-ink-subtle: #6b7a80;
+    --color-line: #dbe3e0;
+    --color-line-strong: #c3cfcb;
+
+    /* Brand */
     --color-brand: #0f6b62;
+    --color-brand-strong: #0a524b;
+    --color-brand-soft: #e3f2ef;
     --color-brand-ink: #ffffff;
-    --color-line: #d6dedb;
+    --color-accent: #c2703d;
+    --color-accent-soft: #fbeee5;
+
+    /* States */
     --color-notice: #fff4d6;
     --color-notice-ink: #5c3d00;
+    --color-warning: #b45309;
+    --color-warning-soft: #fef3c7;
+    --color-success: #15803d;
+    --color-success-soft: #dcfce7;
+    --color-info: #1d4ed8;
+    --color-info-soft: #dbeafe;
     --color-danger: #b42318;
+    --color-danger-soft: #fdecea;
     --color-danger-ink: #ffffff;
+
+    /* Depth */
+    --shadow-card: 0 1px 2px rgb(16 40 36 / 0.04), 0 4px 16px -6px rgb(16 40 36 / 0.08);
+    --shadow-lift: 0 2px 4px rgb(16 40 36 / 0.05), 0 12px 32px -10px rgb(16 40 36 / 0.18);
+
+    /* Motion (subtle, 300–400ms — design dial 3/10) */
+    --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+    --animate-fade-up: fade-up 0.4s var(--ease-out-soft) both;
+    --animate-fade-in: fade-in 0.3s ease-out both;
+    --animate-float: float 9s ease-in-out infinite;
+
+    @keyframes fade-up {
+        from {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+        to {
+            opacity: 1;
+            transform: none;
+        }
+    }
+
+    @keyframes fade-in {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes float {
+        0%,
+        100% {
+            transform: translate3d(0, 0, 0) scale(1);
+        }
+        50% {
+            transform: translate3d(0, -18px, 0) scale(1.04);
+        }
+    }
 }
 
 /* Arabic typography: native typeface, comfortable line height, no letter spacing (L10N-007). */
@@ -43,4 +103,81 @@
 :focus-visible {
     outline: 3px solid var(--color-brand);
     outline-offset: 2px;
+}
+
+/*
+ * Scroll reveal: elements start slightly lowered and transparent, and `useReveal`
+ * adds `is-visible` when they enter the viewport. Only transform/opacity animate.
+ */
+@layer components {
+    .reveal {
+        opacity: 0;
+        transform: translateY(14px);
+        transition:
+            opacity 0.45s var(--ease-out-soft),
+            transform 0.45s var(--ease-out-soft);
+        transition-delay: calc(var(--reveal-index, 0) * 60ms);
+    }
+
+    .reveal.is-visible {
+        opacity: 1;
+        transform: none;
+    }
+
+    .stagger > * {
+        animation: var(--animate-fade-up);
+    }
+
+    .stagger > :nth-child(2) {
+        animation-delay: 60ms;
+    }
+
+    .stagger > :nth-child(3) {
+        animation-delay: 120ms;
+    }
+
+    .stagger > :nth-child(4) {
+        animation-delay: 180ms;
+    }
+
+    .stagger > :nth-child(5) {
+        animation-delay: 240ms;
+    }
+
+    .stagger > :nth-child(n + 6) {
+        animation-delay: 300ms;
+    }
+
+    .hover-lift {
+        transition:
+            transform 0.2s var(--ease-out-soft),
+            box-shadow 0.2s var(--ease-out-soft),
+            border-color 0.2s ease;
+    }
+
+    .hover-lift:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lift);
+    }
+}
+
+/* Reduced motion: show the final state immediately (animation-engine skill §6.4). */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    .reveal {
+        opacity: 1;
+        transform: none;
+    }
+
+    .hover-lift:hover {
+        transform: none;
+    }
 }

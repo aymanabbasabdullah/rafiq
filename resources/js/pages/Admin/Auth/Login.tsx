@@ -1,6 +1,9 @@
 import { Link, useForm } from '@inertiajs/react';
+import { LogIn } from 'lucide-react';
 import type { FormEvent } from 'react';
-import { AdminLayout } from '@/layouts/AdminLayout';
+import { Button } from '@/components/ui/Button';
+import { Field, TextInput } from '@/components/ui/Field';
+import { AdminAuthLayout } from '@/layouts/AdminAuthLayout';
 import { useT } from '@/lib/i18n';
 
 type LoginProps = {
@@ -11,10 +14,7 @@ type LoginProps = {
 
 export default function Login({ status, loginUrl, forgotPasswordUrl }: LoginProps) {
     const t = useT();
-    const { data, setData, post, processing, errors } = useForm({
-        email: '',
-        password: '',
-    });
+    const { data, setData, post, processing, errors } = useForm({ email: '', password: '' });
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
@@ -22,65 +22,47 @@ export default function Login({ status, loginUrl, forgotPasswordUrl }: LoginProp
     };
 
     return (
-        <AdminLayout>
-            <section
-                aria-labelledby="admin-login-title"
-                className="mx-auto max-w-md rounded-xl border border-line bg-surface-raised p-6"
-            >
-                <h1 id="admin-login-title" className="text-2xl font-semibold text-ink">
-                    {t('admin.auth.login_title')}
-                </h1>
-                <p className="mt-2 text-sm text-ink-muted">{t('admin.auth.login_subtitle')}</p>
+        <AdminAuthLayout title={t('admin.auth.login_title')} subtitle={t('admin.auth.login_subtitle')} icon={LogIn}>
+            {status ? <p className="mb-5 rounded-xl bg-brand-soft px-4 py-3 text-sm text-brand-strong">{status}</p> : null}
 
-                {status ? <p className="mt-4 rounded-md bg-brand/10 px-3 py-2 text-sm text-brand">{status}</p> : null}
+            <form onSubmit={submit} className="space-y-5" noValidate>
+                <Field id="email" label={t('admin.auth.email')} error={errors.email}>
+                    <TextInput
+                        id="email"
+                        type="email"
+                        required
+                        dir="ltr"
+                        autoComplete="username"
+                        autoFocus
+                        value={data.email}
+                        invalid={errors.email !== undefined}
+                        onChange={(event) => setData('email', event.target.value)}
+                    />
+                </Field>
 
-                <form onSubmit={submit} className="mt-6 space-y-4">
-                    <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-ink">
-                            {t('admin.auth.email')}
-                        </label>
-                        <input
-                            id="email"
-                            type="email"
-                            required
-                            autoComplete="username"
-                            value={data.email}
-                            onChange={(event) => setData('email', event.target.value)}
-                            className="mt-1 w-full rounded-md border border-line bg-surface px-3 py-2 text-ink"
-                        />
-                        {errors.email ? <p className="mt-1 text-xs text-danger">{errors.email}</p> : null}
-                    </div>
+                <Field id="password" label={t('admin.auth.password')} error={errors.password}>
+                    <TextInput
+                        id="password"
+                        type="password"
+                        required
+                        dir="ltr"
+                        autoComplete="current-password"
+                        value={data.password}
+                        invalid={errors.password !== undefined}
+                        onChange={(event) => setData('password', event.target.value)}
+                    />
+                </Field>
 
-                    <div>
-                        <label htmlFor="password" className="block text-sm font-medium text-ink">
-                            {t('admin.auth.password')}
-                        </label>
-                        <input
-                            id="password"
-                            type="password"
-                            required
-                            autoComplete="current-password"
-                            value={data.password}
-                            onChange={(event) => setData('password', event.target.value)}
-                            className="mt-1 w-full rounded-md border border-line bg-surface px-3 py-2 text-ink"
-                        />
-                        {errors.password ? <p className="mt-1 text-xs text-danger">{errors.password}</p> : null}
-                    </div>
+                <Button type="submit" disabled={processing} className="w-full">
+                    {t('admin.auth.login_button')}
+                </Button>
 
-                    <div className="flex items-center justify-between pt-2">
-                        <Link href={forgotPasswordUrl} className="text-sm text-brand hover:underline">
-                            {t('admin.auth.forgot_link')}
-                        </Link>
-                        <button
-                            type="submit"
-                            disabled={processing}
-                            className="inline-flex min-h-10 items-center rounded-md bg-brand px-5 py-2 text-sm font-semibold text-brand-ink disabled:opacity-50"
-                        >
-                            {t('admin.auth.login_button')}
-                        </button>
-                    </div>
-                </form>
-            </section>
-        </AdminLayout>
+                <p className="text-center text-sm">
+                    <Link href={forgotPasswordUrl} className="font-medium text-brand underline-offset-4 hover:underline">
+                        {t('admin.auth.forgot_link')}
+                    </Link>
+                </p>
+            </form>
+        </AdminAuthLayout>
     );
 }
