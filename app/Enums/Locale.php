@@ -47,7 +47,8 @@ enum Locale: string
      */
     public static function default(): self
     {
-        return self::tryFrom((string) config('app.locale')) ?? self::Arabic;
+        // Not `app.locale`: App::setLocale() rewrites that value for the current request.
+        return self::tryFrom((string) config('rafiq.default_locale')) ?? self::Arabic;
     }
 
     /**

@@ -47,11 +47,18 @@ export interface SharedProps {
             roles: AdminRoleKey[];
             canManageUsers: boolean;
             canViewAuditLog: boolean;
+            canManageContent: boolean;
         } | null;
+        flash: {
+            success: string | null;
+        };
         links: {
             dashboard: string;
             users: string;
             auditLog: string;
+            content: string;
+            sources: string;
+            categories: string;
             logout: string;
             locale: string;
         };

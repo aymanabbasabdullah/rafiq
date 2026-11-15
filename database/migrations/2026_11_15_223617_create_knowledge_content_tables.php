@@ -137,7 +137,12 @@ return new class extends Migration
         });
 
         if (DB::getDriverName() === 'mysql') {
+            // The stopword setting is captured when the index is created. With the ngram parser the
+            // default English stopwords ("in", "is", "an"…) silently break matching of words such as
+            // "pain" (pa·ai·in), so stopwords are disabled for this index.
+            DB::statement('SET SESSION innodb_ft_enable_stopword = 0');
             DB::statement('ALTER TABLE content_chunks ADD FULLTEXT content_chunks_text_fulltext (heading, text_normalized) WITH PARSER ngram');
+            DB::statement('SET SESSION innodb_ft_enable_stopword = 1');
         }
 
         Schema::create('glossary_terms', function (Blueprint $table) {

@@ -19,6 +19,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Platform default language (ADR-015)
+    |--------------------------------------------------------------------------
+    |
+    | Kept separately from `app.locale`, which Laravel overwrites on every
+    | request when App::setLocale() runs. Used for redirects and hreflang x-default.
+    |
+    */
+
+    'default_locale' => env('APP_LOCALE', 'ar'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Kill switches (Security-Architecture §4)
     |--------------------------------------------------------------------------
     */

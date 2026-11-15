@@ -102,3 +102,23 @@ FR-070..073 محققة؛ Demo يحتوي محتوى اصطناعياً كافي�
 
 ## 19. Open Questions
 OQ-012 من يكتب المحتوى وترخيصه؛ OQ-021 إظهار اسم المراجع؛ OQ-030 سلوك المحتوى المتأخر عن المراجعة؛ OQ-035 SEO مقابل البوابة.
+
+---
+
+## 20. ملاحظات التنفيذ (2026-11-15)
+
+**الحالة: منفذة** على الفرع `feature/m00-foundation` مع Module-11-B (دون commit).
+
+| البند | ما نُفذ | ملاحظة |
+|---|---|---|
+| نموذج الإصدارات | النسخة العاملة في `article_translations`؛ كل نشر يلتقط لقطة غير قابلة للتعديل في `article_revisions` (`LogicException` عند `updating`)، والموقع العام يقرأ `published_revision_id` فقط (`scopeLive`). | تعديل مقال منشور لا يغيّر ما يراه الزائر حتى يُعتمد الإصدار الجديد (BR-08-3). |
+| المسارات العامة | `/{locale}/learn` (الفهرس + تصنيفات)، `/learn/{category}`، `/learn/{category}/{slug}`، `/learn/article/{key}` (تحويل أو صفحة "غير متاح بهذه اللغة")، `/glossary`، و`POST /learn/search` (throttle 60/د). | البحث POST فقط فلا يظهر الاستعلام في الرابط ولا السجلات (PRIV-003). |
+| hreflang | `LocalizedUrls::override()` يضع روابط بديلة بالـ slug الخاص بكل لغة؛ `x-default` يقرأ `rafiq.default_locale` لأن `App::setLocale()` يعيد كتابة `app.locale`. | كان يشير خطأً إلى لغة الطلب الحالي. |
+| البحث | `ArabicNormalizer` (إزالة التشكيل، أإآ→ا، ى/ئ→ي، ؤ→و، ة→ه) + `ContentSearch`: FULLTEXT بمحلّل `ngram` في BOOLEAN MODE بعبارات إلزامية `+"term"` على MySQL، وLIKE كبديل على غيره. | الوضع الطبيعي (natural language) كان يُعيد كل المقالات. |
+| كلمات التوقف | الفهرس يُنشأ مع `innodb_ft_enable_stopword = 0` لأن ngram مع قائمة InnoDB الافتراضية يكسر كلمات مثل "pain" (`in` كلمة توقف). | الإعداد يُلتقط لحظة إنشاء الفهرس؛ قواعد بيانات قائمة تحتاج إعادة تهجير. |
+| حد الاختبارات | فهارس InnoDB FULLTEXT لا ترى الصفوف غير الملتزمة، فاختبار البحث داخل المعاملات يُتخطى على MySQL ويغطيه `KnowledgeSearchMysqlTest` (`DatabaseTruncation`). | — |
+| التقطيع | `ChunkBuilder` يقسّم على عناوين `##/###` ويجمع ≈200 كلمة لكل مقطع، مرتبطاً بالإصدار المنشور (أساس RAG لـ Module-09). | يعمل متزامناً عند النشر (ليس عبر Queue) — كافٍ لحجم المحتوى الحالي. |
+| Markdown | `MarkdownRenderer` (CommonMark، `html_input: strip`، `allow_unsafe_links: false`، جداول، روابط خارجية بـ `rel`). | لا HTML خام من المحررين. |
+| صدق المحتوى التجريبي | `ContentDemoSeeder` (local/testing أو Demo mode فقط): 4 تصنيفات، 6 مقالات ثنائية اللغة، 5 مصادر، 5 مصطلحات. ختم المراجعة (`ReviewStamp`) يقول صراحةً في وضع العرض إن المحتوى لم يراجعه مختص طبي. | لا يُعرض أي محتوى كـ"معتمد طبياً" فعلياً قبل مراجعة حقيقية. |
+| الاختبارات | `KnowledgeCenterTest` (15) + `KnowledgeSearchMysqlTest` + تحديث `JourneysTest`؛ المجموع 144 ناجحاً + 1 متخطى على SQLite وMySQL. | — |
+| مؤجل | إدارة المسرد من لوحة التحكم (المصطلحات تُزرع حالياً فقط)، وبنك أسئلة الطبيب. | ضمن 11-B لاحقاً / Module-07. |

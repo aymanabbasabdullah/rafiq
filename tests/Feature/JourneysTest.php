@@ -65,10 +65,8 @@ class JourneysTest extends TestCase
             ->get('/ar/learn')
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->component('Public/JourneyEntry')
-                ->where('journey', 'learn')
-                ->where('showsRedFlagReminder', true)
-                ->where('showsLocalOnlyNotice', false)
+                // Module-08 replaces the J1 placeholder with the Knowledge Center home.
+                ->component('Public/Learn/Index')
                 ->where('concernUrl', route('journeys.concern', ['locale' => 'ar']))
                 ->has('otherJourneys', 3)
                 ->where('otherJourneys.0.key', 'concern')
@@ -220,7 +218,8 @@ class JourneysTest extends TestCase
             $this->assertTrue($response->viewData('page')['encryptHistory'] ?? false);
         }
 
-        $this->get('/ar/learn')->assertSee('<meta name="robots" content="noindex">', false);
+        // Module-08: J1 is now the public Knowledge Center, which is meant to be indexable (OQ-035).
+        $this->get('/ar/learn')->assertDontSee('<meta name="robots" content="noindex">', false);
     }
 
     public function test_language_switcher_preserves_the_current_journey_page(): void

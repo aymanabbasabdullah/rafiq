@@ -4,10 +4,17 @@ use App\Enums\Locale;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\Content\ArticleController;
+use App\Http\Controllers\Admin\Content\ArticleReviewController;
+use App\Http\Controllers\Admin\Content\CategoryController;
+use App\Http\Controllers\Admin\Content\MarkdownPreviewController;
+use App\Http\Controllers\Admin\Content\SourceController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\TwoFactorController;
 use App\Http\Controllers\Public\GateController;
+use App\Http\Controllers\Public\GlossaryController;
 use App\Http\Controllers\Public\JourneyController;
+use App\Http\Controllers\Public\KnowledgeController;
 use App\Http\Controllers\Public\LandingController;
 use App\Http\Controllers\Public\LegalPageController;
 use App\Http\Controllers\Public\RootRedirectController;
@@ -57,6 +64,27 @@ Route::prefix('admin')
                 });
 
                 Route::get('/audit-log', [AuditLogController::class, 'index'])->name('audit.index');
+
+                // Content management & editorial workflow (Module-11-B)
+                Route::prefix('content')->name('content.')->group(function (): void {
+                    Route::get('/', [ArticleController::class, 'index'])->name('index');
+                    Route::post('/preview', MarkdownPreviewController::class)->middleware('throttle:120,1')->name('preview');
+                    Route::get('/articles/create', [ArticleController::class, 'create'])->name('articles.create');
+                    Route::post('/articles', [ArticleController::class, 'store'])->name('articles.store');
+                    Route::get('/articles/{article}/edit', [ArticleController::class, 'edit'])->name('articles.edit');
+                    Route::put('/articles/{article}', [ArticleController::class, 'update'])->name('articles.update');
+                    Route::post('/translations/{translation}/{action}', ArticleReviewController::class)
+                        ->whereIn('action', ArticleReviewController::ACTIONS)
+                        ->name('translations.action');
+
+                    Route::get('/sources', [SourceController::class, 'index'])->name('sources.index');
+                    Route::post('/sources', [SourceController::class, 'store'])->name('sources.store');
+                    Route::put('/sources/{source}', [SourceController::class, 'update'])->name('sources.update');
+
+                    Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
+                    Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
+                    Route::put('/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
+                });
             });
         });
     });
@@ -72,7 +100,13 @@ Route::prefix('{locale}')
         Route::get('/journeys', [JourneyController::class, 'index'])->name('journeys.index');
 
         Route::middleware('age')->group(function (): void {
-            Route::get('/learn', [JourneyController::class, 'enter'])->name('journeys.learn');
+            // J1 Learn = Knowledge Center (Module-08)
+            Route::get('/learn', [KnowledgeController::class, 'index'])->name('journeys.learn');
+            Route::post('/learn/search', [KnowledgeController::class, 'search'])->middleware('throttle:60,1')->name('learn.search');
+            Route::get('/learn/article/{key}', [KnowledgeController::class, 'articleByKey'])->where('key', '[a-z0-9-]+')->name('learn.article.key');
+            Route::get('/learn/{category}', [KnowledgeController::class, 'category'])->name('learn.category');
+            Route::get('/learn/{category}/{slug}', [KnowledgeController::class, 'article'])->name('learn.article');
+            Route::get('/glossary', GlossaryController::class)->name('glossary.index');
 
             Route::middleware(['no-store', 'encrypt-history'])->group(function (): void {
                 Route::get('/doctor-prep', [JourneyController::class, 'enter'])->name('journeys.doctor_prep');

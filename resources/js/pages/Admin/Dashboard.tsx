@@ -1,4 +1,4 @@
-import { Head, usePage } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import {
     Activity,
     Bot,
@@ -6,6 +6,7 @@ import {
     ClipboardCheck,
     FlaskConical,
     KeyRound,
+    MessageSquareWarning,
     ScrollText,
     ShieldCheck,
     Stethoscope,
@@ -41,6 +42,7 @@ interface DashboardProps {
     recoveryCodes?: string[] | null;
     summary: DashboardSummary;
     recentActivity: ActivityItem[];
+    tasks: { id: number; kind: 'review' | 'returned'; title: string; locale: string; url: string }[];
 }
 
 function formatDateTime(iso: string | null, locale: string): string {
@@ -58,7 +60,7 @@ function formatDateTime(iso: string | null, locale: string): string {
  * Admin overview (M11A-FR-06): greeting, KPIs, tasks for the role, system status, quick actions and recent activity.
  * Shows administrative data only — the platform stores no visitor answers (ADM-060).
  */
-export default function Dashboard({ recoveryCodes, summary, recentActivity }: DashboardProps) {
+export default function Dashboard({ recoveryCodes, summary, recentActivity, tasks }: DashboardProps) {
     const t = useT();
     const { admin, locale } = usePage().props;
     const user = admin?.user ?? null;
@@ -119,14 +121,14 @@ export default function Dashboard({ recoveryCodes, summary, recentActivity }: Da
                         tone="brand"
                         value={summary.pendingReviewsCount}
                         label={t('admin.dashboard.pending_reviews')}
-                        hint={t('admin.dashboard.available_with', { module: 'M11-B' })}
+                        href={user?.canManageContent && links ? links.content : undefined}
                     />
                     <StatCard
                         icon={CalendarClock}
                         tone="warning"
                         value={summary.reviewsDueSoonCount}
                         label={t('admin.dashboard.reviews_due')}
-                        hint={t('admin.dashboard.available_with', { module: 'M08' })}
+                        href={user?.canManageContent && links ? links.content : undefined}
                     />
                     <StatCard
                         icon={Users}
@@ -154,11 +156,47 @@ export default function Dashboard({ recoveryCodes, summary, recentActivity }: Da
                         title={t('admin.dashboard.tasks_title')}
                         description={t('admin.dashboard.tasks_subtitle')}
                     >
-                        <EmptyState
-                            icon={ClipboardCheck}
-                            title={t('admin.dashboard.tasks_empty_title')}
-                            description={t('admin.dashboard.tasks_empty_body')}
-                        />
+                        {tasks.length === 0 ? (
+                            <EmptyState
+                                icon={ClipboardCheck}
+                                title={t('admin.dashboard.tasks_empty_title')}
+                                description={t('admin.dashboard.tasks_empty_body')}
+                            />
+                        ) : (
+                            <ul className="stagger divide-y divide-line">
+                                {tasks.map((task) => (
+                                    <li key={`${task.kind}-${task.id}`}>
+                                        <Link href={task.url} className="group flex items-center gap-3 py-3">
+                                            <span
+                                                className={`inline-flex size-9 shrink-0 items-center justify-center rounded-xl ${
+                                                    task.kind === 'review'
+                                                        ? 'bg-warning-soft text-warning'
+                                                        : 'bg-info-soft text-info'
+                                                }`}
+                                            >
+                                                {task.kind === 'review' ? (
+                                                    <ClipboardCheck aria-hidden="true" className="size-4" />
+                                                ) : (
+                                                    <MessageSquareWarning aria-hidden="true" className="size-4" />
+                                                )}
+                                            </span>
+                                            <span className="min-w-0 flex-1">
+                                                <span
+                                                    className="block truncate font-medium text-ink group-hover:text-brand"
+                                                    dir="auto"
+                                                >
+                                                    {task.title}
+                                                </span>
+                                                <span className="text-xs text-ink-subtle">
+                                                    {t(`admin.dashboard.task_${task.kind}`)}
+                                                </span>
+                                            </span>
+                                            <Badge>{task.locale.toUpperCase()}</Badge>
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                     </Panel>
 
                     <Panel className="animate-fade-up" title={t('admin.dashboard.status_title')}>

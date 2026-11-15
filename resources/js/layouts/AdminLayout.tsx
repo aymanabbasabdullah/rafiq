@@ -3,11 +3,14 @@ import {
     BookOpenText,
     Bot,
     ChartColumn,
+    CircleCheck,
     ExternalLink,
+    FolderTree,
     Languages,
     LayoutDashboard,
     LogOut,
     Menu,
+    Quote,
     ScrollText,
     Stethoscope,
     Users,
@@ -59,6 +62,13 @@ export function AdminLayout({ children }: { children: ReactNode }) {
         user && links
             ? [
                   { key: 'dashboard', label: t('admin.nav.dashboard'), icon: LayoutDashboard, href: links.dashboard },
+                  ...(user.canManageContent
+                      ? [
+                            { key: 'content', label: t('admin.nav.content'), icon: BookOpenText, href: links.content },
+                            { key: 'sources', label: t('admin.nav.sources'), icon: Quote, href: links.sources },
+                            { key: 'categories', label: t('admin.nav.categories'), icon: FolderTree, href: links.categories },
+                        ]
+                      : []),
                   ...(user.canManageUsers ? [{ key: 'users', label: t('admin.nav.users'), icon: Users, href: links.users }] : []),
                   ...(user.canViewAuditLog
                       ? [{ key: 'audit', label: t('admin.nav.audit'), icon: ScrollText, href: links.auditLog }]
@@ -67,22 +77,23 @@ export function AdminLayout({ children }: { children: ReactNode }) {
             : [];
 
     const upcoming: NavItem[] = [
-        { key: 'content', label: t('admin.nav.content'), icon: BookOpenText, href: null },
         { key: 'clinical', label: t('admin.nav.clinical'), icon: Stethoscope, href: null },
         { key: 'ai', label: t('admin.nav.ai'), icon: Bot, href: null },
         { key: 'analytics', label: t('admin.nav.analytics'), icon: ChartColumn, href: null },
     ];
 
-    const isActive = (href: string | null) => {
-        if (href === null) {
-            return false;
-        }
+    // The most specific matching item wins, so /admin/content/sources highlights "Sources" only.
+    const currentPath = page.url.split('?')[0] ?? '';
+    const activeKey = items
+        .map((item) => ({ key: item.key, path: item.href !== null ? new URL(item.href, window.location.origin).pathname : '' }))
+        .filter(
+            ({ path }) =>
+                path !== '' &&
+                (path === '/admin' ? currentPath === '/admin' : currentPath === path || currentPath.startsWith(`${path}/`)),
+        )
+        .sort((a, b) => b.path.length - a.path.length)[0]?.key;
 
-        const path = new URL(href, window.location.origin).pathname;
-        const current = page.url.split('?')[0] ?? '';
-
-        return path === '/admin' ? current === '/admin' : current.startsWith(path);
-    };
+    const isActive = (key: string) => key === activeKey;
 
     const sidebar = (
         <div className="flex h-full flex-col">
@@ -104,7 +115,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
             <nav aria-label={t('admin.title')} className="flex-1 overflow-y-auto px-3">
                 <ul className="space-y-1">
                     {items.map((item) => {
-                        const active = isActive(item.href);
+                        const active = isActive(item.key);
 
                         return (
                             <li key={item.key}>
@@ -262,6 +273,16 @@ export function AdminLayout({ children }: { children: ReactNode }) {
                     </header>
 
                     <main id="admin-main" className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 md:px-8 md:py-10">
+                        {admin?.flash.success ? (
+                            <p
+                                key={page.url + admin.flash.success}
+                                role="status"
+                                className="mb-6 flex animate-fade-up items-center gap-2 rounded-xl border border-success/25 bg-success-soft px-4 py-3 text-sm font-medium text-success"
+                            >
+                                <CircleCheck aria-hidden="true" className="size-4 shrink-0" />
+                                {admin.flash.success}
+                            </p>
+                        ) : null}
                         {children}
                     </main>
                 </div>

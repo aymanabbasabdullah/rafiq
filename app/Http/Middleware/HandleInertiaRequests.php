@@ -6,6 +6,7 @@ namespace App\Http\Middleware;
 
 use App\Enums\Locale;
 use App\Http\Controllers\Public\LegalPageController;
+use App\Models\Article;
 use App\Models\AuditLog;
 use App\Models\User;
 use App\Support\LocalizedUrls;
@@ -89,11 +90,18 @@ class HandleInertiaRequests extends Middleware
                 'roles' => $user->activeRoleKeys(),
                 'canManageUsers' => $user->can('viewAny', User::class),
                 'canViewAuditLog' => $user->can('viewAny', AuditLog::class),
+                'canManageContent' => $user->can('viewAny', Article::class),
             ] : null,
+            'flash' => [
+                'success' => $request->session()->get('success'),
+            ],
             'links' => [
                 'dashboard' => route('admin.dashboard'),
                 'users' => route('admin.users.index'),
                 'auditLog' => route('admin.audit.index'),
+                'content' => route('admin.content.index'),
+                'sources' => route('admin.content.sources.index'),
+                'categories' => route('admin.content.categories.index'),
                 'logout' => route('admin.logout'),
                 'locale' => route('admin.locale.update'),
             ],

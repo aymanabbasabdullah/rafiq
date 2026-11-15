@@ -13,6 +13,18 @@ use Illuminate\Support\Facades\Route;
  */
 class LocalizedUrls
 {
+    public const OVERRIDE_ATTRIBUTE = 'rafiq.localized_urls';
+
+    /**
+     * Set explicit per-language URLs for the current page.
+     *
+     * @param  array<string, string>  $urls  keyed by locale code
+     */
+    public static function override(Request $request, array $urls): void
+    {
+        $request->attributes->set(self::OVERRIDE_ATTRIBUTE, $urls);
+    }
+
     /**
      * @return array<string, string> keyed by locale code
      */
@@ -32,6 +44,13 @@ class LocalizedUrls
      */
     public static function forLocale(Request $request, Locale $locale): string
     {
+        // Pages whose slugs differ per language (Knowledge Center) register their own alternates.
+        $overrides = $request->attributes->get(self::OVERRIDE_ATTRIBUTE);
+
+        if (is_array($overrides) && is_string($overrides[$locale->value] ?? null)) {
+            return $overrides[$locale->value];
+        }
+
         $route = $request->route();
         $name = $route?->getName();
 
