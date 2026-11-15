@@ -12,19 +12,21 @@ class LocaleRoutingTest extends TestCase
 
     public function test_root_redirects_to_the_preferred_supported_language(): void
     {
-        $this->get('/', ['Accept-Language' => 'en-GB,en;q=0.9'])
+        $this->withSession(['welcomed' => true])
+            ->get('/', ['Accept-Language' => 'en-GB,en;q=0.9'])
             ->assertRedirect(route('public.landing', ['locale' => 'en']));
     }
 
     public function test_root_redirects_to_arabic_when_the_browser_language_is_unsupported(): void
     {
-        $this->get('/', ['Accept-Language' => 'fr-FR,fr;q=0.9'])
+        $this->withSession(['welcomed' => true])
+            ->get('/', ['Accept-Language' => 'fr-FR,fr;q=0.9'])
             ->assertRedirect(route('public.landing', ['locale' => 'ar']));
     }
 
     public function test_root_prefers_the_language_already_chosen_in_the_session(): void
     {
-        $this->withSession(['locale' => 'en'])
+        $this->withSession(['welcomed' => true, 'locale' => 'en'])
             ->get('/', ['Accept-Language' => 'ar'])
             ->assertRedirect(route('public.landing', ['locale' => 'en']));
     }

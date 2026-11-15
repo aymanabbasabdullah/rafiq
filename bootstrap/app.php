@@ -1,5 +1,9 @@
 <?php
 
+use App\Http\Middleware\EncryptSensitiveHistory;
+use App\Http\Middleware\EnsureAgeConfirmed;
+use App\Http\Middleware\EnsureAiNoticeAcknowledged;
+use App\Http\Middleware\EnsureAssessmentConsent;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\NoStoreCache;
 use App\Http\Middleware\SecurityHeaders;
@@ -26,6 +30,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'locale' => SetLocale::class,
             'no-store' => NoStoreCache::class,
+            'age' => EnsureAgeConfirmed::class,
+            'consent' => EnsureAssessmentConsent::class,
+            'ai-notice' => EnsureAiNoticeAcknowledged::class,
+            'encrypt-history' => EncryptSensitiveHistory::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

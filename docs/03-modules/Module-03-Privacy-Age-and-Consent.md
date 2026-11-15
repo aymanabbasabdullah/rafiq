@@ -116,3 +116,24 @@ CSRF على كل POST؛ لا open redirect؛ الجلسة مشفرة؛ PRIV-012/
 
 ## 19. Open Questions
 OQ-002 القانون المنطبق والموافقة؛ OQ-004 كفاية التأكيد الذاتي للعمر؛ OQ-031 جهة الاتصال في السياسة؛ نص Under-18 (RQ-10).
+
+---
+
+## 20. ملاحظات التنفيذ (2026-11-15)
+
+**الحالة: منفذ** على الفرع `feature/m00-foundation` (مع Module-01، دون commit).
+
+| البند | ما نُفذ | ملاحظة |
+|---|---|---|
+| Age Gate (M03-FR-01/02) | `GET/POST /{locale}/gate/age` بزرين متساويين؛ `EnsureAgeConfirmed` (alias `age`) يعيد التوجيه مع `intended` أو إلى Under-18؛ JSON ⇒ 403 `age_required` / `age_ineligible` | `intended` مقيد بقائمة أسماء مسارات (`GateRedirects::INTENDED_ROUTES`) ⇒ لا open redirect (مختبر). تاريخ الميلاد مرفوض بالتحقق. |
+| Under-18 (M03-FR-03) | `/{locale}/under-18` بلا روابط تقييم/AI + رسالة الطوارئ + "غيّر إجابتي" | النص مسودة بانتظار المراجعة الطبية (RQ-10). |
+| الموافقة (M03-FR-04/05) | `GET/POST /{locale}/gate/consent?journey=concern|conception`؛ مربع غير محدد و"ابدأ" معطّل حتى التحديد؛ "ليس الآن" يعيد إلى J1؛ `EnsureAssessmentConsent` (alias `consent`) | المسار بعد الموافقة `journeys.{journey}` — يُسجَّل في Module-02؛ حتى ذلك الحين يعود إلى الصفحة الرئيسية. |
+| إشعار الـ AI (M03-FR-06/07) | `POST /{locale}/gate/ai-notice`؛ `EnsureAiNoticeAcknowledged` (alias `ai-notice`) ⇒ 409 `ai_notice_required`؛ مكوّن `features/ai-chat/AiNotice.tsx` | المكوّن جاهز لكنه لا يُعرض حتى Module-09. |
+| امسح كل شيء (M03-FR-09) | `POST /{locale}/session/clear`: إبطال الجلسة + تدوير CSRF + `Inertia::clearHistory()`؛ زر في التذييل وصفحة الخصوصية مع حوار تأكيد (`<dialog>` أصلي) | — |
+| تشفير التاريخ (M03-FR-10) | `EncryptSensitiveHistory` (alias `encrypt-history`) على صفحتي الموافقة وUnder-18 — ويُطبق على مسارات J2/J3/J4 لاحقاً | **يعمل فقط في السياقات الآمنة** (HTTPS أو localhost) لأن Web Crypto غير متاح على HTTP عادي ⇒ على `http://rafiq.test` يُتخطى التشفير بدل كسر التنقل. الإنتاج على HTTPS. |
+| خلل اكتُشف وأُصلح | `Inertia::encryptHistory()` يضبط قيمة على Singleton ⇒ كانت تتسرب إلى الطلبات التالية في نفس العملية | الـ middleware يضبط القيمة صراحة (true/false) في كل طلب؛ مختبر. |
+| الصفحات القانونية (M03-FR-11) | الخصوصية: ما نعالجه، ما لا نجمعه، ملفات التعريف، الاحتفاظ، الحقوق، الجهة المسؤولة، تاريخ آخر تحديث؛ الشروط: 5 بنود | **مسودة** — الجهة المسؤولة وجهة الاتصال (OQ-031) والمراجعة القانونية (OQ-002) معلقة. |
+| الـ props المشتركة | `gates.{ageConfirmed, assessmentConsent, aiNoticeAcknowledged}` + روابط `ageGate`, `aiNotice`, `clearSession` | آمنة على صفحات الأخطاء بلا جلسة. |
+| مفاتيح الجلسة | أضيف `inertia` إلى `rafiq.public_session_keys` | علم Inertia المؤقت لـ `clear_history` — منطقي وغير شخصي. |
+| العدادات | `age_gate:adult|under18` | — |
+| الاختبارات | 82 اختباراً ناجحاً على SQLite وMySQL (21 جديدة في `GatesTest`) | فحص في المتصفح: رفض العمر ⇒ Under-18 ⇒ تصحيح ⇒ الموافقة (الزر معطّل حتى التحديد) ⇒ امسح كل شيء ⇒ الجلسة انتهت فعلاً. |

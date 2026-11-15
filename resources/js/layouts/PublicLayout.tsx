@@ -1,13 +1,15 @@
-import { Link } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { DemoBanner } from '@/components/public/DemoBanner';
-import { LanguageSwitcher } from '@/components/public/LanguageSwitcher';
+import { SiteFooter } from '@/components/public/SiteFooter';
+import { SiteHeader } from '@/components/public/SiteHeader';
 import { useT } from '@/lib/i18n';
 
 /**
- * Structural public layout (Module-00). Header, footer and Quick Exit are completed in Module-01.
+ * Public layout: skip link, demo banner, header (language switch + Quick exit), page content and footer.
+ *
+ * `beforeMain` renders full-width content between the header and the main column (e.g. the emergency strip).
  */
-export function PublicLayout({ children }: { children: ReactNode }) {
+export function PublicLayout({ children, beforeMain }: { children: ReactNode; beforeMain?: ReactNode }) {
     const t = useT();
 
     return (
@@ -20,23 +22,14 @@ export function PublicLayout({ children }: { children: ReactNode }) {
             </a>
 
             <DemoBanner />
+            <SiteHeader />
+            {beforeMain}
 
-            <header className="border-b border-line bg-surface-raised">
-                <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
-                    <Link href="/" className="text-lg font-semibold text-brand">
-                        {t('app.name')}
-                    </Link>
-                    <LanguageSwitcher />
-                </div>
-            </header>
-
-            <main id="main-content" className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
+            <main id="main-content" className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
                 {children}
             </main>
 
-            <footer className="border-t border-line bg-surface-raised">
-                <p className="mx-auto max-w-5xl px-4 py-4 text-sm text-ink-muted">{t('footer.not_diagnosis')}</p>
-            </footer>
+            <SiteFooter />
         </div>
     );
 }

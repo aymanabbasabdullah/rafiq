@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Enums\Locale;
+use App\Http\Controllers\Public\LegalPageController;
+use App\Support\LocalizedUrls;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Route;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -53,7 +54,42 @@ class HandleInertiaRequests extends Middleware
             'emergency' => [
                 'number' => $this->emergencyNumber(),
             ],
+            'quickExitUrl' => (string) config('rafiq.quick_exit_url'),
+            'links' => fn (): array => $this->links($this->currentLocale()),
+            'gates' => fn (): array => [
+                'ageConfirmed' => $this->sessionFlag($request, 'age_confirmed'),
+                'assessmentConsent' => $this->sessionFlag($request, 'assessment_consent'),
+                'aiNoticeAcknowledged' => $this->sessionFlag($request, 'ai_notice_ack'),
+            ],
         ];
+    }
+
+    /**
+     * Named public pages for the current language, so the frontend never hard-codes paths.
+     *
+     * @return array<string, string>
+     */
+    private function links(Locale $locale): array
+    {
+        $links = ['home' => route('public.landing', ['locale' => $locale->value])];
+
+        foreach (LegalPageController::PAGES as $page) {
+            $links[$page] = route('public.legal', ['locale' => $locale->value, 'page' => $page]);
+        }
+
+        $links['ageGate'] = route('gate.age', ['locale' => $locale->value]);
+        $links['aiNotice'] = route('gate.ai-notice', ['locale' => $locale->value]);
+        $links['clearSession'] = route('session.clear', ['locale' => $locale->value]);
+
+        return $links;
+    }
+
+    /**
+     * Error pages for unmatched URLs render without a session, so every flag defaults to false there.
+     */
+    private function sessionFlag(Request $request, string $key): bool
+    {
+        return $request->hasSession() && $request->session()->get($key) === true;
     }
 
     private function currentLocale(): Locale
@@ -72,24 +108,9 @@ class HandleInertiaRequests extends Middleware
             'alternate' => [
                 'code' => $locale->alternate()->value,
                 'name' => $locale->alternate()->nativeName(),
-                'url' => $this->alternateUrl($request, $locale->alternate()),
+                'url' => LocalizedUrls::forLocale($request, $locale->alternate()),
             ],
         ];
-    }
-
-    /**
-     * The same page in the other language, or that language's home page (L10N-003).
-     */
-    private function alternateUrl(Request $request, Locale $alternate): string
-    {
-        $route = $request->route();
-        $name = $route?->getName();
-
-        if ($name !== null && Route::has($name) && array_key_exists('locale', $route->parameters())) {
-            return route($name, [...$route->parameters(), 'locale' => $alternate->value]);
-        }
-
-        return route('public.landing', ['locale' => $alternate->value]);
     }
 
     /**

@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 
 /**
  * Sends `/` to the visitor's language: session, then Accept-Language, then the default (L10N-002).
+ *
+ * The first visit of a session goes to the welcome screen (FR-001); later visits go straight to the landing page.
  */
 class RootRedirectController extends Controller
 {
@@ -20,6 +22,8 @@ class RootRedirectController extends Controller
             ?? Locale::tryFrom((string) $request->getPreferredLanguage(Locale::values()))
             ?? Locale::default();
 
-        return redirect()->route('public.landing', ['locale' => $locale->value]);
+        $destination = $request->session()->get('welcomed') === true ? 'public.landing' : 'public.welcome';
+
+        return redirect()->route($destination, ['locale' => $locale->value]);
     }
 }

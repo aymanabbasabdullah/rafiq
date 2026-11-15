@@ -14,8 +14,7 @@ export function EmergencyNotice() {
             <p className="mt-2 font-semibold">
                 {emergency.number !== null ? (
                     <a href={`tel:${emergency.number}`} className="text-danger underline">
-                        {t('emergency.call_number', { number: '' })}
-                        <bdi dir="ltr">{emergency.number}</bdi>
+                        {t('emergency.call_number')} <bdi dir="ltr">{emergency.number}</bdi>
                     </a>
                 ) : (
                     t('emergency.call_local')
