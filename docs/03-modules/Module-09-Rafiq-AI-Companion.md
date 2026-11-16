@@ -120,3 +120,24 @@ GR-01..20؛ T-05, T-06, T-07, T-12, T-17, T-18؛ PRIV-014؛ SEC-018. لا تسج
 
 ## 19. Open Questions
 OQ-005، OQ-006 (Paid/Vertex/الميزانية)، OQ-024 (تفسير "medical advice")؛ هل `general_education` في الـ MVP أم Phase 2؟ (مقترح: مفعّل في Demo، قابل للتعطيل)؛ مستوى التبسيط الافتراضي.
+
+---
+
+## 20. ملاحظات التنفيذ (2026-11-16)
+
+**الحالة: منفذة** (دون commit). `RAFIQ_AI_ENABLED=false` افتراضياً؛ لم يُستدعَ Gemini الحقيقي (لا مفتاح محلياً) — كل الاختبارات بـ `Http::fake()` + `preventStrayRequests`.
+
+| البند | ما نُفذ | ملاحظة |
+|---|---|---|
+| المسارات | `POST /{locale}/ai/messages` (age + ai-notice + `throttle:ai-session` + `throttle:ai-ip` (HMAC للـ IP) + no-store)، `GET /{locale}/ai/suggestions?context=` (allow-list) | الطلب يرفض أي مفتاح خارج القائمة (مثل `answers`) ⇒ 422 (GR-05). |
+| الخط | `CompanionService`: red-flag ⇒ pre-filter ⇒ السقف ⇒ الاسترجاع (لا مقاطع ⇒ رد معتمد) ⇒ `PromptBuilder` ⇒ المولّد ⇒ `personal_case/out_of_scope` ⇒ `OutputPostFilter` ⇒ رد + استشهادات | كل مسار غير `answered` يعرض نصاً معتمداً من lang files (GR-10). |
+| المرشحات | `RedFlagInterceptor` (يقرأ `SafetyLexicon` باللغتين، مع رجوع للملف إن تعذر الوصول لقاعدة البيانات)؛ `InputPreFilter` (PII على النص الخام قبل التطبيع، إفصاح صحي شخصي بكلمات كاملة، طلبات تشخيص/جرعات، injection)؛ `OutputPostFilter` (استشهاد صالح، جرعات، صياغة تشخيصية/طمأنة زائفة، روابط/هواتف غير معتمدة، لغة الواجهة، الطول) | الحجب كامل لا تنقيح جزئي (GR-07). |
+| الاسترجاع | `GroundingRetriever`: مراجعات منشورة ومعتمدة بلغة الزائر، مقالات وتصنيفات `ai_enabled`، **استبعاد أي مقال يستشهد بمصدر `ai_use_restricted`**؛ ترتيب بكلمات كاملة + جذع خفيف + IDF + مضاعفة العنوان، حد مقطعين لكل مقال | في بيانات العرض: 3 من 6 مقالات مستبعدة لأنها تستشهد بإرشادات EAU/AUA المقيّدة — سلوك مقصود. |
+| Gemini | `GeminiTextGenerator`: `v1beta/models/{model}:generateContent` + ترويسة `x-goog-api-key` + `responseSchema`؛ لا `tools`/`cachedContent`/`labels`/معرّفات؛ إعادة محاولة واحدة لـ 429/5xx ثم backoff عام 60 ثانية | `GEMINI_MODEL` يجب ضبطه يدوياً بعد التحقق من صفحة النماذج الرسمية (لم نختر نموذجاً). |
+| بدون مفتاح | `FakeAiTextGenerator` خارج Production فقط: يقتبس أول مقطع معتمد مع استشهاده — لا يولّد نصاً | في Production بدون مفتاح ⇒ `not_configured` ⇒ رد "غير متاح". |
+| CorePrompt | `v1` ثابت في الكود؛ نصوص الإدارة لا تُضاف إليه أبداً | — |
+| السجل والسقف | `ai_usage_logs` بلا نص (مختبر بقائمة الأعمدة)؛ عدادات `ai_request:{outcome}` و`article_ai_explain`؛ `BudgetGuard`: سقف تكلفة يومي إن ضُبطت الأسعار (`RAFIQ_AI_PRICE_*`) وإلا سقف 300 استدعاء/يوم | الأسعار غير مضبوطة عمداً (تُنسخ من الصفحة الرسمية). |
+| الواجهة | `AiChatProvider` (تحميل lazy للوحة عند النقر فقط) + `ChatPanel` (لوحة جانبية/Sheet كامل، تحذير ثابت، عداد 500، إيقاف، مهلة 15 ث، رسالة طوارئ مميزة مع زر فحص علامات الخطر، استشهادات، التنبيه الثابت، مسح، مستوى التبسيط، **زر الخروج السريع داخل اللوحة**) + زر "اسأل رفيق" في الترويسة + "اشرح لي هذا المقال" | `AiNotice` يظهر قبل أول رسالة ثم يُرسل السؤال المعلّق. |
+| التقييم | `rafiq:ai:eval safety [--json]` على `resources/ai-eval/safety.jsonl` (35 حالة حتمية: red-flag/PII/إفصاح/طلبات محظورة/injection/مسموح) — 35/35 | مجموعات النموذج (التأريض، اللغة) تحتاج staging بمفتاح — مؤجلة. |
+| الاختبارات | `AiFiltersTest` (19) + `AiCompanionTest` (14) | — |
+| مؤجل | `explain_term` من واجهة المسرد (المسار يدعمه)، مجموعات تقييم النموذج، مراجعة شروط Google (AI-019) قبل أي تفعيل حقيقي | — |

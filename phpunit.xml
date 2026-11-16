@@ -32,5 +32,9 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <!-- Tests never use a real Gemini key; AI tests opt into the Gemini provider with Http::fake(). -->
+        <env name="RAFIQ_AI_PROVIDER" value="fake"/>
+        <env name="GEMINI_API_KEY" value=""/>
+        <env name="GEMINI_MODEL" value=""/>
     </php>
 </phpunit>

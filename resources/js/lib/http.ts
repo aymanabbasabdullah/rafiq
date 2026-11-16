@@ -22,6 +22,27 @@ function parseBody(raw: string): unknown {
 }
 
 /**
+ * JSON GET for small read-only endpoints (no navigation, nothing in history).
+ */
+export async function getJson<TResponse>(url: string, signal?: AbortSignal): Promise<TResponse> {
+    try {
+        const response = await http.getClient().request({ method: 'get', url, signal, headers: { Accept: 'application/json' } });
+
+        if (response.status < 200 || response.status >= 300) {
+            throw new JsonRequestError(response.status, parseBody(response.data));
+        }
+
+        return parseBody(response.data) as TResponse;
+    } catch (error) {
+        if (error instanceof HttpResponseError) {
+            throw new JsonRequestError(error.response.status, parseBody(error.response.data));
+        }
+
+        throw error;
+    }
+}
+
+/**
  * Sends a JSON POST through Inertia's HTTP client (which attaches the XSRF token)
  * without navigating, so nothing ends up in the URL or browser history (ADR-019, PRIV-003).
  *

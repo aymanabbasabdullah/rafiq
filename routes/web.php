@@ -2,6 +2,7 @@
 
 use App\Enums\Locale;
 use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Admin\AiConfigurationController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\Clinical\ReleaseController;
@@ -14,6 +15,9 @@ use App\Http\Controllers\Admin\Content\MarkdownPreviewController;
 use App\Http\Controllers\Admin\Content\SourceController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\TwoFactorController;
+use App\Http\Controllers\Public\AiController;
+use App\Http\Controllers\Public\AiDevTestController;
+use App\Http\Controllers\Public\AssessmentController;
 use App\Http\Controllers\Public\GateController;
 use App\Http\Controllers\Public\GlossaryController;
 use App\Http\Controllers\Public\JourneyController;
@@ -90,6 +94,19 @@ Route::prefix('admin')
                     Route::put('/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
                 });
 
+                // AI configuration (Module-11-D), Super Admin only.
+                Route::prefix('ai')->name('ai.')->group(function (): void {
+                    Route::get('/', [AiConfigurationController::class, 'index'])->name('index');
+                    Route::post('/draft', [AiConfigurationController::class, 'storeDraft'])->name('draft.store');
+                    Route::put('/draft/{configuration}', [AiConfigurationController::class, 'updateDraft'])->name('draft.update');
+                    Route::post('/draft/{configuration}/evaluate', [AiConfigurationController::class, 'evaluate'])->name('draft.evaluate');
+                    Route::post('/disable', [AiConfigurationController::class, 'disable'])->name('disable');
+                    Route::middleware('password.confirm:admin.password.confirm')->group(function (): void {
+                        Route::post('/draft/{configuration}/activate', [AiConfigurationController::class, 'activate'])->name('draft.activate');
+                        Route::get('/draft/{configuration}/activate', fn () => redirect()->route('admin.ai.index'));
+                    });
+                });
+
                 // Clinical rules management (Module-11-C). Conditions and priorities come from Git only.
                 Route::prefix('clinical')->name('clinical.')->group(function (): void {
                     Route::get('/rules', [RuleController::class, 'index'])->name('rules.index');
@@ -131,12 +148,32 @@ Route::prefix('{locale}')
             Route::get('/learn/{category}/{slug}', [KnowledgeController::class, 'article'])->name('learn.article');
             Route::get('/glossary', GlossaryController::class)->name('glossary.index');
 
+            // Rafiq AI companion (Module-09): only on explicit request, after the AI notice.
+            Route::get('/ai/suggestions', [AiController::class, 'suggestions'])->middleware('throttle:60,1')->name('ai.suggestions');
+            Route::post('/ai/messages', [AiController::class, 'message'])
+                ->middleware(['no-store', 'ai-notice', 'throttle:ai-session', 'throttle:ai-ip'])
+                ->name('ai.messages');
+
+            // Development-only Postman test of the real pipeline (never registered outside local/testing;
+            // 404 unless RAFIQ_AI_DEV_TEST_ROUTE=true). Same gates and limits as the visitor endpoint.
+            if (app()->environment(['local', 'testing'])) {
+                Route::post('/dev/ai/messages', [AiDevTestController::class, 'message'])
+                    ->middleware(['no-store', 'ai-notice', 'throttle:ai-session', 'throttle:ai-ip'])
+                    ->name('ai.dev.messages');
+            }
+
             Route::middleware(['no-store', 'encrypt-history'])->group(function (): void {
                 Route::get('/doctor-prep', [JourneyController::class, 'enter'])->name('journeys.doctor_prep');
 
                 Route::middleware('consent')->group(function (): void {
                     Route::get('/concern', [JourneyController::class, 'enter'])->name('journeys.concern');
                     Route::get('/conception', [JourneyController::class, 'enter'])->name('journeys.conception');
+
+                    // Safety screening and evaluation (Module-04/05): JSON only, nothing stored.
+                    Route::middleware('throttle:30,1')->group(function (): void {
+                        Route::post('/assessment/screen', [AssessmentController::class, 'screen'])->name('assessment.screen');
+                        Route::post('/assessment/evaluate', [AssessmentController::class, 'evaluate'])->name('assessment.evaluate');
+                    });
                 });
             });
         });

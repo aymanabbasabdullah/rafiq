@@ -7,10 +7,12 @@ namespace App\Http\Middleware;
 use App\Enums\Journey;
 use App\Enums\Locale;
 use App\Http\Controllers\Public\LegalPageController;
+use App\Models\AiConfiguration;
 use App\Models\Article;
 use App\Models\AuditLog;
 use App\Models\RulesetRelease;
 use App\Models\User;
+use App\Services\Ai\AiSettings;
 use App\Support\LocalizedUrls;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
@@ -61,6 +63,12 @@ class HandleInertiaRequests extends Middleware
             ],
             'quickExitUrl' => (string) config('rafiq.quick_exit_url'),
             'links' => fn (): array => $this->links($this->currentLocale()),
+            // Rafiq AI: whether it is on, and where to talk to it. Never the key or model (GR-11).
+            'ai' => fn (): array => [
+                'enabled' => app(AiSettings::class)->enabled(),
+                'messagesUrl' => route('ai.messages', ['locale' => $this->currentLocale()->value]),
+                'suggestionsUrl' => route('ai.suggestions', ['locale' => $this->currentLocale()->value]),
+            ],
             'gates' => fn (): array => [
                 'ageConfirmed' => $this->sessionFlag($request, 'age_confirmed'),
                 'assessmentConsent' => $this->sessionFlag($request, 'assessment_consent'),
@@ -94,6 +102,7 @@ class HandleInertiaRequests extends Middleware
                 'canViewAuditLog' => $user->can('viewAny', AuditLog::class),
                 'canManageContent' => $user->can('viewAny', Article::class),
                 'canViewClinical' => $user->can('viewAny', RulesetRelease::class),
+                'canManageAi' => $user->can('viewAny', AiConfiguration::class),
             ] : null,
             'flash' => [
                 'success' => $request->session()->get('success'),
@@ -107,6 +116,8 @@ class HandleInertiaRequests extends Middleware
                 'categories' => route('admin.content.categories.index'),
                 'clinicalRules' => route('admin.clinical.rules.index'),
                 'clinicalReleases' => route('admin.clinical.releases.index'),
+                'ai' => route('admin.ai.index'),
+                'ai' => route('admin.ai.index'),
                 'logout' => route('admin.logout'),
                 'locale' => route('admin.locale.update'),
             ],

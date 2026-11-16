@@ -12,6 +12,8 @@ use App\Models\Article;
 use App\Models\ArticleTranslation;
 use App\Models\ContentCategory;
 use App\Models\ContentCategoryTranslation;
+use App\Services\Ai\AiSettings;
+use App\Services\Ai\GroundingRetriever;
 use App\Services\Analytics\MetricsRecorder;
 use App\Services\Content\ContentSearch;
 use App\Services\Content\KnowledgeCatalog;
@@ -107,7 +109,9 @@ class KnowledgeController extends Controller
                 'version' => $revision->version,
                 'approvedAt' => $revision->approved_at->toDateString(),
                 'reviewDueAt' => $translation->review_due_at?->toDateString(),
-                'aiEnabled' => $article->ai_enabled && $article->category->ai_enabled,
+                'id' => $article->id,
+                // The AI may explain this article only if it is AI-enabled and no source restricts AI use (Knowledge-Grounding).
+                'aiEnabled' => app(AiSettings::class)->enabled() && app(GroundingRetriever::class)->articleIsAvailable($locale, $article->id),
             ],
             'category' => [
                 'name' => $categoryTranslation->name,

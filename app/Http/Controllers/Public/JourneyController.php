@@ -7,7 +7,11 @@ namespace App\Http\Controllers\Public;
 use App\Enums\Journey;
 use App\Http\Controllers\Controller;
 use App\Services\Analytics\MetricsRecorder;
+use App\Services\Assessment\QuestionnaireBuilder;
+use App\Services\Clinical\ActiveRulesetResolver;
+use App\Services\Clinical\Exceptions\NoActiveRuleset;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -37,11 +41,47 @@ class JourneyController extends Controller
             $metrics->increment('journey_selected', $journey->value);
         }
 
+        if ($journey->requiresAssessmentConsent()) {
+            return $this->assessment($journey);
+        }
+
         return Inertia::render('Public/JourneyEntry', [
             'journey' => $journey->value,
             'showsRedFlagReminder' => $journey->showsRedFlagReminder(),
             'showsLocalOnlyNotice' => $journey->showsLocalOnlyNotice(),
             'concernUrl' => Journey::Concern->url(),
+            'otherJourneys' => Journey::cards(exclude: $journey),
+        ]);
+    }
+
+    /**
+     * J2/J3: the guided assessment (M04/M05). Questions come from the ruleset allowed in this environment;
+     * when none may run, or the kill switch is off, the page shows the general safety message instead.
+     */
+    private function assessment(Journey $journey): Response
+    {
+        $locale = App::getLocale();
+        $questions = null;
+        $demo = false;
+
+        if (config('rafiq.assessment_enabled')) {
+            try {
+                $ruleset = app(ActiveRulesetResolver::class)->resolve();
+                $questions = app(QuestionnaireBuilder::class)->questions($ruleset, $journey->value, $locale);
+                $demo = $ruleset->demo;
+            } catch (NoActiveRuleset) {
+                $questions = null;
+            }
+        }
+
+        return Inertia::render('Public/Assessment', [
+            'journey' => $journey->value,
+            'questions' => $questions,
+            'demo' => $demo,
+            'screenUrl' => route('assessment.screen', ['locale' => $locale]),
+            'evaluateUrl' => route('assessment.evaluate', ['locale' => $locale]),
+            'learnUrl' => Journey::Learn->url(),
+            'doctorPrepUrl' => Journey::DoctorPrep->url(),
             'otherJourneys' => Journey::cards(exclude: $journey),
         ]);
     }

@@ -20,6 +20,10 @@ final readonly class AiReply
         public string $text,
         public array $citations = [],
         public ?array $action = null,
+        // Diagnostics for the development test route only; never included in toArray().
+        public ?string $model = null,
+        public ?int $latencyMs = null,
+        public ?string $diagnostic = null,
     ) {}
 
     /**

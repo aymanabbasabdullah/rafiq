@@ -11,13 +11,23 @@ use RuntimeException;
  */
 class BootChecks
 {
+    public const AI_PROVIDERS = ['gemini', 'fake'];
+
     /**
      * @throws RuntimeException
      */
-    public static function assertSafeConfiguration(string $environment, bool $demoMode, bool $debug): void
+    public static function assertSafeConfiguration(string $environment, bool $demoMode, bool $debug, string $aiProvider = 'gemini'): void
     {
+        if (! in_array($aiProvider, self::AI_PROVIDERS, true)) {
+            throw new RuntimeException("Unknown RAFIQ_AI_PROVIDER \"{$aiProvider}\". Use one of: ".implode(', ', self::AI_PROVIDERS).'.');
+        }
+
         if ($environment !== 'production') {
             return;
+        }
+
+        if ($aiProvider !== 'gemini') {
+            throw new RuntimeException('RAFIQ_AI_PROVIDER must be "gemini" in production: the fake provider is for local development and tests only.');
         }
 
         if ($demoMode) {

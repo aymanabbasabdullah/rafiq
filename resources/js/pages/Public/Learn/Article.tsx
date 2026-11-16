@@ -1,7 +1,8 @@
 import { Link } from '@inertiajs/react';
-import { ArrowRight, ExternalLink, MessagesSquare } from 'lucide-react';
+import { ArrowRight, ExternalLink } from 'lucide-react';
 import { ArticleList, type ArticleCardData } from '@/components/learn/ArticleCard';
 import { ReviewStamp } from '@/components/learn/ReviewStamp';
+import { ExplainArticleButton } from '@/features/ai-chat/ExplainArticleButton';
 import { PublicLayout } from '@/layouts/PublicLayout';
 import { useT } from '@/lib/i18n';
 import { useReveal } from '@/lib/useReveal';
@@ -15,6 +16,7 @@ type ArticleProps = {
         version: number;
         approvedAt: string;
         reviewDueAt: string | null;
+        id: number;
         aiEnabled: boolean;
     };
     category: { name: string; url: string };
@@ -50,12 +52,7 @@ export default function Article({ article, category, sources, related, learnUrl 
                     <ReviewStamp approvedAt={article.approvedAt} reviewDueAt={article.reviewDueAt} version={article.version} />
                 </header>
 
-                {article.aiEnabled ? (
-                    <div className="flex items-center gap-3 rounded-2xl border border-dashed border-brand/30 bg-brand-mist px-4 py-3 text-sm text-brand-strong">
-                        <MessagesSquare aria-hidden="true" className="size-4 shrink-0" />
-                        <span>{t('learn.ai_coming')}</span>
-                    </div>
-                ) : null}
+                {article.aiEnabled ? <ExplainArticleButton articleId={article.id} title={article.title} /> : null}
 
                 <article
                     className="rafiq-prose animate-fade-up"

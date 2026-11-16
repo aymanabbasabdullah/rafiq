@@ -33,7 +33,8 @@ final class InputPreFilter
         '/[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}/iu',
         '/(https?:\/\/|www\.)\S+/iu',
         '/\+?\d[\d\s\-().]{6,}\d/u',
-        '/\b(my name is|i am called|اسمي)\b/u',
+        '/\b(my name is|i am called)\b/u',
+        '/(?<!\p{L})اسمي(?!\p{L})/u',
     ];
 
     private const FORBIDDEN_PATTERNS = [
@@ -47,21 +48,31 @@ final class InputPreFilter
         '/(ما الجرعه|كم الجرعه|كم حبه|اصرف لي|اكتب لي وصفه|اي دواء اخذ|هل اوقف الدواء)/u',
     ];
 
-    private const FIRST_PERSON_EN = '/\b(i have|i\'ve|i feel|i am|i\'m|i noticed|i suffer|my|me)\b/u';
+    private const FIRST_PERSON_EN = '/\b(i have|i ve got|i feel|i noticed|i suffer|i get|my)\b/u';
 
     private const HEALTH_TERMS_EN = '/\b(pain|hurts?|lump|swelling|swollen|erection|sperm|semen|symptoms?|discharge|burning|fever|results?|tests?|testicles?|testis|scrotum|penis|infertile|bleeding|blood)\b/u';
 
-    private const FIRST_PERSON_AR = '/(عندي|لدي|اعاني|اشعر|احس|لاحظت|خصيتي|خصيتاي|نتيجتي|نتايجي|تحليلي|حالتي|زوجتي|انتصابي)/u';
+    private const FIRST_PERSON_AR = '/(?<!\p{L})(عندي|لدي|اعاني|اشعر|احس|لاحظت|خصيتي|خصيتاي|نتيجتي|نتايجي|تحليلي|حالتي|زوجتي|انتصابي|المي|وجعي)(?!\p{L})/u';
 
-    private const HEALTH_TERMS_AR = '/(الم|وجع|كتله|تورم|انتفاخ|انتصاب|منوي|منويه|اعراض|افرازات|حرقه|حراره|حمي|تحليل|نتيجه|خصيه|خصيتي|عقم|نزيف|دم)/u';
+    private const HEALTH_TERMS_AR = '/(?<!\p{L})(الم|المي|الالم|بالم|والم|وجع|وجعي|كتله|تورم|انتفاخ|انتصاب|منوي|المنوي|منويه|المنويه|اعراض|افرازات|حرقه|حراره|حمي|تحليل|تحليلي|نتيجه|نتيجتي|خصيه|الخصيه|خصيتي|عقم|العقم|نزيف|دم)(?!\p{L})/u';
+
+    private const DIGITS = ['٠' => '0', '١' => '1', '٢' => '2', '٣' => '3', '٤' => '4', '٥' => '5', '٦' => '6', '٧' => '7', '٨' => '8', '٩' => '9'];
 
     public function __construct(private readonly ArabicNormalizer $normalizer) {}
 
     public function check(string $message): ?string
     {
-        $text = $this->prepare($message);
+        // Contact details need punctuation (@, +, /), so they are checked before normalisation strips it.
+        $raw = mb_strtolower(strtr($message, self::DIGITS));
+        $text = $this->normalizer->normalize($raw);
 
-        foreach ([self::INJECTION => self::INJECTION_PATTERNS, self::PII => self::PII_PATTERNS, self::FORBIDDEN_REQUEST => self::FORBIDDEN_PATTERNS] as $reason => $patterns) {
+        foreach (self::PII_PATTERNS as $pattern) {
+            if (preg_match($pattern, $raw) === 1 || preg_match($pattern, $text) === 1) {
+                return self::PII;
+            }
+        }
+
+        foreach ([self::INJECTION => self::INJECTION_PATTERNS, self::FORBIDDEN_REQUEST => self::FORBIDDEN_PATTERNS] as $reason => $patterns) {
             foreach ($patterns as $pattern) {
                 if (preg_match($pattern, $text) === 1) {
                     return $reason;
@@ -73,15 +84,5 @@ final class InputPreFilter
         $arabicDisclosure = preg_match(self::FIRST_PERSON_AR, $text) === 1 && preg_match(self::HEALTH_TERMS_AR, $text) === 1;
 
         return $englishDisclosure || $arabicDisclosure ? self::PERSONAL_HEALTH : null;
-    }
-
-    /**
-     * Lower-case, Arabic letter normalisation and Arabic-Indic digits as Latin digits.
-     */
-    private function prepare(string $message): string
-    {
-        $text = strtr($message, ['٠' => '0', '١' => '1', '٢' => '2', '٣' => '3', '٤' => '4', '٥' => '5', '٦' => '6', '٧' => '7', '٨' => '8', '٩' => '9', '’' => "'"]);
-
-        return mb_strtolower($this->normalizer->normalize($text));
     }
 }

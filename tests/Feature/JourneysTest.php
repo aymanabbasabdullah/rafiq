@@ -114,10 +114,8 @@ class JourneysTest extends TestCase
             ->assertOk()
             ->assertHeader('Cache-Control', 'max-age=0, no-store, private')
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->component('Public/JourneyEntry')
+                ->component('Public/Assessment')
                 ->where('journey', $journey)
-                ->where('showsRedFlagReminder', false)
-                ->where('showsLocalOnlyNotice', false)
                 ->has('otherJourneys', 3));
     }
 
@@ -138,7 +136,7 @@ class JourneysTest extends TestCase
         $this->get('/ar/concern')
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->component('Public/JourneyEntry')
+                ->component('Public/Assessment')
                 ->where('journey', 'concern'));
     }
 

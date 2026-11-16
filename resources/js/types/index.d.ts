@@ -35,6 +35,7 @@ export interface SharedProps {
         aiNotice: string;
         clearSession: string;
     };
+    ai: { enabled: boolean; messagesUrl: string; suggestionsUrl: string };
     gates: {
         ageConfirmed: boolean;
         assessmentConsent: boolean;
@@ -51,6 +52,7 @@ export interface SharedProps {
             canViewAuditLog: boolean;
             canManageContent: boolean;
             canViewClinical: boolean;
+            canManageAi: boolean;
         } | null;
         flash: {
             success: string | null;
@@ -64,6 +66,8 @@ export interface SharedProps {
             categories: string;
             clinicalRules: string;
             clinicalReleases: string;
+            ai: string;
+            ai: string;
             logout: string;
             locale: string;
         };

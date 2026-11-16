@@ -53,6 +53,21 @@ return [
         'enabled' => (bool) env('RAFIQ_AI_ENABLED', false),
 
         /*
+         * Which text generator answers (explicit, never inferred): "gemini" calls Google; "fake" quotes
+         * approved content without any network call and is refused in production. A failed Gemini request
+         * shows the "unavailable" reply — it never silently falls back to the fake.
+         */
+        'provider' => env('RAFIQ_AI_PROVIDER', 'gemini'),
+
+        /*
+         * Development-only end-to-end test route (POST /{locale}/dev/ai/messages). Registered only in the
+         * local and testing environments, answers 404 unless this is true, keeps the age gate, AI notice,
+         * CSRF and rate limits, always uses the real Gemini provider, and does not switch the assistant on
+         * for visitors. Never enable it on a shared or public server.
+         */
+        'dev_test_route' => (bool) env('RAFIQ_AI_DEV_TEST_ROUTE', false),
+
+        /*
          * Upper limits (AI-013). The active admin configuration may lower them, never raise them (BR-09-5).
          */
         'limits' => [

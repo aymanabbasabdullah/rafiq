@@ -24,7 +24,7 @@ export function SiteFooter() {
     const linkClass = 'text-sm text-ink-muted transition-colors hover:text-brand-strong';
 
     return (
-        <footer className="mt-auto border-t border-line bg-surface-raised">
+        <footer className="mt-auto border-t border-line bg-surface-raised print:hidden">
             <div className="mx-auto grid max-w-6xl gap-12 px-4 py-14 sm:px-6 md:grid-cols-12 lg:px-8">
                 <div className="space-y-5 md:col-span-4">
                     <BrandLockup name={t('app.name')} />

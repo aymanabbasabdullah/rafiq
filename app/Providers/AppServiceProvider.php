@@ -4,6 +4,10 @@ namespace App\Providers;
 
 use App\Contracts\Safety\SafetyLexicon;
 use App\Models\User;
+use App\Services\Ai\AiSettings;
+use App\Services\Ai\Contracts\AiTextGenerator;
+use App\Services\Ai\FakeAiTextGenerator;
+use App\Services\Ai\Gemini\GeminiTextGenerator;
 use App\Services\Clinical\ActiveRulesetResolver;
 use App\Services\Clinical\SafetyLexiconProvider;
 use App\Support\BootChecks;
@@ -26,6 +30,22 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->scoped(ActiveRulesetResolver::class);
         $this->app->bind(SafetyLexicon::class, SafetyLexiconProvider::class);
+        $this->app->scoped(AiSettings::class);
+
+        // Provider chosen explicitly by RAFIQ_AI_PROVIDER (M09-FR-09). "gemini" with a missing key fails
+        // visibly (not_configured ⇒ "unavailable" reply); it never falls back to the fake.
+        $this->app->bind(AiTextGenerator::class, function (): AiTextGenerator {
+            if (config('rafiq.ai.provider') === 'fake' && ! $this->app->isProduction()) {
+                return new FakeAiTextGenerator;
+            }
+
+            return new GeminiTextGenerator(
+                apiKey: (string) config('services.gemini.api_key'),
+                model: config('services.gemini.model'),
+                baseUrl: (string) config('services.gemini.base_url'),
+                timeout: (int) config('services.gemini.timeout'),
+            );
+        });
     }
 
     /**
@@ -37,6 +57,7 @@ class AppServiceProvider extends ServiceProvider
             environment: (string) $this->app->environment(),
             demoMode: (bool) config('rafiq.demo_mode'),
             debug: (bool) config('app.debug'),
+            aiProvider: (string) config('rafiq.ai.provider'),
         );
 
         Model::shouldBeStrict(! $this->app->isProduction());
@@ -65,6 +86,13 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('admin-2fa', fn (Request $request): Limit => Limit::perMinute(5)->by(
             ($request->user()?->getAuthIdentifier() ?? 'guest').'|'.$request->ip(),
         ));
+
+        // AI limits (AI-013): per session, and per IP keyed by an HMAC so no raw IP is stored in the cache.
+        RateLimiter::for('ai-session', fn (Request $request): Limit => Limit::perMinute(app(AiSettings::class)->limits()['per_session_per_minute'])
+            ->by('ai-session|'.$request->session()->getId()));
+
+        RateLimiter::for('ai-ip', fn (Request $request): Limit => Limit::perHour(app(AiSettings::class)->limits()['per_ip_per_hour'])
+            ->by('ai-ip|'.hash_hmac('sha256', (string) $request->ip(), (string) config('app.key'))));
 
         RateLimiter::for('admin', fn (Request $request): Limit => Limit::perMinute(60)->by(
             ($request->user()?->getAuthIdentifier() ?? 'guest').'|'.$request->ip(),

@@ -75,6 +75,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
                             { key: 'releases', label: t('admin.nav.releases'), icon: Layers, href: links.clinicalReleases },
                         ]
                       : []),
+                  ...(user.canManageAi ? [{ key: 'ai', label: t('admin.nav.ai'), icon: Bot, href: links.ai }] : []),
                   ...(user.canManageUsers ? [{ key: 'users', label: t('admin.nav.users'), icon: Users, href: links.users }] : []),
                   ...(user.canViewAuditLog
                       ? [{ key: 'audit', label: t('admin.nav.audit'), icon: ScrollText, href: links.auditLog }]
@@ -82,10 +83,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
               ]
             : [];
 
-    const upcoming: NavItem[] = [
-        { key: 'ai', label: t('admin.nav.ai'), icon: Bot, href: null },
-        { key: 'analytics', label: t('admin.nav.analytics'), icon: ChartColumn, href: null },
-    ];
+    const upcoming: NavItem[] = [{ key: 'analytics', label: t('admin.nav.analytics'), icon: ChartColumn, href: null }];
 
     // The most specific matching item wins, so /admin/content/sources highlights "Sources" only.
     const currentPath = page.url.split('?')[0] ?? '';

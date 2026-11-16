@@ -70,7 +70,7 @@ const FAQ = ['1', '2', '3', '4'];
  * private, what are the limits (never collapsed — BR-01-1), and the remaining questions.
  */
 export default function Landing({ journeys, knowledge }: LandingProps) {
-    const { links } = usePage().props;
+    const { links, ai } = usePage().props;
     const t = useT();
     const page = useReveal<HTMLDivElement>();
 
@@ -167,7 +167,7 @@ export default function Landing({ journeys, knowledge }: LandingProps) {
                                     <div className="flex flex-wrap items-center gap-3">
                                         <Eyebrow tone="mint">{t('landing.ai.eyebrow')}</Eyebrow>
                                         <span className="rounded-full border border-mint/40 px-2.5 py-0.5 text-xs font-semibold text-mint">
-                                            {t('landing.ai.status')}
+                                            {ai.enabled ? t('landing.ai.status_live') : t('landing.ai.status')}
                                         </span>
                                     </div>
                                     <h2 id="ai-title" className="mt-4 text-3xl text-white md:text-4xl">
@@ -212,7 +212,7 @@ export default function Landing({ journeys, knowledge }: LandingProps) {
                                     </div>
                                     <figcaption className="mx-auto mt-5 max-w-md text-center text-sm text-white/60">
                                         <span className="block font-semibold text-white/80">{t('landing.ai.preview_label')}</span>
-                                        <span className="block">{t('landing.ai.status_note')}</span>
+                                        <span className="block">{ai.enabled ? t('landing.ai.status_note_live') : t('landing.ai.status_note')}</span>
                                     </figcaption>
                                 </figure>
                             </div>

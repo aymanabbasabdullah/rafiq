@@ -33,6 +33,19 @@ final class GeminiTextGenerator implements AiTextGenerator
         private readonly int $timeout,
     ) {}
 
+    /**
+     * The real Gemini generator from config/services.php (the same one the assistant uses).
+     */
+    public static function fromConfig(): self
+    {
+        return new self(
+            apiKey: (string) config('services.gemini.api_key'),
+            model: config('services.gemini.model'),
+            baseUrl: (string) config('services.gemini.base_url'),
+            timeout: (int) config('services.gemini.timeout'),
+        );
+    }
+
     public function model(): ?string
     {
         return $this->model;
@@ -56,8 +69,9 @@ final class GeminiTextGenerator implements AiTextGenerator
                 ->retry(2, 1500, fn (\Throwable $exception): bool => $exception instanceof RequestException
                     && ($exception->response->status() === 429 || $exception->response->serverError()), throw: false)
                 ->post("/v1beta/models/{$this->model}:generateContent", $this->payload($prompt));
-        } catch (ConnectionException) {
-            throw new AiGenerationFailed('timeout');
+        } catch (ConnectionException $exception) {
+            // Transport errors (timeout, DNS, TLS) carry no headers; the key is scrubbed regardless.
+            throw new AiGenerationFailed('timeout', null, str_replace($this->apiKey, '[redacted]', mb_substr($exception->getMessage(), 0, 200)));
         }
 
         return $this->parse($response);
@@ -99,18 +113,21 @@ final class GeminiTextGenerator implements AiTextGenerator
 
     private function parse(Response $response): AiResult
     {
+        // Google's error message helps diagnose (bad key, unknown model, overload) and never contains the key.
+        $detail = is_string($response->json('error.message')) ? mb_substr((string) $response->json('error.message'), 0, 300) : null;
+
         if ($response->status() === 429) {
             Cache::put(self::BACKOFF_KEY, true, 60);
 
-            throw new AiGenerationFailed('rate_limited');
+            throw new AiGenerationFailed('rate_limited', 429, $detail);
         }
 
         if ($response->serverError()) {
-            throw new AiGenerationFailed('server_error');
+            throw new AiGenerationFailed('server_error', $response->status(), $detail);
         }
 
         if ($response->failed()) {
-            throw new AiGenerationFailed('bad_request');
+            throw new AiGenerationFailed('bad_request', $response->status(), $detail);
         }
 
         $data = $response->json();

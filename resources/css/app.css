@@ -161,6 +161,12 @@
     outline-offset: 2px;
 }
 
+/* Headings focused by script (to announce a new step) are not interactive, so they need no ring. */
+h1[tabindex='-1']:focus-visible,
+h2[tabindex='-1']:focus-visible {
+    outline: none;
+}
+
 /*
  * Scroll reveal: elements start slightly lowered and transparent, and `useReveal`
  * adds `is-visible` when they enter the viewport. Only transform/opacity animate.

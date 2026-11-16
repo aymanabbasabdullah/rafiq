@@ -8,6 +8,7 @@ use App\Contracts\Safety\SafetyLexicon;
 use App\Models\RulesetRelease;
 use App\Services\Clinical\Exceptions\NoActiveRuleset;
 use App\Services\Content\ArabicNormalizer;
+use Illuminate\Database\QueryException;
 
 /**
  * Reads the red-flag lexicon shipped with the active ruleset release. When no release may run, it
@@ -50,7 +51,8 @@ final class SafetyLexiconProvider implements SafetyLexicon
         try {
             $version = $this->resolver->resolve()->version;
             $phrases = RulesetRelease::query()->firstWhere('version', $version)?->lexicon;
-        } catch (NoActiveRuleset) {
+        } catch (NoActiveRuleset|QueryException) {
+            // No release, or the database is unreachable: the safety net must still work from the file.
             $phrases = null;
         }
 
