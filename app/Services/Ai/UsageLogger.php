@@ -38,8 +38,8 @@ final class UsageLogger
 
         $this->metrics->increment('ai_request', $outcome->value);
 
-        if ($mode === AiMode::ExplainArticle && $outcome === AiOutcome::Answered) {
-            $this->metrics->increment('article_ai_explain', $locale);
+        if ($mode === AiMode::ExplainArticle && $outcome === AiOutcome::Answered && $articleId !== null) {
+            $this->metrics->increment('article_ai_explain', "article:{$articleId}");
         }
     }
 

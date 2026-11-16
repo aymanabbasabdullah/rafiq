@@ -53,6 +53,7 @@ export interface SharedProps {
             canManageContent: boolean;
             canViewClinical: boolean;
             canManageAi: boolean;
+            canViewAnalytics: boolean;
         } | null;
         flash: {
             success: string | null;
@@ -67,7 +68,7 @@ export interface SharedProps {
             clinicalRules: string;
             clinicalReleases: string;
             ai: string;
-            ai: string;
+            analytics: string;
             logout: string;
             locale: string;
         };

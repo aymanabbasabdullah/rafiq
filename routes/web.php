@@ -3,6 +3,7 @@
 use App\Enums\Locale;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AiConfigurationController;
+use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\Clinical\ReleaseController;
@@ -72,6 +73,9 @@ Route::prefix('admin')
                 });
 
                 Route::get('/audit-log', [AuditLogController::class, 'index'])->name('audit.index');
+
+                // Privacy-safe analytics (Module-11-E): aggregated counters only.
+                Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
 
                 // Content management & editorial workflow (Module-11-B)
                 Route::prefix('content')->name('content.')->group(function (): void {

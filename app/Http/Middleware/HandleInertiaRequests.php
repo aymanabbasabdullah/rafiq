@@ -10,6 +10,7 @@ use App\Http\Controllers\Public\LegalPageController;
 use App\Models\AiConfiguration;
 use App\Models\Article;
 use App\Models\AuditLog;
+use App\Models\DailyMetric;
 use App\Models\RulesetRelease;
 use App\Models\User;
 use App\Services\Ai\AiSettings;
@@ -103,6 +104,7 @@ class HandleInertiaRequests extends Middleware
                 'canManageContent' => $user->can('viewAny', Article::class),
                 'canViewClinical' => $user->can('viewAny', RulesetRelease::class),
                 'canManageAi' => $user->can('viewAny', AiConfiguration::class),
+                'canViewAnalytics' => $user->can('viewAny', DailyMetric::class),
             ] : null,
             'flash' => [
                 'success' => $request->session()->get('success'),
@@ -117,7 +119,7 @@ class HandleInertiaRequests extends Middleware
                 'clinicalRules' => route('admin.clinical.rules.index'),
                 'clinicalReleases' => route('admin.clinical.releases.index'),
                 'ai' => route('admin.ai.index'),
-                'ai' => route('admin.ai.index'),
+                'analytics' => route('admin.analytics.index'),
                 'logout' => route('admin.logout'),
                 'locale' => route('admin.locale.update'),
             ],

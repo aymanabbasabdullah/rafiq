@@ -75,6 +75,9 @@ export function AdminLayout({ children }: { children: ReactNode }) {
                             { key: 'releases', label: t('admin.nav.releases'), icon: Layers, href: links.clinicalReleases },
                         ]
                       : []),
+                  ...(user.canViewAnalytics
+                      ? [{ key: 'analytics', label: t('admin.nav.analytics'), icon: ChartColumn, href: links.analytics }]
+                      : []),
                   ...(user.canManageAi ? [{ key: 'ai', label: t('admin.nav.ai'), icon: Bot, href: links.ai }] : []),
                   ...(user.canManageUsers ? [{ key: 'users', label: t('admin.nav.users'), icon: Users, href: links.users }] : []),
                   ...(user.canViewAuditLog
@@ -82,8 +85,6 @@ export function AdminLayout({ children }: { children: ReactNode }) {
                       : []),
               ]
             : [];
-
-    const upcoming: NavItem[] = [{ key: 'analytics', label: t('admin.nav.analytics'), icon: ChartColumn, href: null }];
 
     // The most specific matching item wins, so /admin/content/sources highlights "Sources" only.
     const currentPath = page.url.split('?')[0] ?? '';
@@ -137,24 +138,6 @@ export function AdminLayout({ children }: { children: ReactNode }) {
                             </li>
                         );
                     })}
-                </ul>
-
-                <p className="mt-8 mb-2 px-3 text-xs font-semibold text-white/45">{t('admin.nav.upcoming')}</p>
-                <ul className="space-y-1">
-                    {upcoming.map((item) => (
-                        <li key={item.key}>
-                            <span
-                                aria-disabled="true"
-                                className="flex min-h-10 items-center gap-3 rounded-xl px-3 text-sm text-white/40"
-                            >
-                                <item.icon aria-hidden="true" className="size-[18px] shrink-0" />
-                                <span className="flex-1">{item.label}</span>
-                                <span className="rounded-full bg-white/8 px-2 py-0.5 text-xs font-medium text-white/55">
-                                    {t('admin.nav.soon')}
-                                </span>
-                            </span>
-                        </li>
-                    ))}
                 </ul>
             </nav>
 
