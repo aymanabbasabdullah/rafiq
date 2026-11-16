@@ -1,5 +1,7 @@
 import { router, usePage } from '@inertiajs/react';
+import { UserRoundCheck } from 'lucide-react';
 import { useState } from 'react';
+import { PageIntro } from '@/components/public/PageIntro';
 import { PublicLayout } from '@/layouts/PublicLayout';
 import { useT } from '@/lib/i18n';
 
@@ -16,18 +18,15 @@ export default function Age({ intended }: { intended: string | null }) {
         router.post(links.ageGate, { is_adult: isAdult, intended }, { onFinish: () => setSubmitting(false) });
     };
 
+    // Both answers share one style so neither is nudged (no dark pattern).
     const choiceClass =
-        'inline-flex min-h-14 w-full items-center justify-center rounded-lg border-2 border-brand px-5 py-3 text-lg font-semibold text-brand hover:bg-brand hover:text-brand-ink disabled:opacity-60';
+        'inline-flex min-h-14 w-full cursor-pointer items-center justify-center rounded-full border-2 border-brand/30 bg-surface-raised px-6 text-lg font-semibold text-brand-strong transition-colors hover:border-brand hover:bg-brand-soft disabled:cursor-not-allowed disabled:opacity-50';
 
     return (
         <PublicLayout>
-            <section aria-labelledby="age-question" className="mx-auto max-w-xl py-8 text-center">
-                <p className="text-sm font-semibold text-brand">{t('gate.age.title')}</p>
-                <h1 id="age-question" className="mt-3 text-3xl font-semibold text-ink">
-                    {t('gate.age.question')}
-                </h1>
-                <p className="mt-4 text-ink-muted">{t('gate.age.why')}</p>
-                <div className="mt-8 grid gap-3 sm:grid-cols-2">
+            <section aria-labelledby="age-question" className="mx-auto max-w-xl rounded-[var(--radius-panel)] bg-surface-raised p-8 shadow-card sm:p-12 md:my-6">
+                <PageIntro id="age-question" eyebrow={t('gate.age.title')} title={t('gate.age.question')} lead={t('gate.age.why')} icon={UserRoundCheck} centered />
+                <div className="mt-10 grid gap-3 sm:grid-cols-2">
                     <button type="button" disabled={submitting} onClick={() => answer(true)} className={choiceClass}>
                         {t('gate.age.yes')}
                     </button>

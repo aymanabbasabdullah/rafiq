@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Enums\Journey;
 use App\Enums\Locale;
 use App\Http\Controllers\Public\LegalPageController;
 use App\Models\Article;
 use App\Models\AuditLog;
+use App\Models\RulesetRelease;
 use App\Models\User;
 use App\Support\LocalizedUrls;
 use Illuminate\Http\Request;
@@ -91,6 +93,7 @@ class HandleInertiaRequests extends Middleware
                 'canManageUsers' => $user->can('viewAny', User::class),
                 'canViewAuditLog' => $user->can('viewAny', AuditLog::class),
                 'canManageContent' => $user->can('viewAny', Article::class),
+                'canViewClinical' => $user->can('viewAny', RulesetRelease::class),
             ] : null,
             'flash' => [
                 'success' => $request->session()->get('success'),
@@ -102,6 +105,8 @@ class HandleInertiaRequests extends Middleware
                 'content' => route('admin.content.index'),
                 'sources' => route('admin.content.sources.index'),
                 'categories' => route('admin.content.categories.index'),
+                'clinicalRules' => route('admin.clinical.rules.index'),
+                'clinicalReleases' => route('admin.clinical.releases.index'),
                 'logout' => route('admin.logout'),
                 'locale' => route('admin.locale.update'),
             ],
@@ -111,13 +116,15 @@ class HandleInertiaRequests extends Middleware
     /**
      * Named public pages for the current language, so the frontend never hard-codes paths.
      *
-     * @return array<string, string>
+     * @return array<string, string|null>
      */
     private function links(Locale $locale): array
     {
         $links = [
             'home' => route('public.landing', ['locale' => $locale->value]),
             'journeys' => route('journeys.index', ['locale' => $locale->value]),
+            'learn' => Journey::Learn->isEnabled() ? route('journeys.learn', ['locale' => $locale->value]) : null,
+            'glossary' => Journey::Learn->isEnabled() ? route('glossary.index', ['locale' => $locale->value]) : null,
         ];
 
         foreach (LegalPageController::PAGES as $page) {

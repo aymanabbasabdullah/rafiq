@@ -1,6 +1,8 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { ShieldCheck } from 'lucide-react';
+import { ArrowRight, LockKeyhole, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
+import { PageIntro } from '@/components/public/PageIntro';
+import { buttonClasses } from '@/components/ui/Button';
 import { PublicLayout } from '@/layouts/PublicLayout';
 import { useT } from '@/lib/i18n';
 
@@ -29,48 +31,39 @@ export default function Consent({ journey, submitUrl, declineUrl }: ConsentProps
 
     return (
         <PublicLayout>
-            <section aria-labelledby="consent-title" className="mx-auto max-w-2xl py-6" lang={locale.current}>
-                <h1 id="consent-title" className="text-3xl font-semibold text-ink">
-                    {t(`gate.consent.title.${journey}`)}
-                </h1>
-                <p className="mt-4 text-ink-muted">{t('gate.consent.intro')}</p>
-                <ul className="mt-6 space-y-3 rounded-xl border border-line bg-surface-raised p-5">
+            <section aria-labelledby="consent-title" className="mx-auto max-w-3xl" lang={locale.current}>
+                <PageIntro id="consent-title" title={t(`gate.consent.title.${journey}`)} lead={t('gate.consent.intro')} icon={LockKeyhole} />
+
+                <ul className="mt-10 grid gap-x-8 gap-y-5 rounded-[var(--radius-panel)] bg-surface-raised p-7 shadow-card sm:grid-cols-2 sm:p-9">
                     {POINTS.map((point) => (
                         <li key={point} className="flex items-start gap-3 text-ink">
-                            <ShieldCheck aria-hidden="true" className="mt-1 size-4 shrink-0 text-brand" />
+                            <ShieldCheck aria-hidden="true" className="mt-1 size-5 shrink-0 text-brand" />
                             <span>{t(`gate.consent.${point}`)}</span>
                         </li>
                     ))}
                 </ul>
-                <p className="mt-3 text-sm">
-                    <Link href={links.privacy} className="text-brand underline underline-offset-4">
+                <p className="mt-4 text-sm">
+                    <Link href={links.privacy} className="font-medium text-brand underline underline-offset-4 hover:text-brand-strong">
                         {t('gate.consent.read_more')}
                     </Link>
                 </p>
 
-                <label className="mt-6 flex cursor-pointer items-start gap-3 rounded-lg border border-line bg-surface-raised p-4 text-ink">
+                <label className="mt-8 flex cursor-pointer items-start gap-4 rounded-2xl border-2 border-line bg-surface-raised p-5 text-ink transition-colors has-[:checked]:border-brand has-[:checked]:bg-brand-mist has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand">
                     <input
                         type="checkbox"
                         checked={accepted}
                         onChange={(event) => setAccepted(event.target.checked)}
-                        className="mt-1 size-5 shrink-0 accent-brand"
+                        className="mt-0.5 size-5 shrink-0 cursor-pointer accent-brand"
                     />
-                    <span>{t('gate.consent.checkbox')}</span>
+                    <span className="font-medium">{t('gate.consent.checkbox')}</span>
                 </label>
 
-                <div className="mt-6 flex flex-wrap gap-3">
-                    <button
-                        type="button"
-                        onClick={start}
-                        disabled={!accepted || submitting}
-                        className="inline-flex min-h-11 items-center rounded-md bg-brand px-6 py-3 font-semibold text-brand-ink disabled:cursor-not-allowed disabled:opacity-50"
-                    >
+                <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                    <button type="button" onClick={start} disabled={!accepted || submitting} className={buttonClasses('primary', 'lg')}>
                         {t('gate.consent.start')}
+                        <ArrowRight aria-hidden="true" className="size-5 rtl:-scale-x-100" />
                     </button>
-                    <Link
-                        href={declineUrl}
-                        className="inline-flex min-h-11 items-center rounded-md border border-line bg-surface-raised px-6 py-3 font-medium text-ink"
-                    >
+                    <Link href={declineUrl} className={buttonClasses('secondary', 'lg')}>
                         {t('gate.consent.decline')}
                     </Link>
                 </div>

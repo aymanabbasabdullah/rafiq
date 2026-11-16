@@ -5,18 +5,28 @@ import { SiteHeader } from '@/components/public/SiteHeader';
 import { useT } from '@/lib/i18n';
 
 /**
- * Public layout: skip link, demo banner, header (language switch + Quick exit), page content and footer.
+ * Public layout: skip link, demo banner, sticky header (navigation, language switch, Quick exit),
+ * page content and footer.
  *
- * `beforeMain` renders full-width content between the header and the main column (e.g. the emergency strip).
+ * `beforeMain` renders full-width content between the header and the page (e.g. the emergency strip).
+ * `bleed` lets a page compose its own full-width sections; otherwise content sits in the centred column.
  */
-export function PublicLayout({ children, beforeMain }: { children: ReactNode; beforeMain?: ReactNode }) {
+export function PublicLayout({
+    children,
+    beforeMain,
+    bleed = false,
+}: {
+    children: ReactNode;
+    beforeMain?: ReactNode;
+    bleed?: boolean;
+}) {
     const t = useT();
 
     return (
         <div className="flex min-h-screen flex-col">
             <a
                 href="#main-content"
-                className="sr-only focus:not-sr-only focus:absolute focus:start-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-surface-raised focus:px-4 focus:py-2"
+                className="sr-only focus:not-sr-only focus:absolute focus:start-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-surface-raised focus:px-4 focus:py-2"
             >
                 {t('nav.skip_to_content')}
             </a>
@@ -25,7 +35,10 @@ export function PublicLayout({ children, beforeMain }: { children: ReactNode; be
             <SiteHeader />
             {beforeMain}
 
-            <main id="main-content" className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
+            <main
+                id="main-content"
+                className={bleed ? 'flex-1' : 'mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6 md:py-14 lg:px-8'}
+            >
                 {children}
             </main>
 

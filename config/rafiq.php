@@ -19,6 +19,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Demo ruleset (M06-FR-03)
+    |--------------------------------------------------------------------------
+    |
+    | The draft ruleset release that may run outside production while demo
+    | mode is on. Production only ever runs a published, approved release.
+    |
+    */
+
+    'demo_ruleset' => env('RAFIQ_DEMO_RULESET', 'RS-2026.1'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Platform default language (ADR-015)
     |--------------------------------------------------------------------------
     |
@@ -39,6 +51,30 @@ return [
 
     'ai' => [
         'enabled' => (bool) env('RAFIQ_AI_ENABLED', false),
+
+        /*
+         * Upper limits (AI-013). The active admin configuration may lower them, never raise them (BR-09-5).
+         */
+        'limits' => [
+            'message_max_chars' => 500,
+            'history_max_items' => 6,
+            'grounding_chunks' => 4,
+            'max_output_tokens' => 600,
+            'answer_max_chars' => 1500,
+            'per_session_per_minute' => 6,
+            'per_ip_per_hour' => 40,
+        ],
+
+        'daily_budget_usd' => (float) env('RAFIQ_AI_DAILY_BUDGET_USD', 1.0),
+
+        /*
+         * Price per million tokens in USD, copied by hand from the provider's official pricing page
+         * when the model is chosen (Gemini-Integration §5). Zero means "not set": cost is then unknown.
+         */
+        'pricing' => [
+            'input_per_million_usd' => (float) env('RAFIQ_AI_PRICE_INPUT', 0),
+            'output_per_million_usd' => (float) env('RAFIQ_AI_PRICE_OUTPUT', 0),
+        ],
     ],
 
     /*

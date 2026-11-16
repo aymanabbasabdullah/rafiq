@@ -63,7 +63,7 @@ export function KnowledgeSearch({ searchUrl }: { searchUrl: string }) {
                     onChange={(event) => setQuery(event.target.value)}
                     placeholder={t('learn.search_placeholder')}
                     autoComplete="off"
-                    className="block min-h-14 w-full rounded-2xl border border-line bg-surface-raised ps-12 pe-28 text-base text-ink shadow-card transition-shadow placeholder:text-ink-subtle focus:border-brand focus:ring-4 focus:ring-brand/15 focus:outline-none"
+                    className="block min-h-15 w-full rounded-full border border-line bg-surface-raised ps-12 pe-32 text-base text-ink shadow-card transition-shadow placeholder:text-ink-subtle focus:border-brand focus:ring-4 focus:ring-brand/15 focus:outline-none"
                 />
                 <div className="absolute end-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
                     {query !== '' ? (
@@ -71,14 +71,14 @@ export function KnowledgeSearch({ searchUrl }: { searchUrl: string }) {
                             type="button"
                             onClick={clear}
                             aria-label={t('learn.search_clear')}
-                            className="inline-flex size-10 cursor-pointer items-center justify-center rounded-xl text-ink-subtle hover:bg-surface-sunken"
+                            className="inline-flex size-10 cursor-pointer items-center justify-center rounded-full text-ink-subtle hover:bg-surface-sunken"
                         >
                             <X aria-hidden="true" className="size-4" />
                         </button>
                     ) : null}
                     <button
                         type="submit"
-                        className="inline-flex min-h-10 cursor-pointer items-center gap-1.5 rounded-xl bg-brand px-4 text-sm font-semibold text-brand-ink hover:bg-brand-strong"
+                        className="inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-full bg-brand px-5 text-sm font-semibold text-brand-ink hover:bg-brand-strong"
                     >
                         {loading ? <Loader2 aria-hidden="true" className="size-4 animate-spin" /> : null}
                         {t('learn.search_button')}
@@ -95,7 +95,7 @@ export function KnowledgeSearch({ searchUrl }: { searchUrl: string }) {
                             {t('learn.search_empty')}
                         </p>
                     ) : (
-                        <ul className="stagger mt-4 divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface-raised shadow-card">
+                        <ul className="stagger mt-4 divide-y divide-line overflow-hidden rounded-[var(--radius-card)] bg-surface-raised shadow-card">
                             {results.map((result) => (
                                 <li key={result.url}>
                                     <Link href={result.url} className="block px-5 py-4 transition-colors hover:bg-surface">

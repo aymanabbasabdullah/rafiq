@@ -11,27 +11,29 @@ export function RedFlagReminder({ concernUrl }: { concernUrl: string | null }) {
     const t = useT();
 
     return (
-        <aside aria-labelledby="red-flag-reminder-title" className="mt-8 rounded-xl border border-danger/30 bg-danger/5 p-5">
-            <div className="flex items-start gap-3">
-                <AlertTriangle aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-danger" />
-                <div className="space-y-3">
-                    <h2 id="red-flag-reminder-title" className="font-semibold text-ink">
-                        {t('journey.red_flag.title')}
-                    </h2>
-                    <p className="text-sm text-ink">{t('journey.red_flag.body')}</p>
-                    <EmergencyNotice />
-                    {concernUrl !== null ? (
-                        <div className="pt-1">
+        <aside aria-labelledby="red-flag-reminder-title" className="rounded-[var(--radius-card)] border border-danger/20 bg-surface-raised p-6 sm:p-7">
+            <div className="grid gap-6 md:grid-cols-2 md:items-start">
+                <div className="flex items-start gap-4">
+                    <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-danger-soft text-danger">
+                        <AlertTriangle aria-hidden="true" className="size-5" />
+                    </span>
+                    <div>
+                        <h2 id="red-flag-reminder-title" className="font-display text-lg font-semibold text-ink">
+                            {t('journey.red_flag.title')}
+                        </h2>
+                        <p className="mt-1.5 text-ink-muted">{t('journey.red_flag.body')}</p>
+                        {concernUrl !== null ? (
                             <Link
                                 href={concernUrl}
-                                className="inline-flex min-h-10 items-center gap-2 rounded-md border border-danger/40 bg-surface-raised px-4 py-2 text-sm font-semibold text-danger transition hover:bg-danger/10"
+                                className="mt-4 inline-flex min-h-11 items-center gap-2 font-semibold text-danger underline-offset-4 hover:underline"
                             >
                                 <span>{t('journey.red_flag.check_concern')}</span>
                                 <ArrowRight aria-hidden="true" className="size-4 rtl:-scale-x-100" />
                             </Link>
-                        </div>
-                    ) : null}
+                        ) : null}
+                    </div>
                 </div>
+                <EmergencyNotice />
             </div>
         </aside>
     );

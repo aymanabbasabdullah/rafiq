@@ -1,7 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { ArrowRight } from 'lucide-react';
 import type { CSSProperties } from 'react';
-import { useT } from '@/lib/i18n';
 
 export type ArticleCardData = {
     title: string;
@@ -11,27 +10,43 @@ export type ArticleCardData = {
 };
 
 /**
- * Article teaser card with a gentle lift on hover.
+ * Article teaser as an editorial row: topic label, title, summary and a quiet arrow. Rows sit in a
+ * divided list, which reads faster than a grid of identical cards.
  */
 export function ArticleCard({ article, index = 0 }: { article: ArticleCardData; index?: number }) {
-    const t = useT();
-
     return (
         <Link
             href={article.url}
-            className="reveal hover-lift group flex h-full flex-col rounded-2xl border border-line bg-surface-raised p-5 shadow-card hover:border-brand/40"
+            className="reveal group flex items-start gap-6 py-6 transition-colors"
             style={{ '--reveal-index': index } as CSSProperties}
         >
-            {article.category !== null ? <span className="text-xs font-semibold text-brand">{article.category}</span> : null}
-            <h3 className="mt-2 text-lg font-semibold text-ink">{article.title}</h3>
-            {article.summary !== null ? <p className="mt-2 line-clamp-3 text-sm text-ink-muted">{article.summary}</p> : null}
-            <span className="mt-auto inline-flex items-center gap-1 pt-4 text-sm font-semibold text-brand">
-                {t('learn.read_article')}
-                <ArrowRight
-                    aria-hidden="true"
-                    className="size-4 transition-transform group-hover:translate-x-0.5 rtl:-scale-x-100 rtl:group-hover:-translate-x-0.5"
-                />
+            <div className="min-w-0 flex-1">
+                {article.category !== null ? <span className="text-sm font-semibold text-brand">{article.category}</span> : null}
+                <h3 className="mt-1 font-display text-xl font-semibold text-ink transition-colors group-hover:text-brand-strong">
+                    {article.title}
+                </h3>
+                {article.summary !== null ? (
+                    <p className="mt-2 line-clamp-2 max-w-2xl text-ink-muted">{article.summary}</p>
+                ) : null}
+            </div>
+            <span className="mt-1 inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-line text-ink-muted transition-colors group-hover:border-brand group-hover:bg-brand group-hover:text-brand-ink">
+                <ArrowRight aria-hidden="true" className="size-4 rtl:-scale-x-100" />
             </span>
         </Link>
+    );
+}
+
+/**
+ * Divided list wrapper for article rows.
+ */
+export function ArticleList({ articles, hideCategory = false }: { articles: ArticleCardData[]; hideCategory?: boolean }) {
+    return (
+        <ul className="divide-y divide-line border-y border-line">
+            {articles.map((article, index) => (
+                <li key={article.url}>
+                    <ArticleCard article={hideCategory ? { ...article, category: null } : article} index={index} />
+                </li>
+            ))}
+        </ul>
     );
 }

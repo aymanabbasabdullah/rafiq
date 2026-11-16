@@ -1,0 +1,7 @@
+{
+    "_notice": "DRAFT – PENDING QUALIFIED MEDICAL REVIEW. Phrases that make the AI companion (Module-09) stop and show emergency guidance instead of answering (AI-012). Matching is done on normalised text; it never decides priority.",
+    "phrases": {
+        "ar": ["ألم شديد مفاجئ", "ألم مفاجئ في الخصية", "ألم شديد في الخصية", "التواء الخصية", "تورم مفاجئ", "قيء مع ألم", "غثيان مع ألم في الخصية", "ألم في البطن والخصية", "حمى مع ألم", "حرارة مع تورم"],
+        "en": ["sudden severe pain", "sudden testicle pain", "sudden testicular pain", "severe testicle pain", "testicular torsion", "twisted testicle", "sudden swelling", "vomiting with pain", "nausea and testicle pain", "fever with swelling"]
+    }
+}

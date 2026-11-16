@@ -2,7 +2,10 @@
 
 namespace App\Providers;
 
+use App\Contracts\Safety\SafetyLexicon;
 use App\Models\User;
+use App\Services\Clinical\ActiveRulesetResolver;
+use App\Services\Clinical\SafetyLexiconProvider;
 use App\Support\BootChecks;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -21,7 +24,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->scoped(ActiveRulesetResolver::class);
+        $this->app->bind(SafetyLexicon::class, SafetyLexiconProvider::class);
     }
 
     /**

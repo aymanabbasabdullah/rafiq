@@ -4,6 +4,9 @@ use App\Enums\Locale;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\Clinical\ReleaseController;
+use App\Http\Controllers\Admin\Clinical\RuleController;
+use App\Http\Controllers\Admin\Clinical\RuleReviewController;
 use App\Http\Controllers\Admin\Content\ArticleController;
 use App\Http\Controllers\Admin\Content\ArticleReviewController;
 use App\Http\Controllers\Admin\Content\CategoryController;
@@ -22,6 +25,7 @@ use App\Http\Controllers\Public\SessionController;
 use App\Http\Controllers\Public\UnderAgeController;
 use App\Http\Controllers\Public\WelcomeController;
 use App\Http\Middleware\SetLocale;
+use App\Models\RulesetRelease;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', RootRedirectController::class)->name('root');
@@ -84,6 +88,25 @@ Route::prefix('admin')
                     Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
                     Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
                     Route::put('/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
+                });
+
+                // Clinical rules management (Module-11-C). Conditions and priorities come from Git only.
+                Route::prefix('clinical')->name('clinical.')->group(function (): void {
+                    Route::get('/rules', [RuleController::class, 'index'])->name('rules.index');
+                    Route::get('/rules/{version}', [RuleController::class, 'show'])->name('rules.show');
+                    Route::post('/rules/{version}/{action}', RuleReviewController::class)
+                        ->whereIn('action', RuleReviewController::ACTIONS)
+                        ->name('rules.action');
+
+                    Route::get('/releases', [ReleaseController::class, 'index'])->name('releases.index');
+                    Route::middleware('password.confirm:admin.password.confirm')->group(function (): void {
+                        Route::post('/releases/{release}/publish', [ReleaseController::class, 'publish'])->name('releases.publish');
+                        // After password confirmation the browser returns here with GET: go back to the release.
+                        Route::get('/releases/{release}/publish', fn (RulesetRelease $release) => redirect()->route('admin.clinical.releases.index', ['release' => $release->version]));
+                    });
+                    Route::post('/releases/{release}/{action}', [ReleaseController::class, 'action'])
+                        ->whereIn('action', ReleaseController::ACTIONS)
+                        ->name('releases.action');
                 });
             });
         });

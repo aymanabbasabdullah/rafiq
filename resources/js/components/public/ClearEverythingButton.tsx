@@ -39,7 +39,7 @@ export function ClearEverythingButton({ className = '' }: { className?: string }
             <button
                 type="button"
                 onClick={() => setConfirming(true)}
-                className={`inline-flex min-h-11 items-center gap-2 rounded-md border border-line px-3 py-2 text-sm font-medium text-ink hover:bg-surface ${className}`}
+                className={`inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border border-line-strong px-4 text-sm font-medium text-ink transition-colors hover:border-brand/40 hover:text-brand-strong ${className}`}
             >
                 <Eraser aria-hidden="true" className="size-4" />
                 {t('clear.button')}

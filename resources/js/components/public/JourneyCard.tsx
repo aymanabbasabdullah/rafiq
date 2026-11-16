@@ -3,71 +3,91 @@ import { AlertTriangle, ArrowRight, BookOpen, CalendarCheck, HeartPulse, Sprout,
 import { useT } from '@/lib/i18n';
 import type { JourneyKey } from '@/types';
 
-const ICONS: Record<JourneyKey, LucideIcon> = {
-    learn: BookOpen,
-    concern: HeartPulse,
-    conception: Sprout,
-    doctor_prep: CalendarCheck,
+/**
+ * Each journey has its own icon and tint so the four paths are told apart at a glance.
+ * Tints carry identity only; urgency is always stated in words (concern journey note).
+ */
+const JOURNEYS: Record<JourneyKey, { icon: LucideIcon; tint: string; ink: string; number: string }> = {
+    learn: { icon: BookOpen, tint: 'bg-tint-learn', ink: 'text-brand', number: '01' },
+    concern: { icon: HeartPulse, tint: 'bg-tint-concern', ink: 'text-accent', number: '02' },
+    conception: { icon: Sprout, tint: 'bg-tint-conception', ink: 'text-sage', number: '03' },
+    doctor_prep: { icon: CalendarCheck, tint: 'bg-tint-doctor', ink: 'text-slate', number: '04' },
 };
 
 /**
- * A journey choice (FR-003, M02-FR-01). Shows title, description, what you get, estimated time,
- * what we ask/don't ask, and the urgent warning callout on J2.
+ * A journey choice (FR-003, M02-FR-01). `compact` (landing) shows the essentials; `detailed`
+ * (journeys page) adds what you get and what we ask. The concern journey always shows its urgent note.
  */
-export function JourneyCard({ journey, url }: { journey: JourneyKey; url: string | null }) {
+export function JourneyCard({ journey, url, variant = 'compact' }: { journey: JourneyKey; url: string | null; variant?: 'compact' | 'detailed' }) {
     const t = useT();
-    const Icon = ICONS[journey];
+    const { icon: Icon, tint, ink, number } = JOURNEYS[journey];
     const titleId = `journey-${journey}-title`;
-    const isConcern = journey === 'concern';
+    const detailed = variant === 'detailed';
 
     const content = (
         <>
-            <div className="flex items-center justify-between gap-3">
-                <span className="inline-flex size-11 items-center justify-center rounded-full bg-brand/10 text-brand">
-                    <Icon aria-hidden="true" className="size-5" />
+            <div className="flex items-start justify-between gap-3">
+                <span className={`inline-flex size-12 items-center justify-center rounded-2xl bg-surface-raised ${ink} shadow-card`}>
+                    <Icon aria-hidden="true" className="size-6" />
                 </span>
-                <span className="rounded-full bg-surface px-3 py-1 text-xs font-medium text-ink-muted">{t(`journey.${journey}.time`)}</span>
+                <span aria-hidden="true" className="font-display text-sm font-semibold text-ink/30 tabular-nums">
+                    {number}
+                </span>
             </div>
-            <h3 id={titleId} className="mt-4 text-lg font-semibold text-ink">
+
+            <h3 id={titleId} className={`mt-6 font-display font-semibold text-ink ${detailed ? 'text-2xl' : 'text-xl'}`}>
                 {t(`journey.${journey}.title`)}
             </h3>
-            <p className="mt-2 text-sm text-ink-muted">{t(`journey.${journey}.description`)}</p>
-            <dl className="mt-4 space-y-2 border-t border-line pt-3 text-sm">
-                <div>
-                    <dt className="inline font-medium text-ink">{t('journey.you_get')}</dt>{' '}
-                    <dd className="inline text-ink-muted">{t(`journey.${journey}.gets`)}</dd>
-                </div>
-                <div>
-                    <dt className="inline font-medium text-ink">{t('journey.we_ask')}</dt>{' '}
-                    <dd className="inline text-ink-muted">{t(`journey.${journey}.asks`)}</dd>
-                </div>
-            </dl>
-            {isConcern ? (
-                <p className="mt-4 flex items-start gap-2 rounded-lg border border-danger/30 bg-danger/5 px-3 py-2 text-xs font-medium text-danger">
+            <p className="mt-2 text-ink-muted">{t(`journey.${journey}.description`)}</p>
+
+            {detailed ? (
+                <dl className="mt-5 space-y-3 border-t border-ink/10 pt-5 text-sm">
+                    <div>
+                        <dt className="font-semibold text-ink">{t('journey.you_get')}</dt>
+                        <dd className="mt-0.5 text-ink-muted">{t(`journey.${journey}.gets`)}</dd>
+                    </div>
+                    <div>
+                        <dt className="font-semibold text-ink">{t('journey.we_ask')}</dt>
+                        <dd className="mt-0.5 text-ink-muted">{t(`journey.${journey}.asks`)}</dd>
+                    </div>
+                </dl>
+            ) : null}
+
+            {journey === 'concern' ? (
+                <p className="mt-5 flex items-start gap-2 rounded-xl bg-surface-raised/80 px-3 py-2.5 text-sm font-medium text-danger">
                     <AlertTriangle aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
                     <span>{t('journey.concern.urgent_note')}</span>
                 </p>
             ) : null}
-            <span className="mt-auto inline-flex items-center gap-1 pt-5 text-sm font-semibold text-brand">
-                {url !== null ? t('journey.start') : t('journey.coming_soon')}
-                {url !== null ? <ArrowRight aria-hidden="true" className="size-4 rtl:-scale-x-100" /> : null}
-            </span>
+
+            <div className="mt-auto flex items-center justify-between gap-3 pt-6">
+                <span className="rounded-full bg-surface-raised/70 px-3 py-1 text-xs font-medium text-ink-muted">{t(`journey.${journey}.time`)}</span>
+                {url !== null ? (
+                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-ink">
+                        {t('journey.start')}
+                        <span className="inline-flex size-9 items-center justify-center rounded-full bg-ink text-white transition-transform duration-300 group-hover:translate-x-1 rtl:group-hover:-translate-x-1">
+                            <ArrowRight aria-hidden="true" className="size-4 rtl:-scale-x-100" />
+                        </span>
+                    </span>
+                ) : (
+                    <span className="text-sm font-semibold text-ink-subtle">{t('journey.coming_soon')}</span>
+                )}
+            </div>
         </>
     );
 
-    const borderClasses = isConcern ? 'border-danger/40' : 'border-line';
-    const cardClasses = `flex h-full flex-col rounded-xl border ${borderClasses} bg-surface-raised p-5`;
+    const classes = `group flex h-full flex-col rounded-[var(--radius-card)] ${tint} p-6 sm:p-7`;
 
     if (url === null) {
         return (
-            <article aria-labelledby={titleId} aria-disabled="true" className={`${cardClasses} opacity-75`}>
+            <article aria-labelledby={titleId} aria-disabled="true" className={`${classes} opacity-70`}>
                 {content}
             </article>
         );
     }
 
     return (
-        <Link href={url} aria-labelledby={titleId} className={`${cardClasses} transition hover:border-brand hover:shadow-sm`}>
+        <Link href={url} aria-labelledby={titleId} className={`${classes} hover-lift`}>
             {content}
         </Link>
     );

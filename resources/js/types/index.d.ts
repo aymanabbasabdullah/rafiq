@@ -24,6 +24,8 @@ export interface SharedProps {
     quickExitUrl: string;
     links: {
         home: string;
+        learn: string | null;
+        glossary: string | null;
         journeys: string;
         privacy: string;
         terms: string;
@@ -48,6 +50,7 @@ export interface SharedProps {
             canManageUsers: boolean;
             canViewAuditLog: boolean;
             canManageContent: boolean;
+            canViewClinical: boolean;
         } | null;
         flash: {
             success: string | null;
@@ -59,6 +62,8 @@ export interface SharedProps {
             content: string;
             sources: string;
             categories: string;
+            clinicalRules: string;
+            clinicalReleases: string;
             logout: string;
             locale: string;
         };

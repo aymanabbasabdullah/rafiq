@@ -95,6 +95,32 @@ class KnowledgeCenterTest extends TestCase
         $this->assertDatabaseHas('daily_metrics', ['metric' => 'journey_selected', 'dimension' => 'learn']);
     }
 
+    public function test_landing_previews_live_topics_and_the_latest_article_in_the_visitor_language_only(): void
+    {
+        $this->publishedArticle(['en' => ['title' => 'Pain guide', 'slug' => 'pain-guide', 'body_markdown' => '## A\n\nText.']]);
+
+        $this->get('/en')->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('Public/Landing')
+            ->where('knowledge.categories.0.count', 1)
+            ->where('knowledge.featured.title', 'Pain guide')
+            ->where('knowledge.featured.url', $this->articleUrl('en', 'pain-guide'))
+            ->where('links.learn', route('journeys.learn', ['locale' => 'en'])));
+
+        $this->get('/ar')->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('knowledge.categories.0.count', 0)
+            ->where('knowledge.featured', null));
+    }
+
+    public function test_landing_hides_the_knowledge_preview_when_the_learn_journey_is_disabled(): void
+    {
+        config(['rafiq.journeys.enabled.learn' => false]);
+
+        $this->get('/en')->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('knowledge', null)
+            ->where('links.learn', null)
+            ->where('links.glossary', null));
+    }
+
     public function test_article_page_shows_the_approved_revision_with_sources_and_language_alternates(): void
     {
         $this->publishedArticle([

@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react';
+import { buttonClasses } from '@/components/ui/Button';
 
 type ConfirmDialogProps = {
     open: boolean;
@@ -43,8 +44,6 @@ export function ConfirmDialog({
         }
     }, [open]);
 
-    const confirmClass = tone === 'danger' ? 'bg-danger text-danger-ink' : 'bg-brand text-brand-ink';
-
     return (
         <dialog
             ref={dialog}
@@ -53,17 +52,17 @@ export function ConfirmDialog({
                 event.preventDefault();
                 onCancel();
             }}
-            className="m-auto w-[min(32rem,calc(100vw-2rem))] rounded-xl border border-line bg-surface-raised p-6 text-ink shadow-xl backdrop:bg-ink/50"
+            className="m-auto w-[min(32rem,calc(100vw-2rem))] rounded-[var(--radius-panel)] bg-surface-raised p-6 text-ink shadow-lift backdrop:bg-brand-deep/60 backdrop:backdrop-blur-sm open:animate-fade-up sm:p-8"
         >
-            <h2 id="confirm-dialog-title" className="text-xl font-semibold">
+            <h2 id="confirm-dialog-title" className="text-2xl">
                 {title}
             </h2>
             <div className="mt-4 text-ink-muted">{children}</div>
-            <div className="mt-6 flex flex-wrap justify-end gap-3">
+            <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                 <button
                     type="button"
                     onClick={onCancel}
-                    className="inline-flex min-h-11 items-center rounded-md border border-line px-4 py-2 font-medium"
+                    className={buttonClasses('secondary')}
                 >
                     {cancelLabel}
                 </button>
@@ -71,7 +70,7 @@ export function ConfirmDialog({
                     type="button"
                     onClick={onConfirm}
                     disabled={busy}
-                    className={`inline-flex min-h-11 items-center rounded-md px-4 py-2 font-semibold disabled:opacity-60 ${confirmClass}`}
+                    className={buttonClasses(tone === 'danger' ? 'destructive' : 'primary')}
                 >
                     {confirmLabel}
                 </button>

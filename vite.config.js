@@ -15,9 +15,14 @@ export default defineConfig({
                 bunny('Instrument Sans', {
                     weights: [400, 500, 600],
                 }),
-                // Interim Arabic typeface until the visual identity is decided (OQ-015).
+                // Arabic body typeface.
                 bunny('IBM Plex Sans Arabic', {
                     weights: [400, 500, 600],
+                    subsets: ['arabic', 'latin'],
+                }),
+                // Display typeface for headings in both scripts (Arabic + Latin glyphs in one family).
+                bunny('Alexandria', {
+                    weights: [500, 600],
                     subsets: ['arabic', 'latin'],
                 }),
             ],

@@ -2,6 +2,8 @@ import { Link } from '@inertiajs/react';
 import { AlertTriangle, ArrowRight } from 'lucide-react';
 import { EmergencyStrip } from '@/components/public/EmergencyStrip';
 import { JourneyCard } from '@/components/public/JourneyCard';
+import { PageIntro } from '@/components/public/PageIntro';
+import { buttonClasses } from '@/components/ui/Button';
 import { PublicLayout } from '@/layouts/PublicLayout';
 import { useT } from '@/lib/i18n';
 import type { JourneyKey } from '@/types';
@@ -20,38 +22,36 @@ export default function Journeys({ journeys, concernUrl }: JourneysProps) {
 
     return (
         <PublicLayout beforeMain={<EmergencyStrip />}>
-            <section aria-labelledby="journeys-page-title" className="py-6">
-                <p className="text-sm font-semibold text-brand">{t('journeys.eyebrow')}</p>
-                <h1 id="journeys-page-title" className="mt-2 max-w-3xl text-3xl font-semibold text-ink md:text-4xl">
-                    {t('journeys.title')}
-                </h1>
-                <p className="mt-3 max-w-2xl text-lg text-ink-muted">{t('journeys.subtitle')}</p>
+            <section aria-labelledby="journeys-page-title">
+                <PageIntro id="journeys-page-title" eyebrow={t('journeys.eyebrow')} title={t('journeys.title')} lead={t('journeys.subtitle')} />
 
-                <div className="mt-6 rounded-xl border border-danger/30 bg-danger/5 p-5">
-                    <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-                        <div className="flex items-start gap-3">
-                            <AlertTriangle aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-danger" />
-                            <div>
-                                <h2 className="font-semibold text-ink">{t('journeys.urgent_box_title')}</h2>
-                                <p className="mt-1 text-sm text-ink-muted">{t('journeys.urgent_box_body')}</p>
-                            </div>
+                <aside
+                    aria-labelledby="urgent-box-title"
+                    className="mt-10 flex flex-col gap-5 rounded-[var(--radius-card)] border border-danger/20 bg-surface-raised p-6 sm:p-7 md:flex-row md:items-center md:justify-between"
+                >
+                    <div className="flex items-start gap-4">
+                        <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-danger-soft text-danger">
+                            <AlertTriangle aria-hidden="true" className="size-5" />
+                        </span>
+                        <div>
+                            <h2 id="urgent-box-title" className="font-display text-lg font-semibold text-ink">
+                                {t('journeys.urgent_box_title')}
+                            </h2>
+                            <p className="mt-1.5 max-w-2xl text-ink-muted">{t('journeys.urgent_box_body')}</p>
                         </div>
-                        {concernUrl !== null ? (
-                            <Link
-                                href={concernUrl}
-                                className="inline-flex min-h-11 shrink-0 items-center gap-2 self-start rounded-md bg-danger px-4 py-2.5 text-sm font-semibold text-white md:self-center"
-                            >
-                                <span>{t('journey.concern.safety_cta')}</span>
-                                <ArrowRight aria-hidden="true" className="size-4 rtl:-scale-x-100" />
-                            </Link>
-                        ) : null}
                     </div>
-                </div>
+                    {concernUrl !== null ? (
+                        <Link href={concernUrl} className={buttonClasses('destructive', 'md', 'shrink-0 self-start md:self-center')}>
+                            <span>{t('journey.concern.safety_cta')}</span>
+                            <ArrowRight aria-hidden="true" className="size-4 rtl:-scale-x-100" />
+                        </Link>
+                    ) : null}
+                </aside>
 
                 <ul className="mt-8 grid gap-4 md:grid-cols-2">
                     {journeys.map((journey) => (
                         <li key={journey.key}>
-                            <JourneyCard journey={journey.key} url={journey.url} />
+                            <JourneyCard journey={journey.key} url={journey.url} variant="detailed" />
                         </li>
                     ))}
                 </ul>

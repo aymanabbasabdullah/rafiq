@@ -1,6 +1,8 @@
 import { ExternalLink, Lock } from 'lucide-react';
 import { CheckList } from '@/components/public/CheckList';
 import { ClearEverythingButton } from '@/components/public/ClearEverythingButton';
+import { PageIntro } from '@/components/public/PageIntro';
+import { Alert } from '@/components/ui/Alert';
 import { PublicLayout } from '@/layouts/PublicLayout';
 import { useT } from '@/lib/i18n';
 import type { LegalPageKey } from '@/types';
@@ -29,21 +31,23 @@ export default function Legal({ page, sources, updatedAt }: LegalProps) {
 
     return (
         <PublicLayout>
-            <article className="max-w-3xl">
-                <h1 className="text-3xl font-semibold text-ink">{t(`legal.${page}.title`)}</h1>
+            <article aria-labelledby="legal-title" className="mx-auto max-w-3xl">
+                <PageIntro id="legal-title" eyebrow={t('footer.policies')} title={t(`legal.${page}.title`)} />
                 {isPolicy ? (
                     <>
-                        <p className="mt-2 text-sm text-ink-muted">
+                        <p className="mt-4 text-sm text-ink-muted">
                             {t('legal.updated')}{' '}
                             <bdi dir="ltr">
                                 <time dateTime={updatedAt}>{updatedAt}</time>
                             </bdi>
                         </p>
-                        <p className="mt-4 rounded-md bg-notice px-4 py-3 text-sm text-notice-ink">{t('legal.draft_notice')}</p>
+                        <Alert tone="warning" className="mt-6">
+                            {t('legal.draft_notice')}
+                        </Alert>
                     </>
                 ) : null}
 
-                <div className="mt-8 space-y-6 text-ink">
+                <div className="mt-10 space-y-8 text-lg leading-relaxed text-ink [&_h2]:font-display [&_h2]:text-2xl [&_h2]:font-semibold">
                     {page === 'privacy' ? <PrivacySummary /> : null}
                     {page === 'terms' ? <TermsSummary /> : null}
                     {page === 'limits' ? <LimitsSummary /> : null}
@@ -68,10 +72,10 @@ function PrivacySummary() {
                     </li>
                 ))}
             </ul>
-            <p className="text-sm text-ink-muted">{t('landing.privacy.honesty')}</p>
+            <p className="rounded-2xl bg-surface-raised p-5 text-base text-ink-muted">{t('landing.privacy.honesty')}</p>
 
             <section>
-                <h2 className="mb-3 text-xl font-semibold">{t('legal.privacy.process_title')}</h2>
+                <h2 className="mb-4">{t('legal.privacy.process_title')}</h2>
                 <ul className="list-disc space-y-2 ps-6">
                     {PRIVACY_PROCESSING.map((item) => (
                         <li key={item}>{t(`legal.privacy.${item}`)}</li>
@@ -81,7 +85,7 @@ function PrivacySummary() {
 
             {PRIVACY_SECTIONS.map((section) => (
                 <section key={section}>
-                    <h2 className="mb-2 text-xl font-semibold">{t(`legal.privacy.${section}_title`)}</h2>
+                    <h2 className="mb-3">{t(`legal.privacy.${section}_title`)}</h2>
                     <p>{t(`legal.privacy.${section}_body`)}</p>
                 </section>
             ))}
@@ -109,11 +113,11 @@ function LimitsSummary() {
     return (
         <>
             <section>
-                <h2 className="mb-3 text-xl font-semibold">{t('landing.limits.can_title')}</h2>
+                <h2 className="mb-4">{t('landing.limits.can_title')}</h2>
                 <CheckList variant="yes" items={CAN.map((key) => t(`landing.limits.${key}`))} />
             </section>
             <section>
-                <h2 className="mb-3 text-xl font-semibold">{t('landing.limits.cannot_title')}</h2>
+                <h2 className="mb-4">{t('landing.limits.cannot_title')}</h2>
                 <CheckList variant="no" items={CANNOT.map((key) => t(`landing.limits.${key}`))} />
             </section>
             <p className="font-medium">{t('landing.faq.a4')}</p>
@@ -129,7 +133,7 @@ function SourcesList({ sources }: { sources: Source[] }) {
             <p>{t('legal.sources.intro')}</p>
             <ul className="space-y-4">
                 {sources.map((source) => (
-                    <li key={source.id} className="rounded-xl border border-line bg-surface-raised p-4">
+                    <li key={source.id} className="rounded-[var(--radius-card)] bg-surface-raised p-5 shadow-card">
                         <a
                             href={source.url}
                             target="_blank"
@@ -154,7 +158,7 @@ function SourcesList({ sources }: { sources: Source[] }) {
                     </li>
                 ))}
             </ul>
-            <p className="rounded-md bg-notice px-4 py-3 text-sm text-notice-ink">{t('legal.sources.not_approved')}</p>
+            <Alert tone="warning">{t('legal.sources.not_approved')}</Alert>
         </>
     );
 }

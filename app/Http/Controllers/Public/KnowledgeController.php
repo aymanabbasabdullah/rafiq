@@ -14,13 +14,12 @@ use App\Models\ContentCategory;
 use App\Models\ContentCategoryTranslation;
 use App\Services\Analytics\MetricsRecorder;
 use App\Services\Content\ContentSearch;
+use App\Services\Content\KnowledgeCatalog;
 use App\Services\Content\KnowledgeUrls;
 use App\Support\LocalizedUrls;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -33,7 +32,7 @@ use Inertia\Response;
  */
 class KnowledgeController extends Controller
 {
-    public function __construct(private readonly KnowledgeUrls $urls) {}
+    public function __construct(private readonly KnowledgeUrls $urls, private readonly KnowledgeCatalog $catalog) {}
 
     public function index(Request $request, MetricsRecorder $metrics): Response
     {
@@ -42,19 +41,9 @@ class KnowledgeController extends Controller
         $this->recordJourneyOnce($request, $metrics);
         $metrics->increment('page_view', 'learn_index');
 
-        $categories = ContentCategory::query()
-            ->where('is_visible', true)
-            ->with('translations')
-            ->orderBy('sort_order')
-            ->orderBy('id')
-            ->get()
-            ->map(fn (ContentCategory $category): ?array => $this->categoryCard($category, $locale))
-            ->filter()
-            ->values();
-
         return Inertia::render('Public/Learn/Index', [
-            'categories' => $categories,
-            'latest' => $this->articleCards($this->liveTranslations($locale)->latest('published_at')->limit(6)->get()),
+            'categories' => $this->catalog->categories($locale),
+            'latest' => $this->catalog->latest($locale, 6),
             'searchUrl' => route('learn.search'),
             'glossaryUrl' => route('glossary.index'),
             'concernUrl' => Journey::Concern->url(),
@@ -78,8 +67,8 @@ class KnowledgeController extends Controller
                 'description' => $categoryTranslation->description,
                 'icon' => $model->icon,
             ],
-            'articles' => $this->articleCards(
-                $this->liveTranslations($locale)
+            'articles' => $this->catalog->articleCards(
+                $this->catalog->liveTranslations($locale)
                     ->whereHas('article', fn ($query) => $query->where('content_category_id', $model->id))
                     ->get()
                     ->sortBy(fn (ArticleTranslation $translation): int => $translation->article->sort_order)
@@ -131,8 +120,8 @@ class KnowledgeController extends Controller
                 'url' => $source->url,
                 'date' => $source->publication_date,
             ])->values(),
-            'related' => $this->articleCards(
-                $this->liveTranslations($locale)
+            'related' => $this->catalog->articleCards(
+                $this->catalog->liveTranslations($locale)
                     ->where('id', '!=', $translation->id)
                     ->whereHas('article', fn ($query) => $query->where('content_category_id', $article->content_category_id))
                     ->limit(3)
@@ -185,64 +174,6 @@ class KnowledgeController extends Controller
             ->where('slug', $slug)
             ->with('category')
             ->firstOrFail();
-    }
-
-    /**
-     * @return Builder<ArticleTranslation>
-     */
-    private function liveTranslations(string $locale)
-    {
-        return ArticleTranslation::query()
-            ->live($locale)
-            ->whereHas('article.category', fn ($query) => $query->where('is_visible', true))
-            ->with(['publishedRevision', 'article.category.translations']);
-    }
-
-    /**
-     * @return array{key: string, icon: string, name: string, description: string|null, url: string, count: int}|null
-     */
-    private function categoryCard(ContentCategory $category, string $locale): ?array
-    {
-        $translation = $category->translationFor($locale);
-
-        if ($translation === null) {
-            return null;
-        }
-
-        return [
-            'key' => $category->key,
-            'icon' => $category->icon,
-            'name' => $translation->name,
-            'description' => $translation->description,
-            'url' => route('learn.category', ['locale' => $locale, 'category' => $translation->slug]),
-            'count' => ArticleTranslation::query()->live($locale)->whereHas('article', fn ($query) => $query->where('content_category_id', $category->id))->count(),
-        ];
-    }
-
-    /**
-     * @param  Collection<int, ArticleTranslation>  $translations
-     * @return list<array{title: string, summary: string|null, url: string, category: string|null}>
-     */
-    private function articleCards(Collection $translations): array
-    {
-        $cards = [];
-
-        foreach ($translations as $translation) {
-            $url = $this->urls->article($translation);
-
-            if ($url === null || $translation->publishedRevision === null) {
-                continue;
-            }
-
-            $cards[] = [
-                'title' => $translation->publishedRevision->title,
-                'summary' => $translation->publishedRevision->summary,
-                'url' => $url,
-                'category' => $translation->article->category->translationFor($translation->locale)?->name,
-            ];
-        }
-
-        return $cards;
     }
 
     /**

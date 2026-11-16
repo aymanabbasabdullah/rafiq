@@ -120,3 +120,24 @@ T-10، T-19، T-20؛ لا تسجيل للمدخلات؛ الاستيراد لا 
 
 ## 19. Open Questions
 OQ-009؛ OQ-019 (المسودة الأصلية)؛ RQ-1..RQ-8؛ هل نعتمد مكتبة JSON Schema لـ PHP (`opis/json-schema` أو مماثل — حزمة جديدة تحتاج موافقة) أم تحقق يدوي؟
+
+---
+
+## 20. ملاحظات التنفيذ (2026-11-16)
+
+**الحالة: منفذة** (دون commit). **DRAFT – PENDING QUALIFIED MEDICAL REVIEW:** لا قاعدة معتمدة؛ RS-2026.1 تعمل فقط خارج Production في وضع Demo.
+
+| البند | ما نُفذ | ملاحظة |
+|---|---|---|
+| ملفات الإصدار | `resources/clinical/rulesets/RS-2026.1/{questions.json, rules.json, guidance/{ar,en}.json, red_flag_lexicon.json}` و`resources/clinical/forbidden_phrases.json` | `rules.json` ملف واحد بدل `rules/*.json`؛ حالات الاختبار في `resources/clinical/test-cases/RS-2026.1.json` (ملف واحد). |
+| صيغة القاعدة | `when/outcome` أو `branches` مرتبة (أول فرع مطابق يُطبق)؛ `priority_by_journey` لـ CR-008/CR-009؛ `enabled: false` + `disabled_reason`؛ مفاتيح سياق `@journey` و`@age_confirmed` | CR-004 وCR-005 بفرعَي `yes`/`unsure` (مقترحات الكتالوج لـ TC-35 والكتلة غير المؤكدة)؛ SAFE-006 قاعدة سلامة برمز خاص. |
+| CR-015b | مضمّنة **معطّلة** حتى التحقق من المصدر (SG-1, RQ-6) | TC-12 يتوقع P4 لذلك. |
+| المحرك | `ClinicalRulesEngine::screen()/evaluate()` يعمل على `LoadedRuleset` فقط؛ `ConditionEvaluator` نقي (11 عاملاً + all/any/not) | لا لغة ولا وقت ولا عشوائية؛ استثناء بدل نتيجة افتراضية. |
+| التحقق من المدخلات | مفاتيح مجهولة/خارج المسار/خارج الفحص، قيم مزورة، `none`/`unknown` المتنافية، سؤال مخفي بقيمة، أسئلة خطر ناقصة ⇒ `InvalidAssessmentInput` (422) | الإرسال الجزئي يُقبل فقط إذا فعّل P0 (TC-36/37). |
+| التحقق من الملفات | `RulesetSchemaValidator` يدوي (دون حزمة JSON Schema جديدة) + `ForbiddenPhraseChecker` (SAFE-010) | يتحقق من المراجع بين القواعد والأسئلة والنصوص باللغتين. |
+| الاستيراد | `rafiq:clinical:import RS-2026.1 [--commit=]`: معاملة واحدة، `source_hash` (sha256 بعد توحيد نهايات الأسطر)، يرفض إصداراً دخل المراجعة، ويرفض تغيير إصدار قاعدة معتمد | إعادة الاستيراد نفسها تعيد استخدام الإصدارات. |
+| الاختيار حسب البيئة | `ActiveRulesetResolver`: Production ⇒ منشور وكل قواعده معتمدة فقط؛ Demo خارج Production ⇒ `rafiq.demo_ruleset`؛ غير ذلك ⇒ منشور فقط | Cache بالمفتاح `version + source_hash`. |
+| الاختبارات | `rafiq:clinical:test RS-2026.1 [--files]` (جدول PASS/FAIL)؛ PHPUnit: 33 حالة من الملف + TC-29 (اللغة) + TC-30/31 (البيئات) + الاستيراد + المحظورات + فصل `Clinical` عن `Ai`؛ TC-32 مغطى في `BootChecksTest` | 37 اختبار وحدة لـ `ConditionEvaluator`. |
+| قاموس علامات الخطر | `SafetyLexicon` (عقد) + `SafetyLexiconProvider` يقرأ قاموس الإصدار النشط مع رجوع لملف الإصدار التجريبي | لـ Module-09؛ لا يحدد أولوية. |
+| البذور | `ClinicalDemoSeeder` يستورد RS-2026.1 كمسودة في local/testing أو Demo فقط | لا يعتمد ولا ينشر شيئاً. |
+| مؤجل | واجهات M04/M05/M07 التي تستدعي المحرك (مسارات HTTP + 503 + Kill switch في الواجهة)، تسميات خيارات الأسئلة (`option_labels`)، Mutation testing | — |

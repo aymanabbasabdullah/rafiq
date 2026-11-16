@@ -1,4 +1,5 @@
 import { usePage } from '@inertiajs/react';
+import { Phone } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 
 /**
@@ -9,11 +10,12 @@ export function EmergencyNotice() {
     const t = useT();
 
     return (
-        <div className="rounded-lg border border-danger/30 bg-surface-raised p-4 text-sm text-ink">
+        <div className="rounded-2xl border-s-4 border-danger bg-danger-soft p-4 text-sm text-ink">
             <p>{t('safety.general')}</p>
-            <p className="mt-2 font-semibold">
+            <p className="mt-3 font-semibold text-danger">
                 {emergency.number !== null ? (
-                    <a href={`tel:${emergency.number}`} className="text-danger underline">
+                    <a href={`tel:${emergency.number}`} className="inline-flex items-center gap-2 underline underline-offset-4">
+                        <Phone aria-hidden="true" className="size-4" />
                         {t('emergency.call_number')} <bdi dir="ltr">{emergency.number}</bdi>
                     </a>
                 ) : (
