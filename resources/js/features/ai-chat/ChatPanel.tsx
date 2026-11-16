@@ -3,7 +3,6 @@ import { ArrowRight, Eraser, MessagesSquare, Send, ShieldAlert, Square, X } from
 import { type FormEvent, useEffect, useRef, useState } from 'react';
 import type { ChatTarget } from '@/features/ai-chat/AiChatProvider';
 import { AiNotice } from '@/features/ai-chat/AiNotice';
-import { QuickExitButton } from '@/components/public/QuickExitButton';
 import { buttonClasses } from '@/components/ui/Button';
 import { inputClasses } from '@/components/ui/Field';
 import { Spinner } from '@/components/ui/Spinner';
@@ -185,8 +184,6 @@ export default function ChatPanel({ target, onClose }: { target: ChatTarget; onC
                         </div>
                     </div>
                     <div className="flex items-center gap-1">
-                        {/* Quick exit stays reachable while the panel covers the page (FR-005). */}
-                        <QuickExitButton />
                         {messages.length > 0 ? (
                             <button
                                 type="button"
