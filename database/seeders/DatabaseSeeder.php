@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             AdminSeeder::class,
             ContentDemoSeeder::class,
             ClinicalDemoSeeder::class,
+            DoctorPrepDemoSeeder::class,
         ]);
     }
 }

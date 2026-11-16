@@ -5,7 +5,7 @@
     $rafiqNoIndex = str_starts_with($rafiqComponent, 'Errors/')
         || str_starts_with($rafiqComponent, 'Admin/')
         || str_starts_with($rafiqComponent, 'Public/Gate/')
-        || in_array($rafiqComponent, ['Public/Under18', 'Public/JourneyEntry', 'Public/Assessment'], true);
+        || in_array($rafiqComponent, ['Public/Under18', 'Public/JourneyEntry', 'Public/Assessment', 'Public/DoctorPrep'], true);
 @endphp
 <!DOCTYPE html>
 <html lang="{{ $rafiqLocale->value }}" dir="{{ $rafiqLocale->direction() }}">

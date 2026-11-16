@@ -81,10 +81,8 @@ class JourneysTest extends TestCase
             ->assertOk()
             ->assertHeader('Cache-Control', 'max-age=0, no-store, private')
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->component('Public/JourneyEntry')
-                ->where('journey', 'doctor_prep')
-                ->where('showsRedFlagReminder', true)
-                ->where('showsLocalOnlyNotice', true)
+                ->component('Public/DoctorPrep')
+                ->where('concernUrl', route('journeys.concern', ['locale' => 'en']))
                 ->has('otherJourneys', 3)
                 ->where('otherJourneys.0.key', 'learn')
                 ->where('otherJourneys.1.key', 'concern')

@@ -9,6 +9,7 @@ import { Alert } from '@/components/ui/Alert';
 import { buttonClasses } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { PublicLayout } from '@/layouts/PublicLayout';
+import { setDoctorPrepHandoff } from '@/lib/doctorPrepHandoff';
 import { JsonRequestError, postJson } from '@/lib/http';
 import { useT } from '@/lib/i18n';
 import type { JourneyKey } from '@/types';
@@ -599,7 +600,7 @@ function ResultView({
                     </>
                 ) : null}
                 {doctorPrepUrl !== null && kind === 'report' ? (
-                    <Link href={doctorPrepUrl} className={buttonClasses('secondary')}>
+                    <Link href={doctorPrepUrl} onClick={() => setDoctorPrepHandoff(report.doctorTopics)} className={buttonClasses('secondary')}>
                         {t('report.doctor_prep')}
                     </Link>
                 ) : null}

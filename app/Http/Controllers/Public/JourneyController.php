@@ -10,6 +10,7 @@ use App\Services\Analytics\MetricsRecorder;
 use App\Services\Assessment\QuestionnaireBuilder;
 use App\Services\Clinical\ActiveRulesetResolver;
 use App\Services\Clinical\Exceptions\NoActiveRuleset;
+use App\Services\DoctorPrep\DoctorPrepBank;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Inertia\Inertia;
@@ -45,12 +46,34 @@ class JourneyController extends Controller
             return $this->assessment($journey);
         }
 
+        if ($journey === Journey::DoctorPrep) {
+            return $this->doctorPrep($metrics);
+        }
+
         return Inertia::render('Public/JourneyEntry', [
             'journey' => $journey->value,
             'showsRedFlagReminder' => $journey->showsRedFlagReminder(),
             'showsLocalOnlyNotice' => $journey->showsLocalOnlyNotice(),
             'concernUrl' => Journey::Concern->url(),
             'otherJourneys' => Journey::cards(exclude: $journey),
+        ]);
+    }
+
+    /**
+     * J4: doctor visit preparation (Module-10). The visitor's list is built and printed in the browser only.
+     */
+    private function doctorPrep(MetricsRecorder $metrics): Response
+    {
+        $locale = App::getLocale();
+        $demo = (bool) config('rafiq.demo_mode') && ! app()->isProduction();
+        $metrics->increment('page_view', 'doctor_prep');
+
+        return Inertia::render('Public/DoctorPrep', [
+            ...app(DoctorPrepBank::class)->forLocale($locale, includeDrafts: $demo),
+            'demo' => $demo,
+            'concernUrl' => Journey::Concern->url(),
+            'glossaryUrl' => Journey::Learn->isEnabled() ? route('glossary.index', ['locale' => $locale]) : null,
+            'otherJourneys' => Journey::cards(exclude: Journey::DoctorPrep),
         ]);
     }
 
