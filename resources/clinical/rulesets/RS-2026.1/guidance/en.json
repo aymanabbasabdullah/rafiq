@@ -37,6 +37,9 @@
         "topic.family_history": "My family history",
         "topic.couple_evaluation": "Assessment for both of us as a couple",
         "topic.previous_tests": "The results of my previous tests",
-        "topic.unknown_answers": "Questions I didn't know how to answer"
+        "topic.unknown_answers": "Questions I didn't know how to answer",
+        "guidance.p3.lifestyle": "Everyday habits can affect reproductive health. Steps you can start at home: avoid long hot baths, saunas and a laptop on your lap; move a little every day; aim for regular sleep; and cut down or stop alcohol. Small changes count.",
+        "guidance.p3.lifestyle_doctor": "A doctor or your primary care team can support you with weight or substance use privately and without judgement.",
+        "topic.lifestyle": "Daily habits that might affect my reproductive health"
     }
 }

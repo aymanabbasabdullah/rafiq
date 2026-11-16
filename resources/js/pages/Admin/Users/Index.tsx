@@ -1,6 +1,7 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { KeyRound, Power, Save, ShieldCheck, ShieldOff, UserPlus, Users } from 'lucide-react';
+import { KeyRound, Power, Save, ShieldCheck, ShieldOff, Trash2, UserPlus, Users } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
+import { ConfirmDialog } from '@/components/public/ConfirmDialog';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -25,6 +26,9 @@ interface AdminUserRow {
     canToggleActive: boolean;
     canUpdateRoles: boolean;
     canResetTwoFactor: boolean;
+    canDelete: boolean;
+    deactivatedAt: string | null;
+    deleteUrl: string;
     updateRolesUrl: string;
     toggleActiveUrl: string;
     resetTwoFactorUrl: string;
@@ -44,6 +48,7 @@ function UserCard({ user, availableRoles }: { user: AdminUserRow; availableRoles
     const t = useT();
     const [selectedRoles, setSelectedRoles] = useState<AdminRoleKey[]>(user.roles);
     const [credentialRef, setCredentialRef] = useState<string>(user.credentialReference ?? '');
+    const [confirmingDelete, setConfirmingDelete] = useState(false);
     const changed =
         selectedRoles.slice().sort().join() !== user.roles.slice().sort().join() ||
         credentialRef !== (user.credentialReference ?? '');
@@ -149,6 +154,27 @@ function UserCard({ user, availableRoles }: { user: AdminUserRow; availableRoles
                                 {t('admin.users.reset_2fa')}
                             </Button>
                         ) : null}
+                        {user.canDelete ? (
+                            <Button size="sm" variant="danger" onClick={() => setConfirmingDelete(true)}>
+                                <Trash2 aria-hidden="true" className="size-4" />
+                                {t('admin.users.delete')}
+                            </Button>
+                        ) : null}
+                        <ConfirmDialog
+                            open={confirmingDelete}
+                            title={t('admin.users.delete_title')}
+                            confirmLabel={t('admin.users.delete')}
+                            cancelLabel={t('clear.cancel')}
+                            onCancel={() => setConfirmingDelete(false)}
+                            onConfirm={() =>
+                                router.delete(user.deleteUrl, {
+                                    preserveScroll: true,
+                                    onFinish: () => setConfirmingDelete(false),
+                                })
+                            }
+                        >
+                            <p>{t('admin.users.delete_body')}</p>
+                        </ConfirmDialog>
                     </div>
                 </form>
             ) : (

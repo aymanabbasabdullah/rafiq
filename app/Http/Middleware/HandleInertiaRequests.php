@@ -107,7 +107,8 @@ class HandleInertiaRequests extends Middleware
                 'canViewAnalytics' => $user->can('viewAny', DailyMetric::class),
             ] : null,
             'flash' => [
-                'success' => $request->session()->get('success'),
+                // Unmatched /admin URLs render the 404 page before the session middleware runs.
+                'success' => $request->hasSession() ? $request->session()->get('success') : null,
             ],
             'links' => [
                 'dashboard' => route('admin.dashboard'),
@@ -116,6 +117,8 @@ class HandleInertiaRequests extends Middleware
                 'content' => route('admin.content.index'),
                 'sources' => route('admin.content.sources.index'),
                 'categories' => route('admin.content.categories.index'),
+                'doctorQuestions' => route('admin.content.bank.index', ['bank' => 'doctor-questions']),
+                'glossary' => route('admin.content.bank.index', ['bank' => 'glossary']),
                 'clinicalRules' => route('admin.clinical.rules.index'),
                 'clinicalReleases' => route('admin.clinical.releases.index'),
                 'ai' => route('admin.ai.index'),

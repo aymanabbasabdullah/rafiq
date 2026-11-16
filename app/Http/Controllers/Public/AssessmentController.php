@@ -63,12 +63,36 @@ class AssessmentController extends Controller
             return $this->unavailable();
         }
 
-        $this->metrics->increment($screening ? 'assessment_started' : 'assessment_completed', $journey);
+        $this->recordMetrics($request, $journey, $screening);
 
         return response()->json([
             'status' => $screening ? $this->screeningStatus($report['priority'], $result->stopped) : 'evaluated',
             'report' => $report,
         ]);
+    }
+
+    /**
+     * Impact KPIs without results (OQ-010): starts and completions per journey, completions per language and
+     * device class (equity), and a coarse time-to-guidance band. Nothing identifies the visitor or the outcome.
+     */
+    private function recordMetrics(AssessmentRequest $request, string $journey, bool $screening): void
+    {
+        $stage = $screening ? 'started' : 'completed';
+        $device = preg_match('/Mobile|Android|iPhone|iPad/i', (string) $request->userAgent()) === 1 ? 'mobile' : 'desktop';
+
+        $this->metrics->increment("assessment_{$stage}", $journey);
+        $this->metrics->increment("assessment_{$stage}_segment", App::getLocale().':'.$device);
+
+        $elapsed = $request->validated('elapsed_seconds');
+
+        if (! $screening && is_int($elapsed)) {
+            $this->metrics->increment('assessment_time', match (true) {
+                $elapsed < 180 => 'lt_3m',
+                $elapsed < 360 => '3_6m',
+                $elapsed < 600 => '6_10m',
+                default => 'gt_10m',
+            });
+        }
     }
 
     /**

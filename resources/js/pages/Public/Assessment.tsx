@@ -1,6 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
-import { AlertTriangle, ArrowLeft, ArrowRight, Download, FlaskConical, Phone, Printer, RotateCcw, ShieldAlert, SkipForward } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { AlertTriangle, ArrowLeft, ArrowRight, CheckCircle2, Compass, Download, FlaskConical, Phone, Printer, RotateCcw, ShieldAlert, SkipForward, Stethoscope } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ChangeJourney } from '@/components/public/ChangeJourney';
 import { ConfirmDialog } from '@/components/public/ConfirmDialog';
 import { EmergencyNotice } from '@/components/public/EmergencyNotice';
@@ -38,9 +38,24 @@ type Report = {
     notices: string[];
     showEmergencyCriteria: boolean;
     articles: { title: string; url: string }[];
+    carePathway: { key: string; title: string; body: string; access: { key: string; label: string }[] } | null;
+    otherPathways: { key: string; title: string }[];
+    riskDomains: { key: string; label: string; body: string }[];
     rulesetVersion: string;
     demo: boolean;
 };
+
+type FeedbackSignal = 'report_trust' | 'report_clear' | 'next_step_taken';
+
+/** Whole seconds since a timestamp, for the anonymous time-to-guidance band. */
+function secondsSince(start: number): number {
+    return Math.round((Date.now() - start) / 1000);
+}
+
+/** Fire-and-forget anonymous counter; a failure never affects the visitor. */
+function sendSignal(url: string, signal: FeedbackSignal, value: string): void {
+    void postJson(url, { signal, value }).catch(() => undefined);
+}
 
 type Answer = string | string[];
 
@@ -50,6 +65,7 @@ type AssessmentProps = {
     demo: boolean;
     screenUrl: string;
     evaluateUrl: string;
+    feedbackUrl: string;
     learnUrl: string | null;
     doctorPrepUrl: string | null;
     otherJourneys: { key: JourneyKey; url: string | null }[];
@@ -87,7 +103,7 @@ function isVisible(question: Question, answers: Record<string, Answer>): boolean
  * are sent to the deterministic Clinical Rules Engine; nothing is stored. Warning signs come first, and a
  * single emergency answer stops everything (M04-FR-03).
  */
-export default function Assessment({ journey, questions, demo, screenUrl, evaluateUrl, learnUrl, doctorPrepUrl, otherJourneys }: AssessmentProps) {
+export default function Assessment({ journey, questions, demo, screenUrl, evaluateUrl, feedbackUrl, learnUrl, doctorPrepUrl, otherJourneys }: AssessmentProps) {
     const t = useT();
     const { emergency } = usePage().props;
     const safety = useMemo(() => (questions ?? []).filter((question) => question.section === 'safety'), [questions]);
@@ -96,6 +112,12 @@ export default function Assessment({ journey, questions, demo, screenUrl, evalua
     const [step, setStep] = useState<Step>(questions === null ? { name: 'unavailable' } : { name: 'safety', index: 0 });
     const [busy, setBusy] = useState(false);
     const [restarting, setRestarting] = useState(false);
+    // Start time for the anonymous "time to guidance" band; kept in memory only.
+    const startedAt = useRef<number | null>(null);
+
+    useEffect(() => {
+        startedAt.current = Date.now();
+    }, []);
 
     // Every new step starts at the top with focus on its heading, so an emergency result is never off-screen.
     useEffect(() => {
@@ -132,11 +154,12 @@ export default function Assessment({ journey, questions, demo, screenUrl, evalua
         return payload;
     };
 
-    const send = async (url: string, payload: Record<string, Answer>): Promise<{ status: string; report: Report } | null> => {
+    const send = async (url: string, payload: Record<string, Answer>, withElapsed = false): Promise<{ status: string; report: Report } | null> => {
         setBusy(true);
+        const elapsed = withElapsed && startedAt.current !== null ? { elapsed_seconds: secondsSince(startedAt.current) } : {};
 
         try {
-            return await postJson<{ status: string; report: Report }>(url, { journey, answers: payload });
+            return await postJson<{ status: string; report: Report }>(url, { journey, answers: payload, ...elapsed });
         } catch (error) {
             const status = error instanceof JsonRequestError ? error.status : 0;
 
@@ -199,7 +222,7 @@ export default function Assessment({ journey, questions, demo, screenUrl, evalua
             }
         }
 
-        const response = await send(evaluateUrl, payload);
+        const response = await send(evaluateUrl, payload, true);
 
         if (response !== null) {
             setStep({ name: 'result', kind: 'report', report: response.report });
@@ -233,6 +256,7 @@ export default function Assessment({ journey, questions, demo, screenUrl, evalua
         setAnswers({});
         setStep({ name: 'safety', index: 0 });
         setRestarting(false);
+        startedAt.current = Date.now();
     };
 
     const choice = (selected: boolean) =>
@@ -342,6 +366,7 @@ export default function Assessment({ journey, questions, demo, screenUrl, evalua
                         kind={step.kind}
                         report={step.report}
                         emergencyNumber={emergency.number}
+                        feedbackUrl={feedbackUrl}
                         learnUrl={learnUrl}
                         doctorPrepUrl={doctorPrepUrl}
                         onRestart={() => setRestarting(true)}
@@ -415,6 +440,11 @@ function AssessmentQuestion({
                 {question.prompt}
             </h1>
             {question.type === 'multi' ? <p className="mt-2 text-sm text-ink-muted">{t('assessment.multi_hint')}</p> : null}
+            {index === 0 ? (
+                <Alert tone="info" title={t('assessment.respect_title')} className="mt-6">
+                    {t('assessment.respect_body')}
+                </Alert>
+            ) : null}
 
             <div className={`mt-8 grid gap-3 ${question.options.length > 4 ? 'sm:grid-cols-2' : ''}`}>
                 {question.options.map((option) =>
@@ -472,6 +502,7 @@ function ResultView({
     kind,
     report,
     emergencyNumber,
+    feedbackUrl,
     learnUrl,
     doctorPrepUrl,
     onRestart,
@@ -479,24 +510,29 @@ function ResultView({
     kind: 'emergency' | 'urgent' | 'report';
     report: Report;
     emergencyNumber: string | null;
+    feedbackUrl: string;
     learnUrl: string | null;
     doctorPrepUrl: string | null;
     onRestart: () => void;
 }) {
     const t = useT();
     const priority = report.priority ?? 'P4';
+    const signal = (signalName: FeedbackSignal, value: string) => sendSignal(feedbackUrl, signalName, value);
 
     const download = () => {
+        signal('next_step_taken', 'download');
         const lines = [
             t('report.download_title'),
             '',
             `${report.label ?? ''}: ${report.headline ?? ''}`,
             report.nextStep ?? '',
+            ...(report.carePathway !== null ? ['', `${t('report.pathway_heading')}: ${report.carePathway.title}`, report.carePathway.body] : []),
+            ...(report.riskDomains.length > 0 ? ['', t('report.domains_heading'), ...report.riskDomains.map((domain) => `- ${domain.label}`)] : []),
             '',
             ...report.guidance.map((text) => `- ${text}`),
             ...(report.doctorTopics.length > 0 ? ['', t('report.doctor_topics'), ...report.doctorTopics.map((topic) => `- ${topic}`)] : []),
             '',
-            t('footer.not_diagnosis'),
+            t('report.screening_body'),
             ...(report.demo ? [t('assessment.demo_body')] : []),
         ];
         const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
@@ -531,6 +567,51 @@ function ResultView({
                 <Alert tone="danger" title={t('report.emergency_criteria_title')}>
                     {t('report.emergency_criteria_body')}
                 </Alert>
+            ) : null}
+
+            {kind !== 'emergency' ? (
+                <Alert tone="info" title={t('report.screening_title')}>
+                    {t('report.screening_body')}
+                </Alert>
+            ) : null}
+
+            {report.carePathway !== null && kind !== 'emergency' ? (
+                <div className="rounded-[var(--radius-panel)] border border-line bg-surface-raised p-6 shadow-card">
+                    <p className="flex items-center gap-2 text-sm font-semibold text-brand">
+                        <Compass aria-hidden="true" className="size-4" />
+                        {t('report.pathway_heading')}
+                    </p>
+                    <h2 className="mt-2 text-xl text-ink">{report.carePathway.title}</h2>
+                    <p className="mt-2 text-ink-muted">{report.carePathway.body}</p>
+                    <ul className="mt-4 flex flex-wrap gap-2">
+                        {report.carePathway.access.map((access) => (
+                            <li key={access.key} className="inline-flex items-center gap-1.5 rounded-full bg-brand-soft px-3 py-1.5 text-sm font-medium text-brand-strong">
+                                <CheckCircle2 aria-hidden="true" className="size-4" />
+                                {access.label}
+                            </li>
+                        ))}
+                    </ul>
+                    {report.otherPathways.length > 0 ? (
+                        <p className="mt-4 text-sm text-ink-muted">
+                            {t('report.pathway_also')} {report.otherPathways.map((pathway) => pathway.title).join(t('report.list_separator'))}
+                        </p>
+                    ) : null}
+                </div>
+            ) : null}
+
+            {report.riskDomains.length > 0 ? (
+                <div>
+                    <h2 className="text-xl text-ink">{t('report.domains_heading')}</h2>
+                    <p className="mt-1 text-sm text-ink-muted">{t('report.domains_hint')}</p>
+                    <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+                        {report.riskDomains.map((domain) => (
+                            <li key={domain.key} className="rounded-2xl border border-line bg-surface-raised p-4">
+                                <p className="font-semibold text-ink">{domain.label}</p>
+                                <p className="mt-1 text-sm text-ink-muted">{domain.body}</p>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
             ) : null}
 
             {report.guidance.length > 0 ? (
@@ -574,7 +655,7 @@ function ResultView({
                     <ul className="mt-4 space-y-2">
                         {report.articles.map((article) => (
                             <li key={article.url}>
-                                <Link href={article.url} className="font-medium text-brand underline-offset-4 hover:underline">
+                                <Link href={article.url} onClick={() => signal('next_step_taken', 'article')} className="font-medium text-brand underline-offset-4 hover:underline">
                                     {article.title}
                                 </Link>
                             </li>
@@ -583,13 +664,32 @@ function ResultView({
                 </div>
             ) : null}
 
-            <p className="border-s-4 border-brand ps-4 text-sm text-ink-muted">{t('report.limits')}</p>
+            <div className="rounded-2xl border-s-4 border-brand bg-surface-sunken p-5">
+                <h2 className="flex items-center gap-2 text-base font-semibold text-ink">
+                    <Stethoscope aria-hidden="true" className="size-4 text-brand" />
+                    {t('report.oversight_title')}
+                </h2>
+                <ul className="mt-3 list-disc space-y-1.5 ps-5 text-sm text-ink-muted">
+                    <li>{t('report.oversight_rules')}</li>
+                    <li>{report.demo ? t('report.oversight_review_pending') : t('report.oversight_review_done')}</li>
+                    <li>{t('report.oversight_clinician')}</li>
+                    <li>{t('report.oversight_no_ai')}</li>
+                    <li>{t('report.limits')}</li>
+                </ul>
+            </div>
             {report.demo ? <p className="text-sm font-medium text-warning">{t('assessment.demo_body')}</p> : null}
 
             <div className="flex flex-wrap gap-3 print:hidden">
                 {kind === 'report' ? (
                     <>
-                        <button type="button" onClick={() => window.print()} className={buttonClasses('secondary')}>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                signal('next_step_taken', 'print');
+                                window.print();
+                            }}
+                            className={buttonClasses('secondary')}
+                        >
                             <Printer aria-hidden="true" className="size-4" />
                             {t('report.print')}
                         </button>
@@ -600,7 +700,14 @@ function ResultView({
                     </>
                 ) : null}
                 {doctorPrepUrl !== null && kind === 'report' ? (
-                    <Link href={doctorPrepUrl} onClick={() => setDoctorPrepHandoff(report.doctorTopics)} className={buttonClasses('secondary')}>
+                    <Link
+                        href={doctorPrepUrl}
+                        onClick={() => {
+                            signal('next_step_taken', 'doctor_prep');
+                            setDoctorPrepHandoff(report.doctorTopics);
+                        }}
+                        className={buttonClasses('secondary')}
+                    >
                         {t('report.doctor_prep')}
                     </Link>
                 ) : null}
@@ -614,6 +721,83 @@ function ResultView({
                     {t('assessment.restart')}
                 </button>
             </div>
+
+            {kind === 'report' ? <ReportFeedback onSignal={signal} /> : null}
         </section>
+    );
+}
+
+/**
+ * Anonymous trust and clarity check (KPI "user trust"): one tap each, sent as counters only.
+ */
+function ReportFeedback({ onSignal }: { onSignal: (signal: FeedbackSignal, value: string) => void }) {
+    const t = useT();
+    const [trust, setTrust] = useState<string | null>(null);
+    const [clear, setClear] = useState<string | null>(null);
+
+    const pill = (selected: boolean) =>
+        `inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-xl border px-3 text-sm font-semibold transition-colors disabled:cursor-default ${
+            selected ? 'border-brand bg-brand text-brand-ink' : 'border-line-strong bg-surface-raised text-ink hover:border-brand'
+        }`;
+
+    return (
+        <aside aria-labelledby="feedback-title" className="rounded-2xl border border-line bg-surface-raised p-5 print:hidden">
+            <h2 id="feedback-title" className="text-base font-semibold text-ink">
+                {t('report.feedback_title')}
+            </h2>
+            <p className="mt-1 text-sm text-ink-muted">{t('report.feedback_hint')}</p>
+
+            <fieldset className="mt-4">
+                <legend className="text-sm font-medium text-ink">{t('report.feedback_trust')}</legend>
+                <div className="mt-2 flex flex-wrap items-center gap-2" dir="ltr">
+                    {['1', '2', '3', '4', '5'].map((value) => (
+                        <button
+                            key={value}
+                            type="button"
+                            disabled={trust !== null}
+                            aria-pressed={trust === value}
+                            onClick={() => {
+                                setTrust(value);
+                                onSignal('report_trust', value);
+                            }}
+                            className={pill(trust === value)}
+                        >
+                            {value}
+                        </button>
+                    ))}
+                </div>
+                <p className="mt-1 flex justify-between text-xs text-ink-subtle">
+                    <span>{t('report.feedback_trust_low')}</span>
+                    <span>{t('report.feedback_trust_high')}</span>
+                </p>
+            </fieldset>
+
+            <fieldset className="mt-4">
+                <legend className="text-sm font-medium text-ink">{t('report.feedback_clear')}</legend>
+                <div className="mt-2 flex gap-2">
+                    {(['yes', 'no'] as const).map((value) => (
+                        <button
+                            key={value}
+                            type="button"
+                            disabled={clear !== null}
+                            aria-pressed={clear === value}
+                            onClick={() => {
+                                setClear(value);
+                                onSignal('report_clear', value);
+                            }}
+                            className={pill(clear === value)}
+                        >
+                            {t(`assessment.option.${value}`)}
+                        </button>
+                    ))}
+                </div>
+            </fieldset>
+
+            {trust !== null || clear !== null ? (
+                <p role="status" className="mt-4 text-sm font-medium text-success">
+                    {t('report.feedback_thanks')}
+                </p>
+            ) : null}
+        </aside>
     );
 }

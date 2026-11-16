@@ -155,7 +155,16 @@ final class RulesetTestRunner
             $failures[] = 'stopped: expected '.json_encode($expected['stopped']).', got '.json_encode($result->stopped);
         }
 
-        $exact = ['triggered' => $result->triggeredCodes(), 'flags' => $result->flags, 'guidance' => $result->guidanceKeys];
+        if (array_key_exists('care_pathway', $expected) && $expected['care_pathway'] !== $result->carePathway()?->value) {
+            $failures[] = 'care_pathway: expected '.($expected['care_pathway'] ?? 'none').', got '.($result->carePathway()->value ?? 'none');
+        }
+
+        $exact = [
+            'triggered' => $result->triggeredCodes(),
+            'flags' => $result->flags,
+            'guidance' => $result->guidanceKeys,
+            'risk_domains' => array_map(fn ($domain): string => $domain->value, $result->riskDomains),
+        ];
 
         foreach ($exact as $field => $value) {
             if (array_key_exists($field, $expected) && $expected[$field] !== $value) {

@@ -19,22 +19,30 @@ final class BudgetGuard
 
     public function exceeded(): bool
     {
+        return $this->usedFraction() >= 1.0;
+    }
+
+    /**
+     * Share of today's cap already used (0.0 = nothing, 1.0 = cap reached). A zero budget counts as fully used.
+     */
+    public function usedFraction(): float
+    {
         $today = AiUsageLog::query()->where('created_at', '>=', now()->startOfDay());
         $budgetMicros = (int) round($this->settings->dailyBudgetUsd() * 1_000_000);
 
         if ($budgetMicros <= 0) {
-            return true;
+            return 1.0;
         }
 
         $pricingSet = (float) config('rafiq.ai.pricing.input_per_million_usd') > 0 || (float) config('rafiq.ai.pricing.output_per_million_usd') > 0;
 
         if ($pricingSet) {
-            return (int) (clone $today)->sum('estimated_cost_micros') >= $budgetMicros;
+            return (int) (clone $today)->sum('estimated_cost_micros') / $budgetMicros;
         }
 
         return (clone $today)
             ->whereIn('outcome', [AiOutcome::Answered, AiOutcome::BlockedPostfilter, AiOutcome::RefusedOutOfScope, AiOutcome::RefusedPersonalCase, AiOutcome::Error])
             ->whereNotNull('model')
-            ->count() >= self::DAILY_MODEL_CALLS_WITHOUT_PRICING;
+            ->count() / self::DAILY_MODEL_CALLS_WITHOUT_PRICING;
     }
 }

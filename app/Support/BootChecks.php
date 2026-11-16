@@ -13,11 +13,19 @@ class BootChecks
 {
     public const AI_PROVIDERS = ['gemini', 'fake'];
 
+    public const MAX_SESSION_MINUTES = 30;
+
     /**
      * @throws RuntimeException
      */
-    public static function assertSafeConfiguration(string $environment, bool $demoMode, bool $debug, string $aiProvider = 'gemini'): void
-    {
+    public static function assertSafeConfiguration(
+        string $environment,
+        bool $demoMode,
+        bool $debug,
+        string $aiProvider = 'gemini',
+        int $sessionLifetime = self::MAX_SESSION_MINUTES,
+        string $sessionDriver = 'file',
+    ): void {
         if (! in_array($aiProvider, self::AI_PROVIDERS, true)) {
             throw new RuntimeException("Unknown RAFIQ_AI_PROVIDER \"{$aiProvider}\". Use one of: ".implode(', ', self::AI_PROVIDERS).'.');
         }
@@ -36,6 +44,16 @@ class BootChecks
 
         if ($debug) {
             throw new RuntimeException('APP_DEBUG must be false in production.');
+        }
+
+        // The privacy page promises a 30-minute session (PRIV-005).
+        if ($sessionLifetime < 1 || $sessionLifetime > self::MAX_SESSION_MINUTES) {
+            throw new RuntimeException('SESSION_LIFETIME must be between 1 and '.self::MAX_SESSION_MINUTES.' minutes in production.');
+        }
+
+        // Laravel's database session table stores IP address and user agent (Database-Design §2).
+        if ($sessionDriver === 'database') {
+            throw new RuntimeException('SESSION_DRIVER must not be "database" in production: it stores IP addresses and user agents. Use redis or file.');
         }
     }
 }

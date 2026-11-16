@@ -30,6 +30,8 @@ class AssessmentRequest extends FormRequest
             'journey' => ['required', Rule::in(['concern', 'conception'])],
             'answers' => ['present', 'array', 'max:40'],
             'answers.*' => ['nullable'],
+            // Seconds since the visitor started; only turned into a coarse time band counter (KPI "time to guidance").
+            'elapsed_seconds' => ['sometimes', 'integer', 'min:0', 'max:86400'],
         ];
     }
 
@@ -40,7 +42,7 @@ class AssessmentRequest extends FormRequest
     {
         return [
             function (Validator $validator): void {
-                foreach (array_diff(array_keys($this->all()), ['journey', 'answers']) as $key) {
+                foreach (array_diff(array_keys($this->all()), ['journey', 'answers', 'elapsed_seconds']) as $key) {
                     $validator->errors()->add((string) $key, 'unexpected_field');
                 }
 

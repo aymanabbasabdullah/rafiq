@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services\Clinical\Data;
 
+use App\Enums\CarePathway;
 use App\Enums\Priority;
+use App\Enums\RiskDomain;
 
 /**
  * Immutable engine output (M06-FR-06). Never stored (Clinical-Safety-Framework §5 step 9).
@@ -20,6 +22,8 @@ final readonly class EvaluationResult
      * @param  list<string>  $doctorTopicKeys
      * @param  list<string>  $relatedArticleKeys
      * @param  list<string>  $flags
+     * @param  list<CarePathway>  $carePathways  Most appropriate first.
+     * @param  list<RiskDomain>  $riskDomains  Areas with at least one risk indicator, in a fixed order.
      */
     public function __construct(
         public ?Priority $priority,
@@ -31,7 +35,14 @@ final readonly class EvaluationResult
         public array $flags,
         public string $rulesetVersion,
         public bool $demo,
+        public array $carePathways = [],
+        public array $riskDomains = [],
     ) {}
+
+    public function carePathway(): ?CarePathway
+    {
+        return $this->carePathways[0] ?? null;
+    }
 
     public function safetyPassed(): bool
     {
@@ -61,6 +72,8 @@ final readonly class EvaluationResult
             'flags' => $this->flags,
             'rulesetVersion' => $this->rulesetVersion,
             'demo' => $this->demo,
+            'carePathways' => array_map(fn (CarePathway $pathway): string => $pathway->value, $this->carePathways),
+            'riskDomains' => array_map(fn (RiskDomain $domain): string => $domain->value, $this->riskDomains),
         ];
     }
 }

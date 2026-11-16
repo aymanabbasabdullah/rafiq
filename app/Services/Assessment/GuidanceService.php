@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services\Assessment;
 
+use App\Enums\CarePathway;
+use App\Enums\Priority;
 use App\Enums\ReviewStatus;
+use App\Enums\RiskDomain;
 use App\Models\Article;
 use App\Models\GuidanceTextTranslation;
 use App\Models\RulesetRelease;
@@ -47,8 +50,52 @@ final class GuidanceService
             ))),
             'showEmergencyCriteria' => in_array('show_emergency_criteria', $result->flags, true),
             'articles' => $this->articles($result->relatedArticleKeys, $locale),
+            'carePathway' => $this->carePathway($result, $locale),
+            'otherPathways' => array_map(
+                fn (CarePathway $pathway): array => ['key' => $pathway->value, 'title' => __("report.pathway.{$pathway->value}.title", [], $locale)],
+                array_slice($result->carePathways, 1),
+            ),
+            'riskDomains' => array_map(fn (RiskDomain $domain): array => [
+                'key' => $domain->value,
+                'label' => __("report.domain.{$domain->value}.label", [], $locale),
+                'body' => __("report.domain.{$domain->value}.body", [], $locale),
+            ], $result->riskDomains),
             'rulesetVersion' => $result->rulesetVersion,
             'demo' => $result->demo,
+        ];
+    }
+
+    /**
+     * The recommended next step with the ways to reach it (competition criteria "safe routing" and "less
+     * friction"): remote first contact where suitable, home steps for self-care, in person when an
+     * examination is needed, emergency services for P0.
+     *
+     * @return array{key: string, title: string, body: string, access: list<array{key: string, label: string}>}|null
+     */
+    private function carePathway(EvaluationResult $result, string $locale): ?array
+    {
+        $pathway = $result->carePathway();
+
+        if ($pathway === null) {
+            return null;
+        }
+
+        $access = match (true) {
+            $pathway === CarePathway::Urgent && $result->priority === Priority::P0 => ['emergency'],
+            $pathway === CarePathway::Urgent => ['same_day'],
+            $pathway === CarePathway::SelfCare => ['home_steps', 'see_doctor_if_change'],
+            in_array('prompt_in_person_exam', $result->flags, true) => ['in_person_exam', 'prepare_questions'],
+            default => ['telehealth_first', 'in_person_if_needed', 'prepare_questions'],
+        };
+
+        // Skipped questions mean "no finding" is not "no need": never reassure on an incomplete picture.
+        $bodyKey = $pathway === CarePathway::SelfCare && in_array('unanswered_present', $result->flags, true) ? 'body_incomplete' : 'body';
+
+        return [
+            'key' => $pathway->value,
+            'title' => __("report.pathway.{$pathway->value}.title", [], $locale),
+            'body' => __("report.pathway.{$pathway->value}.{$bodyKey}", [], $locale),
+            'access' => array_map(fn (string $key): array => ['key' => $key, 'label' => __("report.access.{$key}", [], $locale)], $access),
         ];
     }
 

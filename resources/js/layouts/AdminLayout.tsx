@@ -1,6 +1,8 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import {
+    BookA,
     BookOpenText,
+    ClipboardList,
     Bot,
     ChartColumn,
     CircleCheck,
@@ -67,6 +69,13 @@ export function AdminLayout({ children }: { children: ReactNode }) {
                             { key: 'content', label: t('admin.nav.content'), icon: BookOpenText, href: links.content },
                             { key: 'sources', label: t('admin.nav.sources'), icon: Quote, href: links.sources },
                             { key: 'categories', label: t('admin.nav.categories'), icon: FolderTree, href: links.categories },
+                            { key: 'glossary', label: t('admin.nav.glossary'), icon: BookA, href: links.glossary },
+                            {
+                                key: 'doctorQuestions',
+                                label: t('admin.nav.doctor_questions'),
+                                icon: ClipboardList,
+                                href: links.doctorQuestions,
+                            },
                         ]
                       : []),
                   ...(user.canViewClinical

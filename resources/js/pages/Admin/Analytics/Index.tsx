@@ -24,6 +24,15 @@ interface Report {
     daily: { date: string; value: Count }[];
     sections: Section[];
     topArticles: { id: number; title: string; value: Count }[];
+    /** Percentages (or a 1–5 average); `null` means fewer than the threshold in the denominator. */
+    kpis: {
+        completionRate: number | null;
+        fastGuidanceRate: number | null;
+        followThroughRate: number | null;
+        averageTrust: number | null;
+        clarityRate: number | null;
+    };
+    equity: { segment: string; started: Count; completed: Count; rate: number | null }[];
 }
 
 interface AnalyticsProps {
@@ -43,6 +52,7 @@ export default function AnalyticsIndex({ report, periods, threshold, filterUrl }
     const numberFormat = new Intl.NumberFormat(locale.current === 'ar' ? 'ar-u-nu-latn' : 'en-GB');
     const hidden = t('admin.analytics.hidden', { threshold });
     const show = (value: Count) => (value === null ? hidden : numberFormat.format(value));
+    const withUnit = (value: number, unit: string) => numberFormat.format(value) + unit;
     // `null` means hidden ("< 5"); only a missing key is a true zero.
     const total = (metric: string) => show(report.totals[metric] === undefined ? 0 : (report.totals[metric] ?? null));
 
@@ -127,6 +137,83 @@ export default function AnalyticsIndex({ report, periods, threshold, filterUrl }
                         tone="neutral"
                     />
                 </div>
+
+                <Panel title={t('admin.analytics.kpi_title')} description={t('admin.analytics.kpi_hint')}>
+                    <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+                        {(
+                            [
+                                ['completion_rate', report.kpis.completionRate, '%'],
+                                ['fast_guidance', report.kpis.fastGuidanceRate, '%'],
+                                ['follow_through', report.kpis.followThroughRate, '%'],
+                                ['trust', report.kpis.averageTrust, ''],
+                                ['clarity', report.kpis.clarityRate, '%'],
+                            ] as const
+                        ).map(([key, value, unit]) => (
+                            <div key={key} className="rounded-xl bg-surface-sunken p-4">
+                                <dt className="text-sm text-ink-muted">{t(`admin.analytics.kpi.${key}`)}</dt>
+                                <dd className="mt-1 text-2xl font-semibold tabular-nums text-ink">
+                                    {value === null ? (
+                                        <span className="text-sm font-medium text-ink-subtle">
+                                            {t('admin.analytics.kpi.not_enough')}
+                                        </span>
+                                    ) : (
+                                        <bdi>{withUnit(value, unit)}</bdi>
+                                    )}
+                                </dd>
+                            </div>
+                        ))}
+                    </dl>
+                </Panel>
+
+                {report.equity.length > 0 ? (
+                    <Panel title={t('admin.analytics.equity_title')} description={t('admin.analytics.equity_hint')}>
+                        <div className="-m-5 overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead className="bg-surface-sunken text-xs text-ink-muted">
+                                    <tr>
+                                        <th scope="col" className="px-5 py-2.5 text-start font-semibold">
+                                            {t('admin.analytics.col_segment')}
+                                        </th>
+                                        <th scope="col" className="px-5 py-2.5 text-end font-semibold">
+                                            {t('admin.analytics.col_started')}
+                                        </th>
+                                        <th scope="col" className="px-5 py-2.5 text-end font-semibold">
+                                            {t('admin.analytics.col_completed')}
+                                        </th>
+                                        <th scope="col" className="px-5 py-2.5 text-end font-semibold">
+                                            {t('admin.analytics.col_rate')}
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-line">
+                                    {report.equity.map((row) => (
+                                        <tr key={row.segment}>
+                                            <td className="px-5 py-2.5 text-ink">
+                                                {row.segment
+                                                    .split(':')
+                                                    .map((part) => t(`admin.analytics.segment.${part}`))
+                                                    .join(' · ')}
+                                            </td>
+                                            <td className="px-5 py-2.5 text-end tabular-nums text-ink-muted">
+                                                <bdi>{show(row.started)}</bdi>
+                                            </td>
+                                            <td className="px-5 py-2.5 text-end tabular-nums text-ink-muted">
+                                                <bdi>{show(row.completed)}</bdi>
+                                            </td>
+                                            <td className="px-5 py-2.5 text-end font-medium tabular-nums text-ink">
+                                                <bdi>
+                                                    {row.rate === null
+                                                        ? t('admin.analytics.kpi.not_enough')
+                                                        : withUnit(row.rate, '%')}
+                                                </bdi>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </Panel>
+                ) : null}
 
                 {!hasData ? (
                     <EmptyState

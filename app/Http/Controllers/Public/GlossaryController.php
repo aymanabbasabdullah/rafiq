@@ -8,6 +8,7 @@ use App\Enums\PublishStatus;
 use App\Enums\ReviewStatus;
 use App\Http\Controllers\Controller;
 use App\Models\GlossaryTermTranslation;
+use App\Services\Ai\AiSettings;
 use Illuminate\Support\Facades\App;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -26,9 +27,11 @@ class GlossaryController extends Controller
             ->where('locale', $locale)
             ->where('review_status', ReviewStatus::Approved->value)
             ->where('publish_status', PublishStatus::Published->value)
-            ->get(['id', 'term', 'definition_html'])
+            ->get(['id', 'glossary_term_id', 'term', 'definition_html'])
             ->map(fn (GlossaryTermTranslation $term): array => [
                 'id' => $term->id,
+                // The AI explains a term by its glossary id (explain_term, M09); only approved, published terms reach it.
+                'termId' => $term->glossary_term_id,
                 'term' => $term->term,
                 'definitionHtml' => $term->definition_html,
             ])
@@ -39,6 +42,7 @@ class GlossaryController extends Controller
         return Inertia::render('Public/Learn/Glossary', [
             'terms' => $terms,
             'learnUrl' => route('journeys.learn'),
+            'aiEnabled' => app(AiSettings::class)->enabled(),
         ]);
     }
 }

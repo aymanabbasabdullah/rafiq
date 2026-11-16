@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Services\Clinical\RulesetImporter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia;
@@ -79,9 +80,47 @@ class AnalyticsTest extends TestCase
         $this->metric('article_ai_explain', 'article:999', 8);
 
         $this->actingAs(User::factory()->superAdmin()->create())->get('/admin/analytics')->assertInertia(fn (AssertableInertia $page) => $page
-            ->has('report.sections', 7)
+            ->has('report.sections', 11)
             ->missing('report.totals.priority')
             ->missing('report.totals.red_flag')
             ->where('report.topArticles', [['id' => 999, 'title' => '#999', 'value' => 8]]));
+    }
+
+    public function test_impact_kpis_and_equity_rates_are_computed_and_hidden_when_the_base_is_small(): void
+    {
+        $this->metric('assessment_started', 'concern', 20);
+        $this->metric('assessment_completed', 'concern', 15);
+        $this->metric('assessment_time', 'lt_3m', 6);
+        $this->metric('assessment_time', '6_10m', 4);
+        $this->metric('next_step_taken', 'print', 9);
+        $this->metric('report_trust', '4', 3);
+        $this->metric('report_trust', '5', 3);
+        $this->metric('report_clear', 'yes', 3);
+        $this->metric('assessment_started_segment', 'ar:mobile', 12);
+        $this->metric('assessment_completed_segment', 'ar:mobile', 9);
+        $this->metric('assessment_started_segment', 'en:desktop', 3);
+
+        $this->actingAs(User::factory()->superAdmin()->create())->get('/admin/analytics')->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('report.kpis.completionRate', 75)
+            ->where('report.kpis.fastGuidanceRate', 60)
+            ->where('report.kpis.followThroughRate', 60)
+            ->where('report.kpis.averageTrust', 4.5)
+            ->where('report.kpis.clarityRate', null)
+            ->where('report.equity', [
+                ['segment' => 'ar:mobile', 'started' => 12, 'completed' => 9, 'rate' => 75],
+                ['segment' => 'en:desktop', 'started' => null, 'completed' => 0, 'rate' => null],
+            ]));
+    }
+
+    public function test_the_simulation_runs_synthetic_visitors_through_the_rules_reproducibly(): void
+    {
+        config(['rafiq.demo_mode' => true]);
+        app(RulesetImporter::class)->import(resource_path('clinical/rulesets/RS-2026.1'));
+
+        $this->artisan('rafiq:simulate', ['--count' => 50, '--seed' => 7])
+            ->expectsOutputToContain('Simulated 50 synthetic visitors on RS-2026.1 (seed 7).')
+            ->expectsOutputToContain('Can start remotely or at home')
+            ->expectsOutputToContain('not real-world prevalence')
+            ->assertSuccessful();
     }
 }

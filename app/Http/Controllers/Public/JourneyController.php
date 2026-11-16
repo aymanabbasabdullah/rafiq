@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Public;
 
 use App\Enums\Journey;
 use App\Http\Controllers\Controller;
+use App\Services\Ai\AiSettings;
 use App\Services\Analytics\MetricsRecorder;
 use App\Services\Assessment\QuestionnaireBuilder;
 use App\Services\Clinical\ActiveRulesetResolver;
@@ -73,6 +74,7 @@ class JourneyController extends Controller
             'demo' => $demo,
             'concernUrl' => Journey::Concern->url(),
             'glossaryUrl' => Journey::Learn->isEnabled() ? route('glossary.index', ['locale' => $locale]) : null,
+            'aiEnabled' => app(AiSettings::class)->enabled(),
             'otherJourneys' => Journey::cards(exclude: Journey::DoctorPrep),
         ]);
     }
@@ -103,6 +105,7 @@ class JourneyController extends Controller
             'demo' => $demo,
             'screenUrl' => route('assessment.screen', ['locale' => $locale]),
             'evaluateUrl' => route('assessment.evaluate', ['locale' => $locale]),
+            'feedbackUrl' => route('report.feedback', ['locale' => $locale]),
             'learnUrl' => Journey::Learn->url(),
             'doctorPrepUrl' => Journey::DoctorPrep->url(),
             'otherJourneys' => Journey::cards(exclude: $journey),

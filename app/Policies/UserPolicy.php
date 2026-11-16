@@ -53,6 +53,21 @@ class UserPolicy
         return true;
     }
 
+    /**
+     * Permanent deletion only for accounts deactivated for the full retention period (Data-Lifecycle §2).
+     * Audit entries keep the deleted account's id in their summary; their actor reference becomes null.
+     */
+    public function delete(User $actor, User $target): bool
+    {
+        $months = (int) config('rafiq.retention.deactivated_admin_months');
+
+        return $actor->isSuperAdmin()
+            && $actor->id !== $target->id
+            && ! $target->is_active
+            && $target->deactivated_at !== null
+            && $target->deactivated_at->lte(now()->subMonths($months));
+    }
+
     public function resetTwoFactor(User $actor, User $target): bool
     {
         return $actor->isSuperAdmin() && $actor->id !== $target->id;

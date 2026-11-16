@@ -2,18 +2,20 @@ import { Link } from '@inertiajs/react';
 import { BookA, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ExplainTermButton } from '@/features/ai-chat/ExplainTermButton';
 import { PublicLayout } from '@/layouts/PublicLayout';
 import { useT } from '@/lib/i18n';
 
 type GlossaryProps = {
-    terms: { id: number; term: string; definitionHtml: string }[];
+    terms: { id: number; termId: number; term: string; definitionHtml: string }[];
     learnUrl: string;
+    aiEnabled: boolean;
 };
 
 /**
  * Glossary of approved terms (FR-073) with instant local filtering — nothing is sent to the server.
  */
-export default function Glossary({ terms, learnUrl }: GlossaryProps) {
+export default function Glossary({ terms, learnUrl, aiEnabled }: GlossaryProps) {
     const t = useT();
     const [filter, setFilter] = useState('');
 
@@ -63,6 +65,7 @@ export default function Glossary({ terms, learnUrl }: GlossaryProps) {
                                     className="rafiq-prose mt-1 text-sm"
                                     dangerouslySetInnerHTML={{ __html: term.definitionHtml }}
                                 />
+                                {aiEnabled ? <ExplainTermButton termId={term.termId} term={term.term} /> : null}
                             </div>
                         ))}
                     </dl>

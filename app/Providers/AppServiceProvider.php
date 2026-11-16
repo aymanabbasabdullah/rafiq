@@ -58,6 +58,8 @@ class AppServiceProvider extends ServiceProvider
             demoMode: (bool) config('rafiq.demo_mode'),
             debug: (bool) config('app.debug'),
             aiProvider: (string) config('rafiq.ai.provider'),
+            sessionLifetime: (int) config('session.lifetime'),
+            sessionDriver: (string) config('session.driver'),
         );
 
         Model::shouldBeStrict(! $this->app->isProduction());

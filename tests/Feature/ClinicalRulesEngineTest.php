@@ -52,7 +52,7 @@ class ClinicalRulesEngineTest extends TestCase
     }
 
     /**
-     * TC-01..TC-28 and TC-33..TC-37 (Clinical-Test-Cases.md).
+     * TC-01..TC-28, TC-33..TC-37 and TC-38..TC-49 (routing, risk domains and escalation overrides) (Clinical-Test-Cases.md).
      *
      * @param  array<string, mixed>  $case
      */
@@ -150,8 +150,8 @@ class ClinicalRulesEngineTest extends TestCase
 
         $this->assertSame(RulesetStatus::Draft, $release->status);
         $this->assertSame($files->sourceHash, $release->source_hash);
-        $this->assertSame(19, $release->ruleVersions()->count());
-        $this->assertSame(18, $release->questions()->count());
+        $this->assertSame(20, $release->ruleVersions()->count());
+        $this->assertSame(19, $release->questions()->count());
         $this->assertFalse(ClinicalRuleVersion::query()->where('status', '!=', ReviewStatus::Draft)->exists());
         $this->assertDatabaseHas('audit_logs', ['action' => 'clinical.ruleset.imported']);
 
@@ -160,7 +160,7 @@ class ClinicalRulesEngineTest extends TestCase
 
         // Importing the same files again reuses the same rule versions.
         app(RulesetImporter::class)->import(resource_path('clinical/rulesets/'.self::VERSION));
-        $this->assertSame(19, ClinicalRuleVersion::query()->count());
+        $this->assertSame(20, ClinicalRuleVersion::query()->count());
     }
 
     public function test_import_refuses_a_release_that_has_entered_review(): void

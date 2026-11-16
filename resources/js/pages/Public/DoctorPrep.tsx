@@ -1,4 +1,5 @@
-import { ArrowDown, ArrowUp, Check, Download, FlaskConical, Lock, Plus, Printer, Trash2, X } from 'lucide-react';
+import { Link } from '@inertiajs/react';
+import { ArrowDown, ArrowUp, BookA, Check, Download, FlaskConical, Lock, MessagesSquare, Plus, Printer, Trash2, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { ChangeJourney } from '@/components/public/ChangeJourney';
 import { PageIntro } from '@/components/public/PageIntro';
@@ -7,6 +8,7 @@ import { Alert } from '@/components/ui/Alert';
 import { buttonClasses } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { inputClasses } from '@/components/ui/Field';
+import { useAiChat } from '@/features/ai-chat/AiChatProvider';
 import { PublicLayout } from '@/layouts/PublicLayout';
 import { clearDoctorPrepHandoff, peekDoctorPrepHandoff } from '@/lib/doctorPrepHandoff';
 import { useT } from '@/lib/i18n';
@@ -20,6 +22,7 @@ type DoctorPrepProps = {
     demo: boolean;
     concernUrl: string | null;
     glossaryUrl: string | null;
+    aiEnabled: boolean;
     otherJourneys: { key: JourneyKey; url: string | null }[];
 };
 
@@ -39,7 +42,7 @@ const uid = () => `item-${nextUid++}`;
  * J4 doctor visit preparation (Module-10). Everything the visitor picks or writes stays in this page's
  * memory: there is no endpoint that receives it (BR-10-1), and closing the tab erases it.
  */
-export default function DoctorPrep({ topics, bring, demo, concernUrl, otherJourneys }: DoctorPrepProps) {
+export default function DoctorPrep({ topics, bring, demo, concernUrl, glossaryUrl, aiEnabled, otherJourneys }: DoctorPrepProps) {
     const t = useT();
     const [step, setStep] = useState<Step>('topics');
     const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
@@ -395,6 +398,8 @@ export default function DoctorPrep({ topics, bring, demo, concernUrl, otherJourn
                     </section>
                 ) : null}
 
+                {glossaryUrl !== null || aiEnabled ? <TermHelp glossaryUrl={glossaryUrl} aiEnabled={aiEnabled} /> : null}
+
                 <div className="print:hidden">
                     <RedFlagReminder concernUrl={concernUrl} />
                 </div>
@@ -422,5 +427,37 @@ function StepNav({ onBack, onNext }: { onBack?: () => void; onNext: () => void }
                 {t('assessment.continue')}
             </button>
         </div>
+    );
+}
+
+/**
+ * "What does this mean?" (M10-FR-09): the glossary, or Rafiq AI for general education. Nothing from the
+ * visitor's list is sent; the AI opens empty. A child of PublicLayout so it can reach the chat provider.
+ */
+function TermHelp({ glossaryUrl, aiEnabled }: { glossaryUrl: string | null; aiEnabled: boolean }) {
+    const t = useT();
+    const chat = useAiChat();
+
+    return (
+        <aside aria-labelledby="term-help-title" className="mt-10 rounded-2xl bg-brand-mist p-5 print:hidden">
+            <h2 id="term-help-title" className="text-base font-semibold text-brand-strong">
+                {t('doctor_prep.term_help_title')}
+            </h2>
+            <p className="mt-1 text-sm text-ink-muted">{t('doctor_prep.term_help_body')}</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+                {glossaryUrl !== null ? (
+                    <Link href={glossaryUrl} className={buttonClasses('secondary', 'sm')}>
+                        <BookA aria-hidden="true" className="size-4" />
+                        {t('doctor_prep.term_help_glossary')}
+                    </Link>
+                ) : null}
+                {aiEnabled ? (
+                    <button type="button" onClick={() => chat.open({ mode: 'general_education', context: 'glossary' })} className={buttonClasses('secondary', 'sm')}>
+                        <MessagesSquare aria-hidden="true" className="size-4" />
+                        {t('doctor_prep.term_help_ai')}
+                    </button>
+                ) : null}
+            </div>
+        </aside>
     );
 }

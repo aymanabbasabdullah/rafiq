@@ -440,4 +440,35 @@ class AdminAuthAndRolesTest extends TestCase
 
         $this->get('/admin')->assertOk();
     }
+
+    public function test_deactivated_accounts_can_be_deleted_only_after_the_retention_period(): void
+    {
+        $superAdmin = User::factory()->superAdmin()->create();
+        $editor = User::factory()->contentEditor()->create();
+        $session = ['auth.password_confirmed_at' => time()];
+
+        // Deactivating records when it happened; an active or recently deactivated account cannot be deleted.
+        $this->actingAs($superAdmin)->withSession($session)->delete(route('admin.users.destroy', $editor))->assertForbidden();
+        $this->actingAs($superAdmin)->withSession($session)->patch(route('admin.users.toggle-active', $editor))->assertRedirect();
+        $this->assertNotNull($editor->fresh()->deactivated_at);
+        $this->actingAs($superAdmin)->withSession($session)->delete(route('admin.users.destroy', $editor))->assertForbidden();
+
+        $this->travel(12)->months();
+        $this->travel(1)->days();
+        $session = ['auth.password_confirmed_at' => now()->unix()];
+
+        // Only a Super Admin, with password confirmation.
+        $this->actingAs(User::factory()->contentEditor()->create())->withSession($session)->delete(route('admin.users.destroy', $editor))->assertForbidden();
+        $this->flushSession();
+        $this->actingAs($superAdmin)->delete(route('admin.users.destroy', $editor))->assertRedirect(route('admin.password.confirm'));
+
+        $this->actingAs($superAdmin)->withSession($session)->delete(route('admin.users.destroy', $editor))->assertRedirect(route('admin.users.index'));
+        $this->assertDatabaseMissing('users', ['id' => $editor->id]);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'user.deleted', 'actor_id' => $superAdmin->id]);
+
+        // Reactivating clears the timestamp.
+        $other = User::factory()->contentEditor()->create(['is_active' => false, 'deactivated_at' => now()->subYears(2)]);
+        $this->actingAs($superAdmin)->withSession($session)->patch(route('admin.users.toggle-active', $other));
+        $this->assertNull($other->fresh()->deactivated_at);
+    }
 }

@@ -232,6 +232,7 @@ return [
     'retention' => [
         'ai_usage_logs_days' => 90,
         'audit_logs_days' => 730,
+        'deactivated_admin_months' => 12,
     ],
 
 ];

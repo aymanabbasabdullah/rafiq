@@ -69,6 +69,7 @@
             "options": ["diabetes", "obesity", "hypertension", "thyroid", "other_chronic", "none", "unknown"],
             "exclusive": ["none", "unknown"],
             "unknown_values": ["unknown"],
+            "risk_domains": { "diabetes": "metabolic", "obesity": "metabolic", "hypertension": "metabolic", "thyroid": "metabolic", "other_chronic": "medical_history" },
             "required": false,
             "show_if": null,
             "prompt": { "ar": "هل لديك أي من هذه الحالات المزمنة؟", "en": "Do you have any of these long-term conditions?" }
@@ -81,6 +82,7 @@
             "options": ["undescended_testis", "varicocele", "testicular_surgery_or_injury", "mumps_after_puberty", "sti_history", "none", "unknown"],
             "exclusive": ["none", "unknown"],
             "unknown_values": ["unknown"],
+            "risk_domains": { "undescended_testis": "anatomical", "varicocele": "anatomical", "testicular_surgery_or_injury": "anatomical", "mumps_after_puberty": "infectious", "sti_history": "infectious" },
             "required": false,
             "show_if": null,
             "prompt": { "ar": "هل سبق أن كان لديك أي مما يلي؟", "en": "Have you ever had any of the following?" }
@@ -92,6 +94,7 @@
             "type": "single",
             "options": ["current", "past", "never", "unknown"],
             "unknown_values": ["unknown"],
+            "risk_domains": { "current": "medical_history", "past": "medical_history" },
             "required": false,
             "show_if": null,
             "prompt": { "ar": "هل تستخدم أو استخدمت تستوستيرون أو ستيرويدات بنائية؟", "en": "Do you use, or have you used, testosterone or anabolic steroids?" }
@@ -103,6 +106,7 @@
             "type": "single",
             "options": ["planned", "past", "never", "unknown"],
             "unknown_values": ["unknown"],
+            "risk_domains": { "planned": "medical_history", "past": "medical_history" },
             "required": false,
             "show_if": null,
             "prompt": { "ar": "هل تلقيت أو ستتلقى علاجاً كيميائياً أو إشعاعياً؟", "en": "Have you had, or are you due to have, chemotherapy or radiotherapy?" }
@@ -114,6 +118,7 @@
             "type": "boolean_unsure",
             "options": ["yes", "no", "unsure"],
             "unknown_values": ["unsure"],
+            "risk_domains": { "yes": "medical_history" },
             "required": false,
             "show_if": null,
             "prompt": { "ar": "هل تتناول أدوية بشكل منتظم لفترة طويلة؟", "en": "Do you take any medicines regularly over a long period?" }
@@ -124,9 +129,22 @@
             "journeys": ["concern", "conception"],
             "type": "single",
             "options": ["current", "former", "never"],
+            "risk_domains": { "current": "lifestyle" },
             "required": false,
             "show_if": null,
             "prompt": { "ar": "هل تدخن (أي نوع من التبغ)؟", "en": "Do you smoke (any kind of tobacco)?" }
+        },
+        {
+            "key": "as_lifestyle",
+            "section": "assessment",
+            "journeys": ["concern", "conception"],
+            "type": "multi",
+            "options": ["frequent_heat", "inactive", "alcohol", "recreational_drugs", "poor_sleep_or_stress", "weight_concern", "none", "prefer_not"],
+            "exclusive": ["none", "prefer_not"],
+            "risk_domains": { "frequent_heat": "lifestyle", "inactive": "lifestyle", "alcohol": "lifestyle", "recreational_drugs": "lifestyle", "poor_sleep_or_stress": "lifestyle", "weight_concern": "metabolic" },
+            "required": false,
+            "show_if": null,
+            "prompt": { "ar": "(اختياري) هل ينطبق عليك أي مما يلي في حياتك اليومية؟ إجاباتك لا تُحفظ.", "en": "(Optional) Do any of these apply to your daily life? Your answers are not stored." }
         },
         {
             "key": "as_occupational_exposure",
@@ -136,6 +154,7 @@
             "options": ["high_heat", "pesticides_chemicals", "heavy_metals", "radiation", "none", "unknown"],
             "exclusive": ["none", "unknown"],
             "unknown_values": ["unknown"],
+            "risk_domains": { "high_heat": "lifestyle", "pesticides_chemicals": "lifestyle", "heavy_metals": "lifestyle", "radiation": "lifestyle" },
             "required": false,
             "show_if": null,
             "prompt": { "ar": "هل يعرّضك عملك لأي مما يلي بشكل منتظم؟", "en": "Does your work regularly expose you to any of the following?" }
@@ -147,6 +166,7 @@
             "type": "multi",
             "options": ["erection_difficulty", "ejaculation_problem", "burning_or_discharge", "blood_in_semen_or_urine", "low_libido", "none"],
             "exclusive": ["none"],
+            "risk_domains": { "erection_difficulty": "medical_history", "ejaculation_problem": "medical_history", "burning_or_discharge": "infectious", "blood_in_semen_or_urine": "medical_history", "low_libido": "medical_history" },
             "required": false,
             "show_if": null,
             "prompt": { "ar": "هل تعاني من أي مما يلي؟", "en": "Do you have any of the following?" }
@@ -159,6 +179,7 @@
             "options": ["infertility", "testicular_cancer", "genetic_condition", "none", "unknown"],
             "exclusive": ["none", "unknown"],
             "unknown_values": ["unknown"],
+            "risk_domains": { "infertility": "medical_history", "testicular_cancer": "medical_history", "genetic_condition": "medical_history" },
             "required": false,
             "show_if": null,
             "prompt": { "ar": "هل في عائلتك المباشرة أي مما يلي؟", "en": "Does anyone in your close family have any of the following?" }
@@ -190,6 +211,7 @@
             "journeys": ["concern", "conception"],
             "type": "single",
             "options": ["none", "done_told_abnormal", "done_told_normal", "done_unsure"],
+            "risk_domains": { "done_told_abnormal": "test_results", "done_unsure": "test_results" },
             "required": false,
             "show_if": null,
             "prompt": { "ar": "هل أجريت سابقاً فحوصاً للخصوبة (مثل تحليل السائل المنوي)؟", "en": "Have you had fertility tests before (such as a semen analysis)?" }

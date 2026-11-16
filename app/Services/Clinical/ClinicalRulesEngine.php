@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services\Clinical;
 
+use App\Enums\CarePathway;
 use App\Enums\Priority;
+use App\Enums\RiskDomain;
 use App\Services\Clinical\Data\AssessmentInput;
 use App\Services\Clinical\Data\EvaluationResult;
 use App\Services\Clinical\Data\TriggeredRule;
@@ -215,6 +217,7 @@ final class ClinicalRulesEngine
                 'version' => (int) $rule['version'],
                 'priority' => Priority::from((string) ($outcome['priority_by_journey'][$journey] ?? $outcome['priority'])),
                 'stop' => (bool) ($outcome['stop'] ?? false),
+                'pathway' => CarePathway::tryFrom((string) ($outcome['care_pathway_by_journey'][$journey] ?? $outcome['care_pathway'] ?? '')),
                 'flags' => array_values($outcome['flags'] ?? []),
                 'guidance' => array_values($branch['guidance_keys'] ?? $rule['guidance_keys'] ?? []),
                 'topics' => array_values($branch['doctor_topic_keys'] ?? $rule['doctor_topic_keys'] ?? []),
@@ -255,6 +258,7 @@ final class ClinicalRulesEngine
         usort($matches, fn (array $a, array $b): int => ($a['priority']->rank() <=> $b['priority']->rank()) ?: strnatcmp($a['code'], $b['code']));
 
         $priority = $matches === [] ? $defaultPriority : Priority::highest(...array_column($matches, 'priority'));
+        $pathways = $this->pathways($matches, $defaultPriority);
 
         return new EvaluationResult(
             priority: $priority,
@@ -266,7 +270,34 @@ final class ClinicalRulesEngine
             flags: $this->unique(array_merge([], ...array_column($matches, 'flags'))),
             rulesetVersion: $ruleset->version,
             demo: $ruleset->demo,
+            carePathways: $pathways,
         );
+    }
+
+    /**
+     * Care destinations in order: the most urgent priority first, then the more specialised destination.
+     * A full assessment with no findings routes to self-care information; the gate routes nowhere.
+     *
+     * @param  list<array{priority: Priority, pathway: CarePathway|null}>  $matches
+     * @return list<CarePathway>
+     */
+    private function pathways(array $matches, ?Priority $defaultPriority): array
+    {
+        $routed = array_values(array_filter($matches, fn (array $match): bool => $match['pathway'] instanceof CarePathway));
+        usort($routed, fn (array $a, array $b): int => ($a['priority']->rank() <=> $b['priority']->rank()) ?: ($a['pathway']->rank() <=> $b['pathway']->rank()));
+
+        $pathways = [];
+        foreach ($routed as $match) {
+            if (! in_array($match['pathway'], $pathways, true)) {
+                $pathways[] = $match['pathway'];
+            }
+        }
+
+        if ($pathways === [] && $defaultPriority !== null) {
+            $pathways[] = CarePathway::SelfCare;
+        }
+
+        return $pathways;
     }
 
     /**
@@ -278,6 +309,7 @@ final class ClinicalRulesEngine
     {
         $flags = $result->flags;
         $topics = $result->doctorTopicKeys;
+        $domains = [];
 
         foreach ($ruleset->questions as $key => $question) {
             if ($question['section'] !== 'assessment' || ! in_array($journey, $question['journeys'], true)) {
@@ -295,6 +327,14 @@ final class ClinicalRulesEngine
             if (array_intersect((array) $answer, $question['unknown_values'] ?? []) !== []) {
                 $topics[] = self::UNKNOWN_ANSWERS_TOPIC;
             }
+
+            foreach ((array) $answer as $option) {
+                $domain = RiskDomain::tryFrom((string) ($question['risk_domains'][$option] ?? ''));
+
+                if ($domain !== null && ! in_array($domain, $domains, true)) {
+                    $domains[] = $domain;
+                }
+            }
         }
 
         return new EvaluationResult(
@@ -307,6 +347,8 @@ final class ClinicalRulesEngine
             flags: $this->unique($flags),
             rulesetVersion: $result->rulesetVersion,
             demo: $result->demo,
+            carePathways: $result->carePathways,
+            riskDomains: array_values(array_filter(RiskDomain::cases(), fn (RiskDomain $domain): bool => in_array($domain, $domains, true))),
         );
     }
 

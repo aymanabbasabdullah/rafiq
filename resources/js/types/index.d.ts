@@ -65,6 +65,8 @@ export interface SharedProps {
             content: string;
             sources: string;
             categories: string;
+            doctorQuestions: string;
+            glossary: string;
             clinicalRules: string;
             clinicalReleases: string;
             ai: string;

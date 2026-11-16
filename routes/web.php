@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\Content\ArticleReviewController;
 use App\Http\Controllers\Admin\Content\CategoryController;
 use App\Http\Controllers\Admin\Content\MarkdownPreviewController;
 use App\Http\Controllers\Admin\Content\SourceController;
+use App\Http\Controllers\Admin\Content\TextBankController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\TwoFactorController;
 use App\Http\Controllers\Public\AiController;
@@ -25,6 +26,7 @@ use App\Http\Controllers\Public\JourneyController;
 use App\Http\Controllers\Public\KnowledgeController;
 use App\Http\Controllers\Public\LandingController;
 use App\Http\Controllers\Public\LegalPageController;
+use App\Http\Controllers\Public\ReportFeedbackController;
 use App\Http\Controllers\Public\RootRedirectController;
 use App\Http\Controllers\Public\SessionController;
 use App\Http\Controllers\Public\UnderAgeController;
@@ -70,6 +72,7 @@ Route::prefix('admin')
                     Route::match(['post', 'put'], '/users/{user}/roles', [AdminUserController::class, 'updateRoles'])->name('users.roles');
                     Route::match(['post', 'patch'], '/users/{user}/toggle-active', [AdminUserController::class, 'toggleActive'])->name('users.toggle-active');
                     Route::post('/users/{user}/reset-two-factor', [AdminUserController::class, 'resetTwoFactor'])->name('users.reset-two-factor');
+                    Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
                 });
 
                 Route::get('/audit-log', [AuditLogController::class, 'index'])->name('audit.index');
@@ -96,6 +99,16 @@ Route::prefix('admin')
                     Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
                     Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
                     Route::put('/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
+
+                    // Doctor question bank and glossary review (M11B step 5).
+                    Route::prefix('banks/{bank}')->whereIn('bank', TextBankController::BANKS)->name('bank.')->group(function (): void {
+                        Route::get('/', [TextBankController::class, 'index'])->name('index');
+                        Route::put('/{text}', [TextBankController::class, 'update'])->whereNumber('text')->name('update');
+                        Route::post('/{text}/{action}', [TextBankController::class, 'action'])
+                            ->whereNumber('text')
+                            ->whereIn('action', TextBankController::ACTIONS)
+                            ->name('action');
+                    });
                 });
 
                 // AI configuration (Module-11-D), Super Admin only.
@@ -177,6 +190,8 @@ Route::prefix('{locale}')
                     Route::middleware('throttle:30,1')->group(function (): void {
                         Route::post('/assessment/screen', [AssessmentController::class, 'screen'])->name('assessment.screen');
                         Route::post('/assessment/evaluate', [AssessmentController::class, 'evaluate'])->name('assessment.evaluate');
+                        // Anonymous trust/clarity/next-step counters from the report (no text, nothing stored per visitor).
+                        Route::post('/report/feedback', ReportFeedbackController::class)->name('report.feedback');
                     });
                 });
             });

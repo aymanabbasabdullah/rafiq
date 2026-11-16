@@ -54,6 +54,9 @@ class AdminUserController extends Controller
                     'canToggleActive' => $actor->can('toggleActive', $user),
                     'canUpdateRoles' => $actor->can('updateRoles', $user),
                     'canResetTwoFactor' => $actor->can('resetTwoFactor', $user),
+                    'canDelete' => $actor->can('delete', $user),
+                    'deactivatedAt' => $user->deactivated_at?->toIso8601String(),
+                    'deleteUrl' => route('admin.users.destroy', ['user' => $user->id]),
                     'updateRolesUrl' => route('admin.users.roles', ['user' => $user->id]),
                     'toggleActiveUrl' => route('admin.users.toggle-active', ['user' => $user->id]),
                     'resetTwoFactorUrl' => route('admin.users.reset-two-factor', ['user' => $user->id]),
@@ -195,6 +198,7 @@ class AdminUserController extends Controller
 
         $user->forceFill([
             'is_active' => ! $user->is_active,
+            'deactivated_at' => $user->is_active ? now() : null,
             'remember_token' => Str::random(60),
         ])->save();
 
@@ -206,6 +210,24 @@ class AdminUserController extends Controller
         );
 
         return redirect()->route('admin.users.index');
+    }
+
+    /**
+     * Deletes an account deactivated for the full retention period. The audit entry records only the old id.
+     */
+    public function destroy(Request $request, User $user, AuditLogger $audit): RedirectResponse
+    {
+        Gate::authorize('delete', $user);
+
+        /** @var User $actor */
+        $actor = $request->user();
+
+        DB::transaction(function () use ($user, $actor, $audit): void {
+            $audit->record('user.deleted', summary: ['deleted_user_id' => $user->id], actor: $actor);
+            $user->delete();
+        });
+
+        return redirect()->route('admin.users.index')->with('success', __('admin.users.deleted'));
     }
 
     public function resetTwoFactor(Request $request, User $user, AuditLogger $audit): RedirectResponse

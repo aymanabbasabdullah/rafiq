@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services\Clinical;
 
+use App\Enums\CarePathway;
 use App\Enums\Priority;
+use App\Enums\RiskDomain;
 
 /**
  * Strict validation of ruleset files (M06-FR-01) without an external JSON Schema library:
@@ -103,6 +105,16 @@ final class RulesetSchemaValidator
             }
         }
 
+        if (isset($question['risk_domains'])) {
+            $domains = $question['risk_domains'];
+            $this->check(
+                is_array($domains) && $validOptions
+                    && array_diff(array_keys($domains), $options) === []
+                    && array_diff($domains, RiskDomain::values()) === [],
+                "{$path}: risk_domains must map options to known risk domains",
+            );
+        }
+
         $this->check(is_bool($question['required'] ?? null), "{$path}: required must be boolean");
         $this->check($section !== 'safety' || ($question['required'] ?? false) === true, "{$path}: safety questions must be required");
         $this->checkTranslations($question['prompt'] ?? null, "{$path}.prompt");
@@ -184,6 +196,17 @@ final class RulesetSchemaValidator
 
         foreach ((array) ($outcome['priority_by_journey'] ?? []) as $journey => $override) {
             $this->check(in_array($journey, ClinicalRulesEngine::JOURNEYS, true) && Priority::tryFrom((string) $override) !== null, "{$path}: invalid priority_by_journey");
+        }
+
+        // Every safety/assessment outcome names a care destination; the gate stops before any routing.
+        if ($section === 'gate') {
+            $this->check(! isset($outcome['care_pathway']), "{$path}: the gate has no care_pathway");
+        } else {
+            $this->check(CarePathway::tryFrom((string) ($outcome['care_pathway'] ?? '')) !== null, "{$path}: care_pathway is required and must be known");
+        }
+
+        foreach ((array) ($outcome['care_pathway_by_journey'] ?? []) as $journey => $override) {
+            $this->check(in_array($journey, ClinicalRulesEngine::JOURNEYS, true) && CarePathway::tryFrom((string) $override) !== null, "{$path}: invalid care_pathway_by_journey");
         }
 
         foreach ((array) ($outcome['flags'] ?? []) as $flag) {

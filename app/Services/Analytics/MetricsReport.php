@@ -6,6 +6,7 @@ namespace App\Services\Analytics;
 
 use App\Models\ArticleTranslation;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -32,8 +33,19 @@ class MetricsReport
         'age_gate',
         'assessment_started',
         'assessment_completed',
+        'assessment_time',
+        'next_step_taken',
+        'report_trust',
+        'report_clear',
         'ai_request',
     ];
+
+    /**
+     * Read only to build the equity table (completion per language and device class).
+     *
+     * @var list<string>
+     */
+    private const SEGMENT_METRICS = ['assessment_started_segment', 'assessment_completed_segment'];
 
     private const TOP_ARTICLES = 10;
 
@@ -55,7 +67,7 @@ class MetricsReport
 
         $rows = DB::table('daily_metrics')
             ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
-            ->whereIn('metric', [...self::SECTIONS, 'article_ai_explain'])
+            ->whereIn('metric', [...self::SECTIONS, ...self::SEGMENT_METRICS, 'article_ai_explain'])
             ->groupBy('metric', 'dimension')
             ->selectRaw('metric, dimension, SUM(value) as total')
             ->get();
@@ -83,7 +95,65 @@ class MetricsReport
             'daily' => $this->dailyPageViews($from, $to),
             'sections' => $sections,
             'topArticles' => $this->topArticles($rows->where('metric', 'article_ai_explain')->all(), $locale),
+            'kpis' => $this->kpis($rows),
+            'equity' => $this->equity($rows),
         ];
+    }
+
+    /**
+     * Competition impact indicators from the counters. A rate is `null` ("not enough data") whenever its
+     * denominator is below the suppression threshold, so a rate can never reveal a small count.
+     *
+     * @param  Collection<int, object>  $rows
+     * @return array{completionRate: float|null, fastGuidanceRate: float|null, followThroughRate: float|null, averageTrust: float|null, clarityRate: float|null}
+     */
+    private function kpis(Collection $rows): array
+    {
+        $sum = fn (string $metric, ?array $dimensions = null): int => (int) $rows
+            ->where('metric', $metric)
+            ->filter(fn (object $row): bool => $dimensions === null || in_array((string) $row->dimension, $dimensions, true))
+            ->sum('total');
+
+        $completed = $sum('assessment_completed');
+        $timed = $sum('assessment_time');
+        $trustVotes = $sum('report_trust');
+        $trustTotal = (int) $rows->where('metric', 'report_trust')->sum(fn (object $row): int => (int) $row->dimension * (int) $row->total);
+
+        return [
+            'completionRate' => $this->rate($completed, $sum('assessment_started')),
+            'fastGuidanceRate' => $this->rate($sum('assessment_time', ['lt_3m', '3_6m']), $timed),
+            // Share of completed assessments followed by at least one recorded next step (upper bound: one visitor can take several).
+            'followThroughRate' => $this->rate(min($sum('next_step_taken'), $completed), $completed),
+            'averageTrust' => $trustVotes >= self::SUPPRESSION_THRESHOLD ? round($trustTotal / $trustVotes, 1) : null,
+            'clarityRate' => $this->rate($sum('report_clear', ['yes']), $sum('report_clear')),
+        ];
+    }
+
+    private function rate(int $part, int $whole): ?float
+    {
+        return $whole >= self::SUPPRESSION_THRESHOLD ? round(min(1, $part / $whole) * 100, 1) : null;
+    }
+
+    /**
+     * Completion rate per `{locale}:{device}` segment (fairness across the groups Rafiq can see without
+     * collecting demographics).
+     *
+     * @param  Collection<int, object>  $rows
+     * @return list<array{segment: string, started: int|null, completed: int|null, rate: float|null}>
+     */
+    private function equity(Collection $rows): array
+    {
+        $started = $rows->where('metric', 'assessment_started_segment')->mapWithKeys(fn (object $row): array => [(string) $row->dimension => (int) $row->total]);
+        $completed = $rows->where('metric', 'assessment_completed_segment')->mapWithKeys(fn (object $row): array => [(string) $row->dimension => (int) $row->total]);
+
+        return $started->keys()->merge($completed->keys())->unique()->sort()->values()
+            ->map(fn (string $segment): array => [
+                'segment' => $segment,
+                'started' => $this->suppress((int) $started->get($segment, 0)),
+                'completed' => $this->suppress((int) $completed->get($segment, 0)),
+                'rate' => $this->rate((int) $completed->get($segment, 0), (int) $started->get($segment, 0)),
+            ])
+            ->all();
     }
 
     /**

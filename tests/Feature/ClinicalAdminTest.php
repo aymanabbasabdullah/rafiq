@@ -54,12 +54,12 @@ class ClinicalAdminTest extends TestCase
 
         $this->actingAs($roleless)->get('/admin/clinical/rules')->assertForbidden();
         $this->actingAs($this->editor)->get('/admin/clinical/rules')->assertOk()
-            ->assertInertia(fn (AssertableInertia $page) => $page->component('Admin/Clinical/Rules')->has('rules', 19)->where('rules.0.code', 'CR-001'));
+            ->assertInertia(fn (AssertableInertia $page) => $page->component('Admin/Clinical/Rules')->has('rules', 20)->where('rules.0.code', 'CR-001'));
         $this->actingAs($this->reviewer)->get('/admin/clinical/releases')->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page->component('Admin/Clinical/Releases')
                 ->where('selected.version', 'RS-2026.1')
                 ->where('selected.status', 'draft')
-                ->where('selected.checklist.rulesTotal', 19));
+                ->where('selected.checklist.rulesTotal', 20));
     }
 
     public function test_rule_page_shows_a_readable_condition_in_both_languages(): void
@@ -104,7 +104,7 @@ class ClinicalAdminTest extends TestCase
 
         $this->release->refresh();
         $this->assertTrue($this->release->testsPassed());
-        $this->assertSame(33, $this->release->test_report['passed']);
+        $this->assertSame(45, $this->release->test_report['passed']);
 
         $this->actingAs($this->superAdmin)->post($this->releaseAction('submit'))->assertSessionHasNoErrors();
         $this->assertSame(RulesetStatus::PendingMedicalReview, $this->release->refresh()->status);

@@ -136,4 +136,86 @@ class AssessmentTest extends TestCase
         $this->assertSame([], array_diff(array_keys(session()->all()), config('rafiq.public_session_keys')));
         $this->assertDatabaseMissing('audit_logs', ['action' => 'assessment']);
     }
+
+    public function test_the_report_separates_screening_from_diagnosis_routes_to_a_care_pathway_and_groups_risk_indicators(): void
+    {
+        $this->postJson('/en/assessment/evaluate', $this->payload([
+            ...$this->noWarningSigns(),
+            'as_trying_duration' => 'gt_12m',
+            'as_chronic_conditions' => ['diabetes'],
+            'as_repro_history' => ['mumps_after_puberty'],
+            'as_lifestyle' => ['frequent_heat'],
+        ], 'conception'))
+            ->assertOk()
+            ->assertJsonPath('report.carePathway.key', 'fertility_services')
+            ->assertJsonPath('report.carePathway.title', 'Fertility services')
+            ->assertJsonPath('report.carePathway.access.0.key', 'telehealth_first')
+            ->assertJsonPath('report.otherPathways', [['key' => 'primary_care', 'title' => 'Primary care doctor'], ['key' => 'self_care', 'title' => 'Self-care information']])
+            ->assertJsonPath('report.riskDomains.*.key', ['lifestyle', 'metabolic', 'infectious']);
+
+        $this->postJson('/ar/assessment/evaluate', $this->payload($this->noWarningSigns()))
+            ->assertJsonPath('report.carePathway.key', 'self_care')
+            ->assertJsonPath('report.carePathway.access.0.label', 'خطوات يمكنك تطبيقها في المنزل')
+            ->assertJsonPath('report.riskDomains', []);
+    }
+
+    public function test_impact_counters_record_time_to_guidance_and_language_device_segments_without_the_result(): void
+    {
+        $this->withHeader('User-Agent', 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) Mobile')
+            ->postJson('/ar/assessment/screen', $this->payload($this->noWarningSigns()))->assertOk();
+        $this->withHeader('User-Agent', 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) Mobile')
+            ->postJson('/ar/assessment/evaluate', [...$this->payload($this->noWarningSigns()), 'elapsed_seconds' => 250])->assertOk();
+
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'assessment_started_segment', 'dimension' => 'ar:mobile']);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'assessment_completed_segment', 'dimension' => 'ar:mobile']);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'assessment_time', 'dimension' => '3_6m']);
+        $this->assertDatabaseMissing('daily_metrics', ['dimension' => 'self_care']);
+
+        $this->postJson('/en/assessment/evaluate', [...$this->payload($this->noWarningSigns()), 'elapsed_seconds' => 'soon'])->assertStatus(422);
+    }
+
+    public function test_report_feedback_accepts_only_fixed_signals_and_needs_consent(): void
+    {
+        $this->postJson('/en/report/feedback', ['signal' => 'report_trust', 'value' => '4'])->assertOk();
+        $this->postJson('/en/report/feedback', ['signal' => 'next_step_taken', 'value' => 'doctor_prep'])->assertOk();
+        $this->postJson('/en/report/feedback', ['signal' => 'report_trust', 'value' => '9'])->assertStatus(422);
+        $this->postJson('/en/report/feedback', ['signal' => 'comment', 'value' => 'I have pain'])->assertStatus(422);
+
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'report_trust', 'dimension' => '4', 'value' => 1]);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'next_step_taken', 'dimension' => 'doctor_prep']);
+
+        $this->withSession(['age_confirmed' => true, 'assessment_consent' => false])
+            ->postJson('/en/report/feedback', ['signal' => 'report_clear', 'value' => 'yes'])
+            ->assertStatus(403);
+    }
+
+    public function test_urgent_and_emergency_results_never_offer_telehealth_or_home_steps(): void
+    {
+        $fever = [...$this->noWarningSigns(), 'ss_current_pain_or_swelling' => 'yes', 'ss_sudden_severe_pain' => 'no', 'ss_pain_with_nausea_vomiting_abdominal' => 'no', 'ss_pain_over_1h_or_at_rest' => 'no', 'ss_fever_with_pain_or_swelling' => 'yes'];
+
+        $this->postJson('/en/assessment/screen', $this->payload($fever))
+            ->assertJsonPath('status', 'urgent')
+            ->assertJsonPath('report.carePathway.key', 'urgent')
+            ->assertJsonPath('report.carePathway.access.*.key', ['same_day']);
+
+        $this->postJson('/en/assessment/evaluate', $this->payload([...$fever, 'as_trying_duration' => 'gt_12m', 'as_lifestyle' => ['inactive']], 'conception'))
+            ->assertJsonPath('report.carePathway.key', 'urgent')
+            ->assertJsonPath('report.carePathway.access.*.key', ['same_day']);
+
+        $this->postJson('/en/assessment/screen', $this->payload(['ss_current_pain_or_swelling' => 'yes', 'ss_sudden_severe_pain' => 'yes']))
+            ->assertJsonPath('status', 'emergency')
+            ->assertJsonPath('report.carePathway.access.*.key', ['emergency']);
+    }
+
+    public function test_a_needed_examination_replaces_telehealth_and_skipped_questions_are_never_reassuring(): void
+    {
+        $lump = [...$this->noWarningSigns(), 'ss_new_lump_or_change' => 'yes'];
+
+        $this->postJson('/en/assessment/evaluate', $this->payload([...$lump, 'as_trying_duration' => 'gt_12m'], 'conception'))
+            ->assertJsonPath('report.carePathway.access.*.key', ['in_person_exam', 'prepare_questions']);
+
+        $this->postJson('/en/assessment/evaluate', $this->payload($this->noWarningSigns()))
+            ->assertJsonPath('report.carePathway.key', 'self_care')
+            ->assertJsonPath('report.carePathway.body', fn (string $body): bool => str_starts_with($body, 'You skipped some questions'));
+    }
 }

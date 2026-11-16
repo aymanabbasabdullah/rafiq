@@ -23,6 +23,8 @@ use Illuminate\Support\Carbon;
  * @property PublishStatus $publish_status
  * @property int|null $medically_approved_by
  * @property Carbon|null $medically_approved_at
+ * @property int|null $last_editor_id
+ * @property string|null $review_comment
  */
 #[Fillable(['doctor_question_template_id', 'locale', 'text', 'help', 'review_status', 'publish_status', 'medically_approved_by', 'medically_approved_at'])]
 class DoctorQuestionTemplateTranslation extends Model
