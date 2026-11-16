@@ -3,7 +3,6 @@ import { Menu, MessagesSquare, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { BrandLockup } from '@/components/public/BrandMark';
 import { LanguageSwitcher } from '@/components/public/LanguageSwitcher';
-import { QuickExitButton } from '@/components/public/QuickExitButton';
 import { buttonClasses } from '@/components/ui/Button';
 import { useAiChat } from '@/features/ai-chat/AiChatProvider';
 import { useT } from '@/lib/i18n';
@@ -113,7 +112,6 @@ export function SiteHeader() {
                         </button>
                     ) : null}
                     <LanguageSwitcher />
-                    <QuickExitButton />
                     <div className="hidden md:block">
                         <Link href={links.journeys} className={buttonClasses('primary')}>
                             {t('nav.start')}
