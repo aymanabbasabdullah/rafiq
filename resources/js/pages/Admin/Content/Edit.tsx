@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 import { PublishBadge, ReviewBadge } from '@/components/admin/ContentStatus';
+import { DiffViewer } from '@/components/admin/DiffViewer';
 import { ConfirmDialog } from '@/components/public/ConfirmDialog';
 import { Badge } from '@/components/ui/Badge';
 import { Button, buttonClasses } from '@/components/ui/Button';
@@ -460,7 +461,7 @@ export default function Edit({
                         </Card>
 
                         {status?.latestApproved ? (
-                            <details className="rounded-2xl border border-line bg-surface-raised p-5 shadow-card">
+                            <details className="rounded-2xl border border-line bg-surface-raised p-5 shadow-card" open>
                                 <summary className="flex cursor-pointer items-center gap-2 font-semibold text-ink">
                                     <History aria-hidden="true" className="size-4 text-brand" />
                                     {t('admin.content.last_approved', { version: status.latestApproved.version })}
@@ -468,12 +469,11 @@ export default function Edit({
                                 <p className="mt-4 font-semibold text-ink" dir={textDir}>
                                     {status.latestApproved.title}
                                 </p>
-                                <pre
+                                <DiffViewer
+                                    previousText={status.latestApproved.body_markdown}
+                                    currentText={current.body_markdown}
                                     dir={textDir}
-                                    className="mt-2 max-h-96 overflow-auto rounded-xl bg-surface p-4 font-mono text-xs whitespace-pre-wrap text-ink-muted"
-                                >
-                                    {status.latestApproved.body_markdown}
-                                </pre>
+                                />
                             </details>
                         ) : null}
                     </div>

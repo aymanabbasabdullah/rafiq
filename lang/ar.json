@@ -1124,5 +1124,13 @@
     "doctor_prep.term_help_title": "ما معنى هذا؟",
     "doctor_prep.term_help_body": "لست متأكداً من كلمة في أسئلتك؟ ابحث عنها في المسرد أو اسأل رفيق الذكي سؤالاً عاماً. قائمتك لا تُرسل أبداً.",
     "doctor_prep.term_help_glossary": "افتح المسرد",
-    "doctor_prep.term_help_ai": "اسأل رفيق الذكي"
+    "doctor_prep.term_help_ai": "اسأل رفيق الذكي",
+    "admin.content.diff_unchanged": "لا توجد تغييرات مقارنةً بآخر نسخة معتمدة.",
+    "admin.clinical.edit_text": "تعديل",
+    "admin.clinical.save_text": "حفظ النص",
+    "admin.clinical.text_saved": "تم حفظ النص وإعادته إلى المسودة للمراجعة.",
+    "admin.clinical.error.forbidden_phrase": "يحتوي النص على صياغة تشخيصية أو علاجية محظورة في رفيق.",
+    "doctor_prep.save_local_label": "حفظ مسودتي على هذا الجهاز فقط",
+    "doctor_prep.save_local_warning": "لا تفعّل هذا الخيار إذا كنت تستخدم جهازاً مشتركاً؛ قد يرى من يستخدم الجهاز قائمتك المحفوظة.",
+    "doctor_prep.clear_local": "مسح المسودة المحفوظة"
 }

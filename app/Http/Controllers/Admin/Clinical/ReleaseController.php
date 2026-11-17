@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin\Clinical;
 
+use App\Enums\ReviewStatus;
 use App\Enums\RulesetStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Clinical\ClinicalDecisionRequest;
@@ -11,11 +12,16 @@ use App\Models\ClinicalQuestion;
 use App\Models\GuidanceText;
 use App\Models\RulesetRelease;
 use App\Models\User;
+use App\Services\Audit\AuditLogger;
+use App\Services\Clinical\ActiveRulesetResolver;
 use App\Services\Clinical\ClinicalReviewWorkflow;
+use App\Services\Clinical\ForbiddenPhraseChecker;
 use App\Services\Content\ContentWorkflowException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -101,6 +107,112 @@ class ReleaseController extends Controller
         return back()->with('success', __('admin.clinical.release_done.publish'));
     }
 
+    public function updateText(
+        Request $request,
+        RulesetRelease $release,
+        GuidanceText $guidanceText,
+        ForbiddenPhraseChecker $forbidden,
+        AuditLogger $audit,
+        ActiveRulesetResolver $resolver,
+    ): RedirectResponse {
+        Gate::authorize('editTexts', $release);
+
+        if ($guidanceText->ruleset_release_id !== $release->id || $release->status === RulesetStatus::Published) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'ar' => ['required', 'string', 'max:2000'],
+            'en' => ['required', 'string', 'max:2000'],
+        ]);
+
+        foreach (['ar', 'en'] as $locale) {
+            if ($forbidden->find((string) $validated[$locale], $locale) !== []) {
+                throw ValidationException::withMessages([
+                    $locale => [__('admin.clinical.error.forbidden_phrase')],
+                ]);
+            }
+        }
+
+        /** @var User $user */
+        $user = $request->user();
+
+        DB::transaction(function () use ($guidanceText, $release, $validated): void {
+            foreach (['ar', 'en'] as $locale) {
+                $guidanceText->translations()->updateOrCreate(
+                    ['locale' => $locale],
+                    [
+                        'text_markdown' => trim((string) $validated[$locale]),
+                        'review_status' => ReviewStatus::Draft,
+                        'reviewed_by' => null,
+                        'reviewed_at' => null,
+                    ],
+                );
+            }
+
+            if ($release->status === RulesetStatus::Approved) {
+                $release->update(['status' => RulesetStatus::Draft]);
+            }
+        });
+
+        $resolver->forget();
+        $audit->record('clinical.guidance.updated', $guidanceText, ['key' => $guidanceText->key, 'version' => $release->version], $user);
+
+        return back()->with('success', __('admin.clinical.text_saved'));
+    }
+
+    public function updateQuestion(
+        Request $request,
+        RulesetRelease $release,
+        ClinicalQuestion $question,
+        ForbiddenPhraseChecker $forbidden,
+        AuditLogger $audit,
+        ActiveRulesetResolver $resolver,
+    ): RedirectResponse {
+        Gate::authorize('editTexts', $release);
+
+        if ($question->ruleset_release_id !== $release->id || $release->status === RulesetStatus::Published) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'ar' => ['required', 'string', 'max:1000'],
+            'en' => ['required', 'string', 'max:1000'],
+        ]);
+
+        foreach (['ar', 'en'] as $locale) {
+            if ($forbidden->find((string) $validated[$locale], $locale) !== []) {
+                throw ValidationException::withMessages([
+                    $locale => [__('admin.clinical.error.forbidden_phrase')],
+                ]);
+            }
+        }
+
+        /** @var User $user */
+        $user = $request->user();
+
+        DB::transaction(function () use ($question, $release, $validated): void {
+            foreach (['ar', 'en'] as $locale) {
+                $question->translations()->updateOrCreate(
+                    ['locale' => $locale],
+                    [
+                        'prompt' => trim((string) $validated[$locale]),
+                        'review_status' => ReviewStatus::Draft,
+                    ],
+                );
+            }
+
+            if ($release->status === RulesetStatus::Approved) {
+                $release->update(['status' => RulesetStatus::Draft]);
+            }
+        });
+
+        $resolver->forget();
+        $audit->record('clinical.question.updated', $question, ['key' => $question->key, 'version' => $release->version], $user);
+
+        return back()->with('success', __('admin.clinical.text_saved'));
+    }
+
     private function failure(ContentWorkflowException $exception): RedirectResponse
     {
         if ($exception->translationKey === 'admin.content.error.four_eyes') {
@@ -145,22 +257,27 @@ class ReleaseController extends Controller
             ] : null,
             'checklist' => $workflow->checklist($release),
             'texts' => $release->guidanceTexts()->with('translations')->orderBy('key')->get()->map(fn (GuidanceText $text): array => [
+                'id' => $text->id,
                 'key' => $text->key,
                 'ar' => $text->translations->firstWhere('locale', 'ar')?->text_markdown,
                 'en' => $text->translations->firstWhere('locale', 'en')?->text_markdown,
                 'approved' => $text->translations->every(fn ($translation): bool => $translation->review_status->value === 'approved'),
+                'updateUrl' => route('admin.clinical.releases.update-text', ['release' => $release, 'guidanceText' => $text]),
             ]),
             'questions' => $release->questions()->with('translations')->get()->map(fn (ClinicalQuestion $question): array => [
+                'id' => $question->id,
                 'key' => $question->key,
                 'section' => $question->section,
                 'ar' => $question->translations->firstWhere('locale', 'ar')?->prompt,
                 'en' => $question->translations->firstWhere('locale', 'en')?->prompt,
+                'updateUrl' => route('admin.clinical.releases.update-question', ['release' => $release, 'question' => $question]),
             ]),
             'can' => [
                 'runTests' => $user->can('runTests', $release) && in_array($release->status, [RulesetStatus::Draft, RulesetStatus::PendingMedicalReview], true),
                 'submit' => $release->status === RulesetStatus::Draft && $user->can('submit', $release),
                 'review' => $canReview,
                 'publish' => $release->status === RulesetStatus::Approved && $user->can('publish', $release),
+                'editTexts' => $user->can('editTexts', $release) && $release->status !== RulesetStatus::Published,
             ],
             'actionUrl' => route('admin.clinical.releases.action', ['release' => $release, 'action' => '__action__']),
             'publishUrl' => route('admin.clinical.releases.publish', $release),

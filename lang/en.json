@@ -1124,5 +1124,13 @@
     "doctor_prep.term_help_title": "What does this mean?",
     "doctor_prep.term_help_body": "Not sure about a word in your questions? Look it up in the glossary or ask Rafiq AI a general question. Your list is never sent.",
     "doctor_prep.term_help_glossary": "Open the glossary",
-    "doctor_prep.term_help_ai": "Ask Rafiq AI"
+    "doctor_prep.term_help_ai": "Ask Rafiq AI",
+    "admin.content.diff_unchanged": "No changes compared with the last approved version.",
+    "admin.clinical.edit_text": "Edit",
+    "admin.clinical.save_text": "Save text",
+    "admin.clinical.text_saved": "Text saved and returned to draft for review.",
+    "admin.clinical.error.forbidden_phrase": "The text contains a diagnostic or prescribing phrase that is forbidden in Rafiq.",
+    "doctor_prep.save_local_label": "Save my draft on this device only",
+    "doctor_prep.save_local_warning": "Do not enable this on a shared device; anyone using the device could see your saved list.",
+    "doctor_prep.clear_local": "Clear saved draft"
 }

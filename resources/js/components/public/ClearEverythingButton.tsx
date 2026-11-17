@@ -18,6 +18,7 @@ export function ClearEverythingButton({ className = '' }: { className?: string }
 
         try {
             window.sessionStorage.clear();
+            window.localStorage.removeItem('rafiq.doctor_prep.draft');
         } catch {
             // Storage may be unavailable; the server-side session is still cleared.
         }

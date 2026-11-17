@@ -34,23 +34,72 @@ type Step = (typeof STEPS)[number];
 const MAX_OWN = 20;
 const MAX_CHARS = 300;
 const TEMPLATES = ['since_when', 'what_causes', 'which_tests', 'what_options'];
+const DRAFT_STORAGE_KEY = 'rafiq.doctor_prep.draft';
 
 let nextUid = 1;
 const uid = () => `item-${nextUid++}`;
 
+function readStoredDraft(): { selectedTopics: string[]; items: Item[]; checked: string[] } | null {
+    try {
+        const raw = window.localStorage.getItem(DRAFT_STORAGE_KEY);
+        if (!raw) {
+            return null;
+        }
+        const parsed = JSON.parse(raw) as { selectedTopics?: unknown; items?: unknown; checked?: unknown };
+        return {
+            selectedTopics: Array.isArray(parsed.selectedTopics) ? parsed.selectedTopics.filter((x): x is string => typeof x === 'string') : [],
+            items: Array.isArray(parsed.items) ? (parsed.items as Item[]) : [],
+            checked: Array.isArray(parsed.checked) ? parsed.checked.filter((x): x is string => typeof x === 'string') : [],
+        };
+    } catch {
+        return null;
+    }
+}
+
 /**
  * J4 doctor visit preparation (Module-10). Everything the visitor picks or writes stays in this page's
- * memory: there is no endpoint that receives it (BR-10-1), and closing the tab erases it.
+ * memory (or in browser localStorage if explicitly opted in — FR-095): there is no endpoint that receives it (BR-10-1).
  */
 export default function DoctorPrep({ topics, bring, demo, concernUrl, glossaryUrl, aiEnabled, otherJourneys }: DoctorPrepProps) {
     const t = useT();
     const [step, setStep] = useState<Step>('topics');
-    const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
+    const [stored] = useState(readStoredDraft);
+    const [saveLocally, setSaveLocally] = useState<boolean>(() => stored !== null);
+    const [selectedTopics, setSelectedTopics] = useState<string[]>(() => stored?.selectedTopics ?? []);
     // Topics handed over from the assessment report start the list (M10-FR-06).
-    const [items, setItems] = useState<Item[]>(() => peekDoctorPrepHandoff().map((text): Item => ({ uid: `report-${text}`, text, source: 'report' })));
-    const [checked, setChecked] = useState<string[]>([]);
+    const [items, setItems] = useState<Item[]>(() => {
+        const handoff = peekDoctorPrepHandoff().map((text): Item => ({ uid: `report-${text}`, text, source: 'report' }));
+        const savedItems = stored?.items ?? [];
+        const existingTexts = new Set(savedItems.map((i) => i.text));
+        return [...savedItems, ...handoff.filter((h) => !existingTexts.has(h.text))];
+    });
+    const [checked, setChecked] = useState<string[]>(() => stored?.checked ?? []);
 
     useEffect(() => clearDoctorPrepHandoff(), []);
+
+    useEffect(() => {
+        try {
+            if (saveLocally) {
+                window.localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify({ selectedTopics, items, checked }));
+            } else {
+                window.localStorage.removeItem(DRAFT_STORAGE_KEY);
+            }
+        } catch {
+            // Ignore localStorage quota/privacy errors
+        }
+    }, [saveLocally, selectedTopics, items, checked]);
+
+    const clearLocalDraft = () => {
+        setSaveLocally(false);
+        setSelectedTopics([]);
+        setItems([]);
+        setChecked([]);
+        try {
+            window.localStorage.removeItem(DRAFT_STORAGE_KEY);
+        } catch {
+            // Ignore storage errors
+        }
+    };
 
     useEffect(() => {
         window.scrollTo({ top: 0 });
@@ -150,6 +199,27 @@ export default function DoctorPrep({ topics, bring, demo, concernUrl, glossaryUr
                 <Alert tone="info" title={t('journey.doctor_prep.local_notice_title')} className="print:hidden">
                     {t('journey.doctor_prep.local_notice_body')}
                 </Alert>
+
+                <div className="flex flex-wrap items-start justify-between gap-3 rounded-2xl border border-line bg-surface-raised p-4 print:hidden">
+                    <label className="flex cursor-pointer items-start gap-3 text-sm text-ink">
+                        <input
+                            type="checkbox"
+                            checked={saveLocally}
+                            onChange={(event) => setSaveLocally(event.target.checked)}
+                            className="mt-0.5 size-4 shrink-0 accent-brand"
+                        />
+                        <span>
+                            <span className="font-semibold">{t('doctor_prep.save_local_label')}</span>
+                            <span className="mt-0.5 block text-xs text-ink-muted">{t('doctor_prep.save_local_warning')}</span>
+                        </span>
+                    </label>
+                    {saveLocally ? (
+                        <button type="button" onClick={clearLocalDraft} className={buttonClasses('ghost', 'sm')}>
+                            <Trash2 aria-hidden="true" className="size-3.5" />
+                            {t('doctor_prep.clear_local')}
+                        </button>
+                    ) : null}
+                </div>
 
                 {demo ? (
                     <Alert tone="warning" title={t('doctor_prep.demo_title')} className="print:hidden">

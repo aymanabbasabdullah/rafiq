@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             ContentDemoSeeder::class,
             ClinicalDemoSeeder::class,
             DoctorPrepDemoSeeder::class,
+            ApproveAllContentSeeder::class,
         ]);
     }
 }

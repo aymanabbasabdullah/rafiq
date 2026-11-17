@@ -5,13 +5,15 @@ import {
     FlaskConical,
     Layers,
     ListChecks,
+    PencilLine,
     Rocket,
+    Save,
     Send,
     ShieldCheck,
     Square,
     SquareCheck,
 } from 'lucide-react';
-import { useState } from 'react';
+import { type FormEvent, useState } from 'react';
 import { DecisionDialog, ReleaseBadge } from '@/components/admin/ClinicalStatus';
 import { ConfirmDialog } from '@/components/public/ConfirmDialog';
 import { Alert } from '@/components/ui/Alert';
@@ -19,6 +21,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button, buttonClasses } from '@/components/ui/Button';
 import { Panel } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { inputClasses } from '@/components/ui/Field';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { useT } from '@/lib/i18n';
@@ -42,9 +45,9 @@ type Selected = {
         results: { id: string; description: string; passed: boolean; failures: string[] }[];
     } | null;
     checklist: { testsPassed: boolean; rulesApproved: number; rulesTotal: number; textsApproved: boolean };
-    texts: { key: string; ar: string | null; en: string | null; approved: boolean }[];
-    questions: { key: string; section: string; ar: string | null; en: string | null }[];
-    can: { runTests: boolean; submit: boolean; review: boolean; publish: boolean };
+    texts: { id: number; key: string; ar: string | null; en: string | null; approved: boolean; updateUrl: string }[];
+    questions: { id: number; key: string; section: string; ar: string | null; en: string | null; updateUrl: string }[];
+    can: { runTests: boolean; submit: boolean; review: boolean; publish: boolean; editTexts?: boolean };
     actionUrl: string;
     publishUrl: string;
 };
@@ -244,22 +247,15 @@ export default function Releases({ releases, selected, environment, rulesUrl }: 
                                         </summary>
                                         <ul className="mt-4 space-y-3">
                                             {selected.texts.map((text) => (
-                                                <li key={text.key} className="rounded-xl bg-surface p-3 text-sm">
-                                                    <div className="flex items-center justify-between gap-2">
-                                                        <span className="font-mono text-xs text-ink-subtle" dir="ltr">
-                                                            {text.key}
-                                                        </span>
-                                                        {text.approved ? (
-                                                            <Badge tone="success">{t('admin.content.review.approved')}</Badge>
-                                                        ) : null}
-                                                    </div>
-                                                    <p className="mt-1.5 text-ink" lang="ar" dir="rtl">
-                                                        {text.ar}
-                                                    </p>
-                                                    <p className="mt-1 text-ink-muted" lang="en" dir="ltr">
-                                                        {text.en}
-                                                    </p>
-                                                </li>
+                                                <EditableTextItem
+                                                    key={text.key}
+                                                    itemKey={text.key}
+                                                    ar={text.ar ?? ''}
+                                                    en={text.en ?? ''}
+                                                    approved={text.approved}
+                                                    canEdit={Boolean(selected.can.editTexts)}
+                                                    updateUrl={text.updateUrl}
+                                                />
                                             ))}
                                         </ul>
                                     </details>
@@ -269,17 +265,15 @@ export default function Releases({ releases, selected, environment, rulesUrl }: 
                                         </summary>
                                         <ul className="mt-4 space-y-3">
                                             {selected.questions.map((question) => (
-                                                <li key={question.key} className="rounded-xl bg-surface p-3 text-sm">
-                                                    <span className="font-mono text-xs text-ink-subtle" dir="ltr">
-                                                        {question.key}
-                                                    </span>
-                                                    <p className="mt-1.5 text-ink" lang="ar" dir="rtl">
-                                                        {question.ar}
-                                                    </p>
-                                                    <p className="mt-1 text-ink-muted" lang="en" dir="ltr">
-                                                        {question.en}
-                                                    </p>
-                                                </li>
+                                                <EditableTextItem
+                                                    key={question.key}
+                                                    itemKey={question.key}
+                                                    ar={question.ar ?? ''}
+                                                    en={question.en ?? ''}
+                                                    approved={false}
+                                                    canEdit={Boolean(selected.can.editTexts)}
+                                                    updateUrl={question.updateUrl}
+                                                />
                                             ))}
                                         </ul>
                                     </details>
@@ -409,5 +403,98 @@ export default function Releases({ releases, selected, environment, rulesUrl }: 
                 <p>{t('admin.clinical.publish_body')}</p>
             </ConfirmDialog>
         </AdminLayout>
+    );
+}
+
+function EditableTextItem({
+    itemKey,
+    ar,
+    en,
+    approved,
+    canEdit,
+    updateUrl,
+}: {
+    itemKey: string;
+    ar: string;
+    en: string;
+    approved: boolean;
+    canEdit: boolean;
+    updateUrl: string;
+}) {
+    const t = useT();
+    const [editing, setEditing] = useState(false);
+    const [arText, setArText] = useState(ar);
+    const [enText, setEnText] = useState(en);
+    const [saving, setSaving] = useState(false);
+
+    const submit = (event: FormEvent) => {
+        event.preventDefault();
+        setSaving(true);
+        router.put(
+            updateUrl,
+            { ar: arText, en: enText },
+            {
+                preserveScroll: true,
+                onSuccess: () => setEditing(false),
+                onFinish: () => setSaving(false),
+            },
+        );
+    };
+
+    return (
+        <li className="rounded-xl bg-surface p-3 text-sm">
+            <div className="flex items-center justify-between gap-2">
+                <span className="font-mono text-xs text-ink-subtle" dir="ltr">
+                    {itemKey}
+                </span>
+                <div className="flex items-center gap-2">
+                    {approved ? <Badge tone="success">{t('admin.content.review.approved')}</Badge> : null}
+                    {canEdit ? (
+                        <Button size="sm" variant="ghost" onClick={() => setEditing((v) => !v)}>
+                            <PencilLine aria-hidden="true" className="size-3.5" />
+                            {t('admin.clinical.edit_text')}
+                        </Button>
+                    ) : null}
+                </div>
+            </div>
+            {editing ? (
+                <form onSubmit={submit} className="mt-3 space-y-2">
+                    <textarea
+                        rows={2}
+                        dir="rtl"
+                        lang="ar"
+                        value={arText}
+                        onChange={(e) => setArText(e.target.value)}
+                        className={inputClasses}
+                    />
+                    <textarea
+                        rows={2}
+                        dir="ltr"
+                        lang="en"
+                        value={enText}
+                        onChange={(e) => setEnText(e.target.value)}
+                        className={inputClasses}
+                    />
+                    <div className="flex justify-end gap-2">
+                        <Button size="sm" variant="ghost" onClick={() => setEditing(false)}>
+                            {t('clear.cancel')}
+                        </Button>
+                        <Button type="submit" size="sm" disabled={saving}>
+                            <Save aria-hidden="true" className="size-3.5" />
+                            {t('admin.clinical.save_text')}
+                        </Button>
+                    </div>
+                </form>
+            ) : (
+                <>
+                    <p className="mt-1.5 text-ink" lang="ar" dir="rtl">
+                        {ar}
+                    </p>
+                    <p className="mt-1 text-ink-muted" lang="en" dir="ltr">
+                        {en}
+                    </p>
+                </>
+            )}
+        </li>
     );
 }

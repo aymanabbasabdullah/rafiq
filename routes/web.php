@@ -141,6 +141,8 @@ Route::prefix('admin')
                     Route::post('/releases/{release}/{action}', [ReleaseController::class, 'action'])
                         ->whereIn('action', ReleaseController::ACTIONS)
                         ->name('releases.action');
+                    Route::put('/releases/{release}/texts/{guidanceText}', [ReleaseController::class, 'updateText'])->name('releases.update-text');
+                    Route::put('/releases/{release}/questions/{question}', [ReleaseController::class, 'updateQuestion'])->name('releases.update-question');
                 });
             });
         });

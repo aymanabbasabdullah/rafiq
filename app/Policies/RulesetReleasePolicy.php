@@ -36,4 +36,9 @@ class RulesetReleasePolicy
     {
         return $user->isSuperAdmin();
     }
+
+    public function editTexts(User $user, ?RulesetRelease $release = null): bool
+    {
+        return $user->isSuperAdmin() || $user->isContentEditor();
+    }
 }

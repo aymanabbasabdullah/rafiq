@@ -4,11 +4,14 @@ namespace Tests\Feature;
 
 use App\Enums\ReviewStatus;
 use App\Enums\RulesetStatus;
+use App\Models\ArticleTranslation;
 use App\Models\ClinicalRuleVersion;
+use App\Models\DoctorQuestionTemplateTranslation;
 use App\Models\RulesetRelease;
 use App\Models\User;
 use App\Services\Clinical\ActiveRulesetResolver;
 use App\Services\Clinical\RulesetImporter;
+use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
@@ -148,5 +151,46 @@ class ClinicalAdminTest extends TestCase
         $this->actingAs($this->reviewer)->post($this->releaseAction('approve'), ['comment' => 'OK'])
             ->assertSessionHasErrors(['workflow' => __('admin.clinical.error.rules_not_approved')]);
         $this->assertSame(RulesetStatus::PendingMedicalReview, $this->release->refresh()->status);
+    }
+
+    public function test_editing_guidance_and_question_texts_rejects_forbidden_phrases_and_resets_approval(): void
+    {
+        $guidance = $this->release->guidanceTexts()->firstOrFail();
+        $url = route('admin.clinical.releases.update-text', ['release' => $this->release, 'guidanceText' => $guidance]);
+
+        // Medical reviewer cannot edit clinical texts; content editor can.
+        $this->actingAs($this->reviewer)->put($url, [
+            'ar' => 'نص إرشادي محدث ومحايد.',
+            'en' => 'Updated neutral guidance text.',
+        ])->assertForbidden();
+
+        // Forbidden diagnostic phrase is rejected.
+        $this->actingAs($this->editor)->put($url, [
+            'ar' => 'نص إرشادي محدث.',
+            'en' => 'Your diagnosis is testicular torsion.',
+        ])->assertSessionHasErrors('en');
+
+        $this->actingAs($this->editor)->put($url, [
+            'ar' => 'نص إرشادي محدث ومحايد.',
+            'en' => 'Updated neutral guidance text.',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertSame(
+            'Updated neutral guidance text.',
+            $guidance->translations()->where('locale', 'en')->firstOrFail()->text_markdown,
+        );
+        $this->assertDatabaseHas('audit_logs', [
+            'action' => 'clinical.guidance.updated',
+            'actor_id' => $this->editor->id,
+        ]);
+    }
+
+    public function test_approve_all_command_approves_and_publishes_all_content_and_ruleset(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $this->assertSame(RulesetStatus::Published, $this->release->refresh()->status);
+        $this->assertSame(0, DoctorQuestionTemplateTranslation::query()->where('review_status', '!=', ReviewStatus::Approved)->count());
+        $this->assertSame(0, ArticleTranslation::query()->where('review_status', '!=', ReviewStatus::Approved)->count());
     }
 }
