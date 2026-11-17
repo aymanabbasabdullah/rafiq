@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" width="1200" height="720">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f4f8f6"/>
+      <stop offset="100%" stop-color="#e8f2ee"/>
+    </linearGradient>
+    <linearGradient id="brandGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0b4f48"/>
+      <stop offset="100%" stop-color="#0f6b62"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#0b3b36" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <!-- Browser Window Frame -->
+  <rect width="1200" height="720" rx="18" fill="url(#bgGrad)" stroke="#d6dedb" stroke-width="2"/>
+  <rect width="1200" height="44" rx="18" fill="#ffffff"/>
+  <rect y="24" width="1200" height="20" fill="#ffffff"/>
+  <line x1="0" y1="44" x2="1200" y2="44" stroke="#d6dedb" stroke-width="1"/>
+  <circle cx="28" cy="22" r="6" fill="#f87171"/>
+  <circle cx="48" cy="22" r="6" fill="#fbbf24"/>
+  <circle cx="68" cy="22" r="6" fill="#34d399"/>
+  <rect x="380" y="10" width="440" height="24" rx="12" fill="#f1f5f3"/>
+  <text x="600" y="26" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#4b5a60" text-anchor="middle">https://rafiq.test/ar</text>
+
+  <!-- Site Header (RTL) -->
+  <rect x="0" y="45" width="1200" height="68" fill="#ffffff" opacity="0.95"/>
+  <line x1="0" y1="113" x2="1200" y2="113" stroke="#d6dedb" stroke-width="1"/>
+  <!-- Brand Lockup on Right -->
+  <rect x="1096" y="61" width="36" height="36" rx="10" fill="url(#brandGrad)"/>
+  <text x="1114" y="85" font-family="Tahoma, Segoe UI, sans-serif" font-size="18" font-weight="bold" fill="#ffffff" text-anchor="middle">ر</text>
+  <text x="1082" y="86" font-family="Tahoma, Segoe UI, sans-serif" font-size="22" font-weight="bold" fill="#1f2a2e" text-anchor="end">رفيق</text>
+
+  <!-- Nav Links -->
+  <text x="920" y="84" font-family="Tahoma, Segoe UI, sans-serif" font-size="14" font-weight="600" fill="#0f6b62" text-anchor="end">الصفحة الرئيسية</text>
+  <text x="795" y="84" font-family="Tahoma, Segoe UI, sans-serif" font-size="14" fill="#4b5a60" text-anchor="end">كيف يعمل رفيق</text>
+  <text x="675" y="84" font-family="Tahoma, Segoe UI, sans-serif" font-size="14" fill="#4b5a60" text-anchor="end">مركز المعرفة</text>
+  <text x="575" y="84" font-family="Tahoma, Segoe UI, sans-serif" font-size="14" fill="#4b5a60" text-anchor="end">عن رفيق</text>
+
+  <!-- CTA & Language Switcher on Left -->
+  <rect x="68" y="61" width="118" height="36" rx="18" fill="url(#brandGrad)"/>
+  <text x="127" y="84" font-family="Tahoma, Segoe UI, sans-serif" font-size="13" font-weight="bold" fill="#ffffff" text-anchor="middle">ابدأ رحلتك</text>
+  <rect x="198" y="61" width="84" height="36" rx="18" fill="#f1f5f3" stroke="#d6dedb"/>
+  <text x="240" y="84" font-family="Segoe UI, sans-serif" font-size="13" font-weight="600" fill="#1f2a2e" text-anchor="middle">English</text>
+  <rect x="294" y="61" width="120" height="36" rx="18" fill="#e6f4f1"/>
+  <text x="354" y="84" font-family="Tahoma, Segoe UI, sans-serif" font-size="13" font-weight="bold" fill="#0f6b62" text-anchor="middle">اسأل رفيق الذكي</text>
+
+  <!-- Emergency Strip -->
+  <rect x="0" y="114" width="1200" height="40" fill="#fef3f2"/>
+  <line x1="0" y1="154" x2="1200" y2="154" stroke="#fecdca" stroke-width="1"/>
+  <text x="1130" y="139" font-family="Tahoma, Segoe UI, sans-serif" font-size="13" font-weight="bold" fill="#b42318" text-anchor="end">تنبيه طوارئ: ألم شديد ومفاجئ في الخصية؟ لا تنتظر — اتصل بالطوارئ أو اذهب إلى أقرب قسم طوارئ الآن.</text>
+
+  <!-- Hero Section -->
+  <rect x="68" y="184" width="1064" height="236" rx="24" fill="url(#brandGrad)" filter="url(#cardShadow)"/>
+  <rect x="975" y="208" width="125" height="28" rx="14" fill="#ffffff" opacity="0.16"/>
+  <text x="1037" y="227" font-family="Tahoma, Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#d1fae5" text-anchor="middle">صحة الرجل الإنجابية</text>
+
+  <text x="1100" y="276" font-family="Tahoma, Segoe UI, sans-serif" font-size="34" font-weight="bold" fill="#ffffff" text-anchor="end">افهم صحتك. واعرف خطوتك القادمة بثقة.</text>
+  <text x="1100" y="314" font-family="Tahoma, Segoe UI, sans-serif" font-size="16" fill="#e2f2ef" text-anchor="end">يساعدك رفيق على فهم الصحة الإنجابية للرجل من خلال محتوى تثقيفي موثّق ورحلات موجّهة</text>
+  <text x="1100" y="340" font-family="Tahoma, Segoe UI, sans-serif" font-size="16" fill="#e2f2ef" text-anchor="end">مع احترام خصوصيتك بالكامل، دون حساب، ودون حفظ أي بيانات تعريفية أو إجابات صحية.</text>
+
+  <rect x="952" y="362" width="148" height="40" rx="20" fill="#ffffff"/>
+  <text x="1026" y="387" font-family="Tahoma, Segoe UI, sans-serif" font-size="14" font-weight="bold" fill="#0b4f48" text-anchor="middle">ابدأ رحلتك الآن</text>
+
+  <rect x="780" y="362" width="158" height="40" rx="20" fill="none" stroke="#ffffff" stroke-width="1.5"/>
+  <text x="859" y="387" font-family="Tahoma, Segoe UI, sans-serif" font-size="14" font-weight="bold" fill="#ffffff" text-anchor="middle">تصفّح مركز المعرفة</text>
+
+  <!-- Privacy Badges inside Hero Left -->
+  <rect x="96" y="214" width="290" height="176" rx="18" fill="#ffffff" opacity="0.12"/>
+  <text x="364" y="248" font-family="Tahoma, Segoe UI, sans-serif" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="end">الخصوصية بالتصميم (Privacy by Design)</text>
+  <text x="364" y="280" font-family="Tahoma, Segoe UI, sans-serif" font-size="13" fill="#d1fae5" text-anchor="end">✓ لا تسجيل دخول ولا حساب ولا اسم</text>
+  <text x="364" y="308" font-family="Tahoma, Segoe UI, sans-serif" font-size="13" fill="#d1fae5" text-anchor="end">✓ إجابات التقييم في الذاكرة فقط ولا تُخزّن</text>
+  <text x="364" y="336" font-family="Tahoma, Segoe UI, sans-serif" font-size="13" fill="#d1fae5" text-anchor="end">✓ فحص أولي وتوجيه آمن — وليس تشخيصاً طبياً</text>
+  <text x="364" y="364" font-family="Tahoma, Segoe UI, sans-serif" font-size="13" fill="#d1fae5" text-anchor="end">✓ محتوى وقواعد معتمدة طبياً بمبدأ العينين الأربع</text>
+
+  <!-- Four Journeys Cards Section -->
+  <text x="1132" y="458" font-family="Tahoma, Segoe UI, sans-serif" font-size="20" font-weight="bold" fill="#1f2a2e" text-anchor="end">المسارات الأربعة في رفيق</text>
+
+  <!-- Card 1 (Rightmost - J1 Learn) -->
+  <rect x="881" y="478" width="251" height="200" rx="18" fill="#ffffff" stroke="#d6dedb" filter="url(#cardShadow)"/>
+  <rect x="1076" y="498" width="36" height="36" rx="10" fill="#e6f4f1"/>
+  <text x="1094" y="521" font-family="Segoe UI, sans-serif" font-size="14" font-weight="bold" fill="#0f6b62" text-anchor="middle">J1</text>
+  <text x="1112" y="560" font-family="Tahoma, Segoe UI, sans-serif" font-size="16" font-weight="bold" fill="#1f2a2e" text-anchor="end">أريد أن أتعلّم</text>
+  <text x="1112" y="586" font-family="Tahoma, Segoe UI, sans-serif" font-size="12.5" fill="#4b5a60" text-anchor="end">مقالات طبية موثّقة ومبسطة</text>
+  <text x="1112" y="606" font-family="Tahoma, Segoe UI, sans-serif" font-size="12.5" fill="#4b5a60" text-anchor="end">ومسرد مصطلحات دون أي أسئلة.</text>
+  <text x="1112" y="652" font-family="Tahoma, Segoe UI, sans-serif" font-size="13" font-weight="bold" fill="#0f6b62" text-anchor="end">دخول المسار ←</text>
+
+  <!-- Card 2 (J2 Health Concern) -->
+  <rect x="610" y="478" width="251" height="200" rx="18" fill="#ffffff" stroke="#d6dedb" filter="url(#cardShadow)"/>
+  <rect x="805" y="498" width="36" height="36" rx="10" fill="#fef3f2"/>
+  <text x="823" y="521" font-family="Segoe UI, sans-serif" font-size="14" font-weight="bold" fill="#b42318" text-anchor="middle">J2</text>
+  <text x="841" y="560" font-family="Tahoma, Segoe UI, sans-serif" font-size="16" font-weight="bold" fill="#1f2a2e" text-anchor="end">لدي قلق أو عرض صحي</text>
+  <text x="841" y="586" font-family="Tahoma, Segoe UI, sans-serif" font-size="12.5" fill="#4b5a60" text-anchor="end">فحص علامات الخطر أولاً ثم</text>
+  <text x="841" y="606" font-family="Tahoma, Segoe UI, sans-serif" font-size="12.5" fill="#4b5a60" text-anchor="end">توجيه واضح لوجهة الرعاية.</text>
+  <text x="841" y="652" font-family="Tahoma, Segoe UI, sans-serif" font-size="13" font-weight="bold" fill="#0f6b62" text-anchor="end">دخول المسار ←</text>
+
+  <!-- Card 3 (J3 Conception) -->
+  <rect x="339" y="478" width="251" height="200" rx="18" fill="#ffffff" stroke="#d6dedb" filter="url(#cardShadow)"/>
+  <rect x="534" y="498" width="36" height="36" rx="10" fill="#e6f4f1"/>
+  <text x="552" y="521" font-family="Segoe UI, sans-serif" font-size="14" font-weight="bold" fill="#0f6b62" text-anchor="middle">J3</text>
+  <text x="570" y="560" font-family="Tahoma, Segoe UI, sans-serif" font-size="16" font-weight="bold" fill="#1f2a2e" text-anchor="end">أستعد للإنجاب / تأخر حمل</text>
+  <text x="570" y="586" font-family="Tahoma, Segoe UI, sans-serif" font-size="12.5" fill="#4b5a60" text-anchor="end">تقييم عوامل الخطر والتاريخ</text>
+  <text x="570" y="606" font-family="Tahoma, Segoe UI, sans-serif" font-size="12.5" fill="#4b5a60" text-anchor="end">الطبي ونمط الحياة للزوجين.</text>
+  <text x="570" y="652" font-family="Tahoma, Segoe UI, sans-serif" font-size="13" font-weight="bold" fill="#0f6b62" text-anchor="end">دخول المسار ←</text>
+
+  <!-- Card 4 (Leftmost - J4 Doctor Prep) -->
+  <rect x="68" y="478" width="251" height="200" rx="18" fill="#ffffff" stroke="#d6dedb" filter="url(#cardShadow)"/>
+  <rect x="263" y="498" width="36" height="36" rx="10" fill="#e6f4f1"/>
+  <text x="281" y="521" font-family="Segoe UI, sans-serif" font-size="14" font-weight="bold" fill="#0f6b62" text-anchor="middle">J4</text>
+  <text x="299" y="560" font-family="Tahoma, Segoe UI, sans-serif" font-size="16" font-weight="bold" fill="#1f2a2e" text-anchor="end">التحضير لزيارة الطبيب</text>
+  <text x="299" y="586" font-family="Tahoma, Segoe UI, sans-serif" font-size="12.5" fill="#4b5a60" text-anchor="end">جهّز قائمة أسئلتك وما تحضره</text>
+  <text x="299" y="606" font-family="Tahoma, Segoe UI, sans-serif" font-size="12.5" fill="#4b5a60" text-anchor="end">معك للعيادة على جهازك فقط.</text>
+  <text x="299" y="652" font-family="Tahoma, Segoe UI, sans-serif" font-size="13" font-weight="bold" fill="#0f6b62" text-anchor="end">دخول المسار ←</text>
+</svg>

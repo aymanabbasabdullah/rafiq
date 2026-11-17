@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 680" width="1200" height="680">
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#0b3b36" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="680" rx="18" fill="#f8faf9" stroke="#d6dedb" stroke-width="2"/>
+  <rect width="1200" height="44" rx="18" fill="#ffffff"/>
+  <rect y="24" width="1200" height="20" fill="#ffffff"/>
+  <line x1="0" y1="44" x2="1200" y2="44" stroke="#d6dedb" stroke-width="1"/>
+  <circle cx="28" cy="22" r="6" fill="#f87171"/>
+  <circle cx="48" cy="22" r="6" fill="#fbbf24"/>
+  <circle cx="68" cy="22" r="6" fill="#34d399"/>
+  <rect x="380" y="10" width="440" height="24" rx="12" fill="#f1f5f3"/>
+  <text x="600" y="26" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#4b5a60" text-anchor="middle">https://rafiq.test/ar/concern — التقرير التوجيهي وفحص الأمان</text>
+
+  <!-- Report Header Card -->
+  <rect x="80" y="72" width="1040" height="148" rx="20" fill="#ffffff" stroke="#0f6b62" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="956" y="94" width="136" height="30" rx="15" fill="#fef3c7"/>
+  <text x="1024" y="114" font-family="Tahoma, Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#92400e" text-anchor="middle">الأولوية P2 — موعد قريب</text>
+
+  <text x="1092" y="152" font-family="Tahoma, Segoe UI, sans-serif" font-size="24" font-weight="bold" fill="#1f2a2e" text-anchor="end">يُنصح بحجز موعد مع طبيب مسالك بولية أو ذكورة خلال الأسابيع القادمة</text>
+  <text x="1092" y="182" font-family="Tahoma, Segoe UI, sans-serif" font-size="14" fill="#4b5a60" text-anchor="end">هذا فحص أولي لتوجيهك إلى الخطوة المناسبة، وليس تشخيصاً طبياً. إجاباتك لم تُحفظ على خوادمنا.</text>
+
+  <!-- Two Columns: Risk Domains (Right) & Care Pathway + Access (Left) -->
+  <rect x="616" y="242" width="504" height="280" rx="20" fill="#ffffff" stroke="#d6dedb" filter="url(#shadow)"/>
+  <text x="1092" y="278" font-family="Tahoma, Segoe UI, sans-serif" font-size="18" font-weight="bold" fill="#1f2a2e" text-anchor="end">مؤشرات الخطر التي لاحظناها حسب المجال</text>
+
+  <rect x="644" y="298" width="448" height="60" rx="12" fill="#f4f8f6"/>
+  <text x="1074" y="322" font-family="Tahoma, Segoe UI, sans-serif" font-size="14" font-weight="bold" fill="#0f6b62" text-anchor="end">• العوامل التشريحية والجراحية</text>
+  <text x="1074" y="344" font-family="Tahoma, Segoe UI, sans-serif" font-size="12.5" fill="#4b5a60" text-anchor="end">ملاحظة كتلة أو ثِقل غير مؤلم في كيس الصفن يستدعي فحصاً سريرياً.</text>
+
+  <rect x="644" y="370" width="448" height="60" rx="12" fill="#f4f8f6"/>
+  <text x="1074" y="394" font-family="Tahoma, Segoe UI, sans-serif" font-size="14" font-weight="bold" fill="#0f6b62" text-anchor="end">• نمط الحياة والتعرّض المهني</text>
+  <text x="1074" y="416" font-family="Tahoma, Segoe UI, sans-serif" font-size="12.5" fill="#4b5a60" text-anchor="end">التدخين أو التعرض للحرارة المرتفعة من العوامل القابلة للتحسين.</text>
+
+  <rect x="644" y="442" width="448" height="60" rx="12" fill="#f4f8f6"/>
+  <text x="1074" y="466" font-family="Tahoma, Segoe UI, sans-serif" font-size="14" font-weight="bold" fill="#0f6b62" text-anchor="end">• التاريخ الطبي والأدوية</text>
+  <text x="1074" y="488" font-family="Tahoma, Segoe UI, sans-serif" font-size="12.5" fill="#4b5a60" text-anchor="end">مراجعة الأدوية أو المكملات الحالية مع الطبيب المختص دون إيقافها ذاتياً.</text>
+
+  <!-- Left Column: Care Pathway & Telehealth/In-person options -->
+  <rect x="80" y="242" width="512" height="280" rx="20" fill="#ffffff" stroke="#d6dedb" filter="url(#shadow)"/>
+  <text x="564" y="278" font-family="Tahoma, Segoe UI, sans-serif" font-size="18" font-weight="bold" fill="#1f2a2e" text-anchor="end">وجهة الرعاية المقترحة وطرق الوصول</text>
+
+  <rect x="108" y="298" width="456" height="68" rx="12" fill="#e6f4f1"/>
+  <text x="546" y="324" font-family="Tahoma, Segoe UI, sans-serif" font-size="15" font-weight="bold" fill="#0b4f48" text-anchor="end">عيادة المسالك البولية والذكورة (Urology / Andrology)</text>
+  <text x="546" y="348" font-family="Tahoma, Segoe UI, sans-serif" font-size="12.5" fill="#1f2a2e" text-anchor="end">يمكن البدء باستشارة طبية عن بُعد (Telehealth) أو حجز موعد حضوري للفحص.</text>
+
+  <text x="564" y="398" font-family="Tahoma, Segoe UI, sans-serif" font-size="14" font-weight="bold" fill="#1f2a2e" text-anchor="end">الخطوات العملية التالية:</text>
+  <text x="564" y="424" font-family="Tahoma, Segoe UI, sans-serif" font-size="13" fill="#4b5a60" text-anchor="end">1. انقل المواضيع المقترحة تلقائياً إلى أداة التحضير لزيارة الطبيب (J4).</text>
+  <text x="564" y="448" font-family="Tahoma, Segoe UI, sans-serif" font-size="13" fill="#4b5a60" text-anchor="end">2. اطبع هذا الملخص أو احفظه كملف نصي (.txt) على جهازك فقط.</text>
+  <text x="564" y="472" font-family="Tahoma, Segoe UI, sans-serif" font-size="13" fill="#4b5a60" text-anchor="end">3. في حال ظهور ألم مفاجئ وشديد، انتقل إلى الطوارئ فوراً.</text>
+
+  <!-- Bottom Action Bar -->
+  <rect x="80" y="544" width="1040" height="92" rx="20" fill="#ffffff" stroke="#d6dedb" filter="url(#shadow)"/>
+  <rect x="880" y="568" width="212" height="44" rx="22" fill="#0f6b62"/>
+  <text x="986" y="595" font-family="Tahoma, Segoe UI, sans-serif" font-size="14" font-weight="bold" fill="#ffffff" text-anchor="middle">استعد لزيارة الطبيب (J4)</text>
+
+  <rect x="712" y="568" width="152" height="44" rx="22" fill="#f1f5f3" stroke="#d6dedb"/>
+  <text x="788" y="595" font-family="Tahoma, Segoe UI, sans-serif" font-size="14" font-weight="600" fill="#1f2a2e" text-anchor="middle">طباعة التقرير</text>
+
+  <rect x="530" y="568" width="168" height="44" rx="22" fill="#f1f5f3" stroke="#d6dedb"/>
+  <text x="614" y="595" font-family="Tahoma, Segoe UI, sans-serif" font-size="14" font-weight="600" fill="#1f2a2e" text-anchor="middle">تنزيل على جهازي (.txt)</text>
+</svg>
