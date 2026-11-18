@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 680" width="1200" height="680">
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#0b3b36" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="680" rx="18" fill="#f8faf9" stroke="#d6dedb" stroke-width="2"/>
+  <rect width="1200" height="44" rx="18" fill="#ffffff"/>
+  <rect y="24" width="1200" height="20" fill="#ffffff"/>
+  <line x1="0" y1="44" x2="1200" y2="44" stroke="#d6dedb" stroke-width="1"/>
+  <circle cx="28" cy="22" r="6" fill="#f87171"/>
+  <circle cx="48" cy="22" r="6" fill="#fbbf24"/>
+  <circle cx="68" cy="22" r="6" fill="#34d399"/>
+  <rect x="380" y="10" width="440" height="24" rx="12" fill="#f1f5f3"/>
+  <text x="600" y="26" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#4b5a60" text-anchor="middle">https://rafiq.test/ar/doctor-prep — التحضير لزيارة الطبيب والمساعد الذكي</text>
+
+  <!-- Right Side: Doctor Visit Preparation (J4) -->
+  <rect x="520" y="72" width="640" height="572" rx="20" fill="#ffffff" stroke="#d6dedb" filter="url(#shadow)"/>
+  <text x="1132" y="112" font-family="Tahoma, Segoe UI, sans-serif" font-size="22" font-weight="bold" fill="#1f2a2e" text-anchor="end">التحضير لزيارة الطبيب (المسار الرابع J4)</text>
+  <text x="1132" y="138" font-family="Tahoma, Segoe UI, sans-serif" font-size="13" fill="#0f6b62" text-anchor="end">🔒 ما تختاره أو تكتبه يبقى على جهازك فقط — لا يوجد أي مسار خادم يستقبل أسئلتك الخاصة</text>
+
+  <!-- Steps Pills -->
+  <rect x="1032" y="158" width="100" height="32" rx="16" fill="#0f6b62"/>
+  <text x="1082" y="179" font-family="Tahoma, Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">1. المواضيع</text>
+  <rect x="912" y="158" width="110" height="32" rx="16" fill="#e6f4f1"/>
+  <text x="967" y="179" font-family="Tahoma, Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#0f6b62" text-anchor="middle">2. أسئلة مقترحة</text>
+  <rect x="802" y="158" width="100" height="32" rx="16" fill="#e6f4f1"/>
+  <text x="852" y="179" font-family="Tahoma, Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#0f6b62" text-anchor="middle">3. أسئلتي</text>
+  <rect x="692" y="158" width="100" height="32" rx="16" fill="#e6f4f1"/>
+  <text x="742" y="179" font-family="Tahoma, Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#0f6b62" text-anchor="middle">4. ما أحضره</text>
+  <rect x="572" y="158" width="110" height="32" rx="16" fill="#e6f4f1"/>
+  <text x="627" y="179" font-family="Tahoma, Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#0f6b62" text-anchor="middle">5. المعاينة والطباعة</text>
+
+  <!-- LocalStorage Opt-in Box -->
+  <rect x="548" y="208" width="584" height="60" rx="14" fill="#f4f8f6" stroke="#d6dedb"/>
+  <text x="1112" y="232" font-family="Tahoma, Segoe UI, sans-serif" font-size="13" font-weight="bold" fill="#1f2a2e" text-anchor="end">☑ حفظ مسودتي على هذا الجهاز فقط (اختياري — localStorage)</text>
+  <text x="1112" y="254" font-family="Tahoma, Segoe UI, sans-serif" font-size="11.5" fill="#4b5a60" text-anchor="end">تحذير: لا تفعّل هذا الخيار إذا كنت تستخدم جهازاً مشتركاً؛ وتُمسح المسودة فوراً عند الضغط على «امسح كل شيء».</text>
+
+  <!-- Questions Preview List -->
+  <text x="1132" y="302" font-family="Tahoma, Segoe UI, sans-serif" font-size="16" font-weight="bold" fill="#1f2a2e" text-anchor="end">قائمة أسئلتي المجهزة للطبيب:</text>
+
+  <rect x="548" y="318" width="584" height="52" rx="12" fill="#f8faf9" stroke="#d6dedb"/>
+  <text x="1112" y="349" font-family="Tahoma, Segoe UI, sans-serif" font-size="13.5" fill="#1f2a2e" text-anchor="end">1. هل يجب أن نُقيَّم أنا وشريكتي معاً، وبأي ترتيب؟</text>
+
+  <rect x="548" y="380" width="584" height="52" rx="12" fill="#f8faf9" stroke="#d6dedb"/>
+  <text x="1112" y="411" font-family="Tahoma, Segoe UI, sans-serif" font-size="13.5" fill="#1f2a2e" text-anchor="end">2. كيف أستعد لتحليل السائل المنوي وما الفحوص الأولية المعتادة؟</text>
+
+  <rect x="548" y="442" width="584" height="52" rx="12" fill="#f8faf9" stroke="#d6dedb"/>
+  <text x="1112" y="473" font-family="Tahoma, Segoe UI, sans-serif" font-size="13.5" fill="#1f2a2e" text-anchor="end">3. هل يمكن أن تؤثر حالتي الصحية أو أدويتي الحالية على الخصوبة؟</text>
+
+  <rect x="944" y="576" width="188" height="42" rx="21" fill="#0f6b62"/>
+  <text x="1038" y="602" font-family="Tahoma, Segoe UI, sans-serif" font-size="13.5" font-weight="bold" fill="#ffffff" text-anchor="middle">طباعة القائمة / PDF</text>
+  <rect x="748" y="576" width="184" height="42" rx="21" fill="#f1f5f3" stroke="#d6dedb"/>
+  <text x="840" y="602" font-family="Tahoma, Segoe UI, sans-serif" font-size="13.5" font-weight="600" fill="#1f2a2e" text-anchor="middle">تنزيل ملف نصي (.txt)</text>
+
+  <!-- Left Side: Rafiq AI Companion Drawer -->
+  <rect x="40" y="72" width="456" height="572" rx="20" fill="#ffffff" stroke="#0f6b62" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="40" y="72" width="456" height="64" rx="20" fill="#0b3b36"/>
+  <rect x="40" y="116" width="456" height="20" fill="#0b3b36"/>
+  <text x="468" y="110" font-family="Tahoma, Segoe UI, sans-serif" font-size="17" font-weight="bold" fill="#ffffff" text-anchor="end">رفيق الذكي (AI Companion — RAG)</text>
+
+  <!-- AI Guardrail Banner -->
+  <rect x="60" y="150" width="416" height="48" rx="10" fill="#fffbeb" stroke="#fde68a"/>
+  <text x="460" y="171" font-family="Tahoma, Segoe UI, sans-serif" font-size="11.5" font-weight="bold" fill="#92400e" text-anchor="end">يشرح المحتوى المعتمد فقط · لا يشخّص ولا يصف أدوية ولا يرى إجاباتك</text>
+  <text x="460" y="189" font-family="Tahoma, Segoe UI, sans-serif" font-size="11" fill="#92400e" text-anchor="end">فلاتر أمان حتمية قبل وبعد النموذج (Red-Flag &amp; PII Interceptors)</text>
+
+  <!-- User Message -->
+  <rect x="140" y="214" width="336" height="50" rx="14" fill="#0f6b62"/>
+  <text x="460" y="244" font-family="Tahoma, Segoe UI, sans-serif" font-size="13" fill="#ffffff" text-anchor="end">ما المقصود بدوالي الخصية ببساطة؟</text>
+
+  <!-- AI Grounded Answer -->
+  <rect x="60" y="280" width="380" height="132" rx="14" fill="#f4f8f6" stroke="#d6dedb"/>
+  <text x="424" y="308" font-family="Tahoma, Segoe UI, sans-serif" font-size="12.5" fill="#1f2a2e" text-anchor="end">دوالي الخصية هي توسّع في الأوردة داخل كيس الصفن.</text>
+  <text x="424" y="330" font-family="Tahoma, Segoe UI, sans-serif" font-size="12.5" fill="#1f2a2e" text-anchor="end">قد لا تسبب أي أعراض لدى كثير من الرجال، وترتبط أحياناً</text>
+  <text x="424" y="352" font-family="Tahoma, Segoe UI, sans-serif" font-size="12.5" fill="#1f2a2e" text-anchor="end">بانخفاض الخصوبة. الطبيب وحده يحدد إن كانت تحتاج متابعة.</text>
+  <text x="424" y="392" font-family="Tahoma, Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#0f6b62" text-anchor="end">المصدر المعتمد: متى يُنصح بتقييم الخصوبة؟ (SRC-003)</text>
+
+  <!-- Personal Case Refusal Example -->
+  <rect x="140" y="428" width="336" height="46" rx="14" fill="#0f6b62"/>
+  <text x="460" y="456" font-family="Tahoma, Segoe UI, sans-serif" font-size="12.5" fill="#ffffff" text-anchor="end">عندي ألم مستمر منذ يومين، ما تشخيص حالتي؟</text>
+
+  <rect x="60" y="488" width="380" height="74" rx="14" fill="#fef3f2" stroke="#fecdca"/>
+  <text x="424" y="514" font-family="Tahoma, Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#b42318" text-anchor="end">رفض آمن حتمي (Deterministic Safety Interceptor):</text>
+  <text x="424" y="536" font-family="Tahoma, Segoe UI, sans-serif" font-size="11.5" fill="#1f2a2e" text-anchor="end">لا أستطيع تشخيص حالتك الشخصية. يمكنك استخدام مسار «لدي قلق صحي».</text>
+</svg>

@@ -1,9 +1,22 @@
 <?php
 
+use App\Http\Middleware\EncryptSensitiveHistory;
+use App\Http\Middleware\EnsureAdminActive;
+use App\Http\Middleware\EnsureAgeConfirmed;
+use App\Http\Middleware\EnsureAiNoticeAcknowledged;
+use App\Http\Middleware\EnsureAssessmentConsent;
+use App\Http\Middleware\EnsureTwoFactorEnabled;
+use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\NoStoreCache;
+use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\SetAdminLocale;
+use App\Http\Middleware\SetLocale;
+use App\Support\InertiaErrorPage;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -12,10 +25,34 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->redirectGuestsTo(fn (): string => route('admin.login'));
+        $middleware->redirectUsersTo(fn (): string => route('admin.dashboard'));
+
+        $middleware->web(append: [
+            SecurityHeaders::class,
+            HandleInertiaRequests::class,
+        ]);
+
+        $middleware->alias([
+            'locale' => SetLocale::class,
+            'admin.locale' => SetAdminLocale::class,
+            'admin.active' => EnsureAdminActive::class,
+            '2fa' => EnsureTwoFactorEnabled::class,
+            'no-store' => NoStoreCache::class,
+            'age' => EnsureAgeConfirmed::class,
+            'consent' => EnsureAssessmentConsent::class,
+            'ai-notice' => EnsureAiNoticeAcknowledged::class,
+            'encrypt-history' => EncryptSensitiveHistory::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
+        );
+
+        $exceptions->dontFlash(config('rafiq.sensitive_keys', []));
+
+        $exceptions->respond(
+            fn (Response $response, Throwable $exception, Request $request): Response => InertiaErrorPage::render($response, $request),
         );
     })->create();

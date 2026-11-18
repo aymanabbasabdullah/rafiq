@@ -1,0 +1,365 @@
+{
+    "_notice": "DRAFT – PENDING QUALIFIED MEDICAL REVIEW. Rebuilt from docs/04-clinical/Clinical-Rules-Catalogue.md §3. No rule is approved; none may run in production.",
+    "rules": [
+        {
+            "code": "CR-001",
+            "version": 1,
+            "title": "Age and platform eligibility",
+            "section": "gate",
+            "journeys": ["concern", "conception"],
+            "support": "inference",
+            "when": { "q": "@age_confirmed", "op": "neq", "value": true },
+            "outcome": { "priority": "GATE", "stop": true, "flags": [] },
+            "guidance_keys": ["guidance.gate.under18"],
+            "doctor_topic_keys": [],
+            "related_article_keys": [],
+            "evidence": [{ "source": "SRC-006", "support": "policy" }],
+            "status": "draft"
+        },
+        {
+            "code": "CR-002",
+            "version": 1,
+            "title": "Sudden severe testicular pain",
+            "section": "safety",
+            "journeys": ["concern", "conception"],
+            "support": "source",
+            "when": { "q": "ss_sudden_severe_pain", "op": "eq", "value": "yes" },
+            "outcome": { "priority": "P0", "stop": true, "flags": [], "care_pathway": "urgent" },
+            "guidance_keys": ["guidance.p0.emergency", "guidance.p0.dont_drive", "guidance.p0.bring_meds"],
+            "doctor_topic_keys": [],
+            "related_article_keys": ["testicular-pain-when-urgent"],
+            "evidence": [{ "source": "SRC-001", "support": "direct" }, { "source": "SRC-002", "support": "direct" }],
+            "status": "draft"
+        },
+        {
+            "code": "CR-003",
+            "version": 1,
+            "title": "Testicular pain with nausea, vomiting or abdominal pain",
+            "section": "safety",
+            "journeys": ["concern", "conception"],
+            "support": "source",
+            "when": { "q": "ss_pain_with_nausea_vomiting_abdominal", "op": "eq", "value": "yes" },
+            "outcome": { "priority": "P0", "stop": true, "flags": [], "care_pathway": "urgent" },
+            "guidance_keys": ["guidance.p0.emergency", "guidance.p0.dont_drive", "guidance.p0.bring_meds"],
+            "doctor_topic_keys": [],
+            "related_article_keys": ["testicular-pain-when-urgent"],
+            "evidence": [{ "source": "SRC-001", "support": "direct" }],
+            "status": "draft"
+        },
+        {
+            "code": "CR-004",
+            "version": 1,
+            "title": "Pain or swelling with fever",
+            "section": "safety",
+            "journeys": ["concern", "conception"],
+            "support": "review",
+            "branches": [
+                {
+                    "when": { "q": "ss_fever_with_pain_or_swelling", "op": "eq", "value": "yes" },
+                    "outcome": { "priority": "P1", "flags": [], "care_pathway": "urgent" },
+                    "guidance_keys": ["guidance.p1.fever_same_day"]
+                },
+                {
+                    "when": { "q": "ss_fever_with_pain_or_swelling", "op": "is_unsure" },
+                    "outcome": { "priority": "P2", "flags": ["confirm_fever_then_same_day"], "care_pathway": "primary_care" },
+                    "guidance_keys": ["guidance.p2.fever_unsure"]
+                }
+            ],
+            "doctor_topic_keys": [],
+            "related_article_keys": ["testicular-pain-when-urgent"],
+            "evidence": [],
+            "status": "draft"
+        },
+        {
+            "code": "CR-005",
+            "version": 1,
+            "title": "New lump or change in a testicle",
+            "section": "safety",
+            "journeys": ["concern", "conception"],
+            "support": "source",
+            "branches": [
+                {
+                    "when": { "q": "ss_new_lump_or_change", "op": "eq", "value": "yes" },
+                    "outcome": { "priority": "P2", "flags": ["prompt_in_person_exam"], "care_pathway": "urology_andrology" },
+                    "guidance_keys": ["guidance.p2.lump_exam"],
+                    "doctor_topic_keys": ["topic.lump_exam"]
+                },
+                {
+                    "when": { "q": "ss_new_lump_or_change", "op": "is_unsure" },
+                    "outcome": { "priority": "P3", "flags": [], "care_pathway": "self_care" },
+                    "guidance_keys": ["guidance.p3.lump_self_check"]
+                }
+            ],
+            "related_article_keys": ["testicular-lumps-and-swellings"],
+            "evidence": [{ "source": "SRC-002", "support": "direct" }, { "source": "SRC-001", "support": "conflicting" }],
+            "status": "draft"
+        },
+        {
+            "code": "SAFE-006",
+            "version": 1,
+            "title": "Not sure on an emergency question",
+            "section": "safety",
+            "journeys": ["concern", "conception"],
+            "support": "inference",
+            "when": {
+                "any": [
+                    { "q": "ss_sudden_severe_pain", "op": "is_unsure" },
+                    { "q": "ss_pain_with_nausea_vomiting_abdominal", "op": "is_unsure" },
+                    { "q": "ss_pain_over_1h_or_at_rest", "op": "is_unsure" }
+                ]
+            },
+            "outcome": { "priority": "P1", "flags": ["show_emergency_criteria"], "care_pathway": "urgent" },
+            "guidance_keys": ["guidance.safe006.emergency_criteria"],
+            "doctor_topic_keys": [],
+            "related_article_keys": ["testicular-pain-when-urgent"],
+            "evidence": [],
+            "status": "draft"
+        },
+        {
+            "code": "CR-006",
+            "version": 1,
+            "title": "Chronic and metabolic conditions",
+            "section": "assessment",
+            "journeys": ["concern", "conception"],
+            "support": "inference",
+            "when": { "q": "as_chronic_conditions", "op": "contains_any", "value": ["diabetes", "obesity", "hypertension", "thyroid", "other_chronic"] },
+            "outcome": { "priority": "P3", "flags": [], "care_pathway": "primary_care" },
+            "guidance_keys": ["guidance.p3.chronic"],
+            "doctor_topic_keys": ["topic.chronic_conditions"],
+            "related_article_keys": [],
+            "evidence": [{ "source": "SRC-003", "support": "indirect" }],
+            "status": "draft"
+        },
+        {
+            "code": "CR-007",
+            "version": 1,
+            "title": "Reproductive and urological history",
+            "section": "assessment",
+            "journeys": ["concern", "conception"],
+            "support": "source",
+            "when": { "q": "as_repro_history", "op": "contains_any", "value": ["undescended_testis", "varicocele", "testicular_surgery_or_injury", "mumps_after_puberty", "sti_history"] },
+            "outcome": { "priority": "P3", "flags": [], "care_pathway": "primary_care", "care_pathway_by_journey": { "conception": "fertility_services" } },
+            "guidance_keys": ["guidance.p3.repro_history"],
+            "doctor_topic_keys": ["topic.repro_history"],
+            "related_article_keys": ["when-to-seek-fertility-evaluation"],
+            "evidence": [{ "source": "SRC-003", "support": "partial" }],
+            "status": "draft"
+        },
+        {
+            "code": "CR-008",
+            "version": 1,
+            "title": "Testosterone or anabolic steroid use",
+            "section": "assessment",
+            "journeys": ["concern", "conception"],
+            "support": "source",
+            "when": { "q": "as_testosterone_or_steroids", "op": "in", "value": ["current", "past"] },
+            "outcome": { "priority": "P3", "priority_by_journey": { "conception": "P2" }, "flags": [], "care_pathway": "primary_care", "care_pathway_by_journey": { "conception": "fertility_services" } },
+            "guidance_keys": ["guidance.steroids"],
+            "doctor_topic_keys": ["topic.steroids"],
+            "related_article_keys": ["anabolic-steroids-and-fertility"],
+            "evidence": [{ "source": "SRC-003", "support": "direct" }],
+            "status": "draft"
+        },
+        {
+            "code": "CR-009",
+            "version": 1,
+            "title": "Chemotherapy or radiotherapy",
+            "section": "assessment",
+            "journeys": ["concern", "conception"],
+            "support": "source",
+            "branches": [
+                {
+                    "when": { "q": "as_chemo_radiotherapy", "op": "eq", "value": "planned" },
+                    "outcome": { "priority": "P2", "flags": ["time_sensitive"], "care_pathway": "fertility_services" },
+                    "guidance_keys": ["guidance.p2.chemo_planned"],
+                    "doctor_topic_keys": ["topic.fertility_preservation"]
+                },
+                {
+                    "when": { "q": "as_chemo_radiotherapy", "op": "eq", "value": "past" },
+                    "outcome": { "priority": "P3", "priority_by_journey": { "conception": "P2" }, "flags": [], "care_pathway": "primary_care", "care_pathway_by_journey": { "conception": "fertility_services" } },
+                    "guidance_keys": ["guidance.chemo_past"],
+                    "doctor_topic_keys": ["topic.past_treatment"]
+                }
+            ],
+            "related_article_keys": [],
+            "evidence": [{ "source": "SRC-003", "support": "direct" }],
+            "status": "draft"
+        },
+        {
+            "code": "CR-010",
+            "version": 1,
+            "title": "Long-term medication",
+            "section": "assessment",
+            "journeys": ["concern", "conception"],
+            "support": "inference",
+            "when": { "q": "as_long_term_medication", "op": "eq", "value": "yes" },
+            "outcome": { "priority": "P3", "flags": [], "care_pathway": "primary_care" },
+            "guidance_keys": ["guidance.p3.medication_list"],
+            "doctor_topic_keys": ["topic.medication_list"],
+            "related_article_keys": [],
+            "evidence": [],
+            "status": "draft"
+        },
+        {
+            "code": "CR-011",
+            "version": 1,
+            "title": "Smoking",
+            "section": "assessment",
+            "journeys": ["concern", "conception"],
+            "support": "source",
+            "when": { "q": "as_smoking", "op": "eq", "value": "current" },
+            "outcome": { "priority": "P3", "flags": [], "care_pathway": "self_care" },
+            "guidance_keys": ["guidance.p3.smoking"],
+            "doctor_topic_keys": ["topic.smoking_support"],
+            "related_article_keys": ["smoking-and-reproductive-health"],
+            "evidence": [{ "source": "SRC-003", "support": "direct" }],
+            "status": "draft"
+        },
+        {
+            "code": "CR-012",
+            "version": 1,
+            "title": "Occupational exposure",
+            "section": "assessment",
+            "journeys": ["concern", "conception"],
+            "support": "source",
+            "when": { "q": "as_occupational_exposure", "op": "contains_any", "value": ["high_heat", "pesticides_chemicals", "heavy_metals", "radiation"] },
+            "outcome": { "priority": "P3", "flags": [], "care_pathway": "self_care" },
+            "guidance_keys": ["guidance.p3.occupational"],
+            "doctor_topic_keys": ["topic.occupational"],
+            "related_article_keys": [],
+            "evidence": [{ "source": "SRC-003", "support": "partial" }],
+            "status": "draft"
+        },
+        {
+            "code": "CR-018",
+            "version": 1,
+            "title": "Daily lifestyle factors (proposed)",
+            "section": "assessment",
+            "journeys": ["concern", "conception"],
+            "support": "inference",
+            "branches": [
+                {
+                    "when": { "q": "as_lifestyle", "op": "contains_any", "value": ["recreational_drugs", "weight_concern"] },
+                    "outcome": { "priority": "P3", "flags": [], "care_pathway": "primary_care" },
+                    "guidance_keys": ["guidance.p3.lifestyle", "guidance.p3.lifestyle_doctor"]
+                },
+                {
+                    "when": { "q": "as_lifestyle", "op": "contains_any", "value": ["frequent_heat", "inactive", "alcohol", "poor_sleep_or_stress"] },
+                    "outcome": { "priority": "P3", "flags": [], "care_pathway": "self_care" },
+                    "guidance_keys": ["guidance.p3.lifestyle"]
+                }
+            ],
+            "doctor_topic_keys": ["topic.lifestyle"],
+            "related_article_keys": [],
+            "evidence": [{ "source": "SRC-003", "support": "partial" }],
+            "status": "draft"
+        },
+        {
+            "code": "CR-013",
+            "version": 1,
+            "title": "Sexual or urinary symptoms",
+            "section": "assessment",
+            "journeys": ["concern", "conception"],
+            "support": "review",
+            "when": { "q": "as_sexual_urinary_symptoms", "op": "contains_any", "value": ["erection_difficulty", "ejaculation_problem", "burning_or_discharge", "blood_in_semen_or_urine", "low_libido"] },
+            "outcome": { "priority": "P2", "flags": [], "care_pathway": "urology_andrology" },
+            "guidance_keys": ["guidance.p2.sexual_urinary"],
+            "doctor_topic_keys": ["topic.sexual_urinary"],
+            "related_article_keys": [],
+            "evidence": [],
+            "status": "draft"
+        },
+        {
+            "code": "CR-014",
+            "version": 1,
+            "title": "Family history",
+            "section": "assessment",
+            "journeys": ["concern", "conception"],
+            "support": "source",
+            "when": { "q": "as_family_history", "op": "contains_any", "value": ["infertility", "testicular_cancer", "genetic_condition"] },
+            "outcome": { "priority": "P3", "flags": [], "care_pathway": "primary_care" },
+            "guidance_keys": ["guidance.p3.family_history"],
+            "doctor_topic_keys": ["topic.family_history"],
+            "related_article_keys": [],
+            "evidence": [{ "source": "SRC-003", "support": "partial" }],
+            "status": "draft"
+        },
+        {
+            "code": "CR-015",
+            "version": 1,
+            "title": "Trying to conceive for more than 12 months",
+            "section": "assessment",
+            "journeys": ["conception"],
+            "support": "source",
+            "when": { "q": "as_trying_duration", "op": "eq", "value": "gt_12m" },
+            "outcome": { "priority": "P2", "flags": [], "care_pathway": "fertility_services" },
+            "guidance_keys": ["guidance.p2.trying_12m"],
+            "doctor_topic_keys": ["topic.couple_evaluation"],
+            "related_article_keys": ["when-to-seek-fertility-evaluation"],
+            "evidence": [{ "source": "SRC-003", "support": "direct" }],
+            "status": "draft"
+        },
+        {
+            "code": "CR-015b",
+            "version": 1,
+            "title": "Trying 6–12 months with partner aged 35 or over",
+            "section": "assessment",
+            "journeys": ["conception"],
+            "support": "review",
+            "enabled": false,
+            "disabled_reason": "Source not verified (SG-1, RQ-6). Do not enable before medical review.",
+            "when": {
+                "all": [
+                    { "q": "as_trying_duration", "op": "eq", "value": "6_12m" },
+                    { "q": "as_partner_age_band", "op": "eq", "value": "gte_35" }
+                ]
+            },
+            "outcome": { "priority": "P2", "flags": [], "care_pathway": "fertility_services" },
+            "guidance_keys": ["guidance.p2.trying_6_12m_partner_35"],
+            "doctor_topic_keys": ["topic.couple_evaluation"],
+            "related_article_keys": ["when-to-seek-fertility-evaluation"],
+            "evidence": [],
+            "status": "draft"
+        },
+        {
+            "code": "CR-016",
+            "version": 1,
+            "title": "Previous fertility tests",
+            "section": "assessment",
+            "journeys": ["concern", "conception"],
+            "support": "source",
+            "branches": [
+                {
+                    "when": { "q": "as_previous_tests", "op": "eq", "value": "done_told_abnormal" },
+                    "outcome": { "priority": "P2", "flags": [], "care_pathway": "fertility_services" },
+                    "guidance_keys": ["guidance.p2.previous_abnormal"],
+                    "doctor_topic_keys": ["topic.previous_tests"]
+                },
+                {
+                    "when": { "q": "as_previous_tests", "op": "eq", "value": "done_unsure" },
+                    "outcome": { "priority": "P3", "flags": [], "care_pathway": "primary_care" },
+                    "guidance_keys": ["guidance.p3.previous_unsure"],
+                    "doctor_topic_keys": ["topic.previous_tests"]
+                }
+            ],
+            "related_article_keys": [],
+            "evidence": [{ "source": "SRC-003", "support": "partial" }],
+            "status": "draft"
+        },
+        {
+            "code": "CR-017",
+            "version": 1,
+            "title": "Pain lasting over an hour or at rest (proposed)",
+            "section": "safety",
+            "journeys": ["concern", "conception"],
+            "support": "source",
+            "when": { "q": "ss_pain_over_1h_or_at_rest", "op": "eq", "value": "yes" },
+            "outcome": { "priority": "P0", "stop": true, "flags": [], "care_pathway": "urgent" },
+            "guidance_keys": ["guidance.p0.emergency", "guidance.p0.dont_drive", "guidance.p0.bring_meds"],
+            "doctor_topic_keys": [],
+            "related_article_keys": ["testicular-pain-when-urgent"],
+            "evidence": [{ "source": "SRC-001", "support": "direct" }],
+            "status": "draft"
+        }
+    ]
+}

@@ -1,9 +1,357 @@
-@import 'tailwindcss';
+@import 'tailwindcss' source(none);
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
+@source '../js';
+@source '../views';
 
+/*
+ * Rafiq design tokens — "Calm precision" (docs/01-product/Design-System.md).
+ * Deep teal brand on warm off-white, charcoal ink, one warm clay accent used sparingly.
+ * Every text/background pair below meets WCAG AA.
+ */
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans:
+        var(--font-instrument-sans, 'Instrument Sans'), ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-arabic: var(--font-ibm-plex-sans-arabic, 'IBM Plex Sans Arabic'), 'Segoe UI', Tahoma, sans-serif;
+    --font-display:
+        var(--font-alexandria, 'Alexandria'), var(--font-ibm-plex-sans-arabic, 'IBM Plex Sans Arabic'), ui-sans-serif, sans-serif;
+
+    /* Neutrals */
+    --color-surface: #f7f8f5;
+    --color-surface-raised: #ffffff;
+    --color-surface-sunken: #eef1ed;
+    --color-ink: #263a40;
+    --color-ink-muted: #4f6166;
+    --color-ink-subtle: #6a7b7f;
+    --color-line: #e0e6e2;
+    --color-line-strong: #c8d3ce;
+
+    /* Brand */
+    --color-brand: #0d665e;
+    --color-brand-strong: #164b50;
+    --color-brand-deep: #0f3438;
+    --color-brand-soft: #e8f2ef;
+    --color-brand-mist: #f1f7f4;
+    --color-brand-ink: #ffffff;
+    --color-mint: #9fd4c4;
+    --color-accent: #b5683a;
+    --color-accent-soft: #f8ece3;
+
+    /* Journey tints (identity only, never meaning) */
+    --color-tint-learn: #e8f2ef;
+    --color-tint-concern: #fbeee9;
+    --color-tint-conception: #eef2e4;
+    --color-tint-doctor: #e9eff4;
+    --color-sage: #4d6a36;
+    --color-slate: #33557a;
+
+    /* States */
+    --color-notice: #fff4d6;
+    --color-notice-ink: #5c3d00;
+    --color-warning: #a14a07;
+    --color-warning-soft: #fef3c7;
+    --color-success: #15703a;
+    --color-success-soft: #dcf5e4;
+    --color-info: #1f4f99;
+    --color-info-soft: #e1ebf8;
+    --color-danger: #b42318;
+    --color-danger-soft: #fdecea;
+    --color-danger-ink: #ffffff;
+
+    /* Radii */
+    --radius-card: 1.25rem;
+    --radius-panel: 1.75rem;
+
+    /* Depth: soft and rare */
+    --shadow-card: 0 1px 2px rgb(15 52 56 / 0.04), 0 6px 20px -10px rgb(15 52 56 / 0.1);
+    --shadow-lift: 0 2px 6px rgb(15 52 56 / 0.05), 0 18px 40px -16px rgb(15 52 56 / 0.22);
+
+    /* Motion (subtle, 300–400ms — design dial 3/10) */
+    --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+    --animate-fade-up: fade-up 0.4s var(--ease-out-soft) both;
+    --animate-fade-in: fade-in 0.3s ease-out both;
+    --animate-float: float 9s ease-in-out infinite;
+
+    @keyframes fade-up {
+        from {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+        to {
+            opacity: 1;
+            transform: none;
+        }
+    }
+
+    @keyframes fade-in {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes draw {
+        to {
+            stroke-dashoffset: 0;
+        }
+    }
+
+    @keyframes halo {
+        0%,
+        100% {
+            opacity: 0.35;
+            transform: scale(1);
+        }
+        50% {
+            opacity: 0.1;
+            transform: scale(1.35);
+        }
+    }
+
+    @keyframes float {
+        0%,
+        100% {
+            transform: translate3d(0, 0, 0) scale(1);
+        }
+        50% {
+            transform: translate3d(0, -18px, 0) scale(1.04);
+        }
+    }
+}
+
+/*
+ * Typography: Alexandria for display headings in both scripts, Instrument Sans (English) or
+ * IBM Plex Sans Arabic (Arabic) for reading text.
+ */
+@layer base {
+    :is(h1, h2, .font-display) {
+        font-family: var(--font-display);
+        font-weight: 600;
+        letter-spacing: -0.015em;
+        text-wrap: balance;
+    }
+
+    :is(h3, h4) {
+        text-wrap: balance;
+    }
+
+    p {
+        text-wrap: pretty;
+    }
+}
+
+/* Arabic typography: native typeface, comfortable line height, no letter spacing (L10N-007). */
+[dir='rtl'] body {
+    font-family: var(--font-arabic);
+    line-height: 1.7;
+    letter-spacing: 0;
+}
+
+[dir='rtl'] :is(h1, h2, h3, h4, .font-display) {
+    line-height: 1.35;
+    letter-spacing: 0;
+}
+
+:focus-visible {
+    outline: 3px solid var(--color-brand);
+    outline-offset: 2px;
+}
+
+/* Headings focused by script (to announce a new step) are not interactive, so they need no ring. */
+h1[tabindex='-1']:focus-visible,
+h2[tabindex='-1']:focus-visible {
+    outline: none;
+}
+
+/*
+ * Scroll reveal: elements start slightly lowered and transparent, and `useReveal`
+ * adds `is-visible` when they enter the viewport. Only transform/opacity animate.
+ */
+@layer components {
+    .reveal {
+        opacity: 0;
+        transform: translateY(14px);
+        transition:
+            opacity 0.45s var(--ease-out-soft),
+            transform 0.45s var(--ease-out-soft);
+        transition-delay: calc(var(--reveal-index, 0) * 60ms);
+    }
+
+    .reveal.is-visible {
+        opacity: 1;
+        transform: none;
+    }
+
+    .stagger > * {
+        animation: var(--animate-fade-up);
+    }
+
+    .stagger > :nth-child(2) {
+        animation-delay: 60ms;
+    }
+
+    .stagger > :nth-child(3) {
+        animation-delay: 120ms;
+    }
+
+    .stagger > :nth-child(4) {
+        animation-delay: 180ms;
+    }
+
+    .stagger > :nth-child(5) {
+        animation-delay: 240ms;
+    }
+
+    .stagger > :nth-child(n + 6) {
+        animation-delay: 300ms;
+    }
+
+    /* Hero journey line: drawn once on load (pathLength="1" on the SVG path). */
+    .draw-line {
+        stroke-dasharray: 1;
+        stroke-dashoffset: 1;
+        animation: draw 1.8s var(--ease-out-soft) 0.25s forwards;
+    }
+
+    .halo {
+        transform-box: fill-box;
+        transform-origin: center;
+        animation: halo 4s ease-in-out infinite;
+    }
+
+    .hover-lift {
+        transition:
+            transform 0.2s var(--ease-out-soft),
+            box-shadow 0.2s var(--ease-out-soft),
+            border-color 0.2s ease;
+    }
+
+    .hover-lift:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lift);
+    }
+}
+
+/* Reduced motion: show the final state immediately (animation-engine skill §6.4). */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    .reveal {
+        opacity: 1;
+        transform: none;
+    }
+
+    .draw-line {
+        stroke-dashoffset: 0;
+        animation: none;
+    }
+
+    .halo {
+        animation: none;
+    }
+
+    .hover-lift:hover {
+        transform: none;
+    }
+}
+
+/* Article body typography for sanitised Markdown HTML (Module-08). Logical properties only (L10N-005). */
+@layer components {
+    .rafiq-prose {
+        color: var(--color-ink);
+        font-size: 1.0625rem;
+        line-height: 1.85;
+    }
+
+    @media (min-width: 768px) {
+        .rafiq-prose {
+            font-size: 1.125rem;
+        }
+    }
+
+    .rafiq-prose > * + * {
+        margin-block-start: 1em;
+    }
+
+    .rafiq-prose h2 {
+        margin-block-start: 2em;
+        font-family: var(--font-display);
+        font-size: 1.625rem;
+        font-weight: 600;
+        line-height: 1.35;
+    }
+
+    .rafiq-prose h3 {
+        margin-block-start: 1.6em;
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+
+    .rafiq-prose ul,
+    .rafiq-prose ol {
+        padding-inline-start: 1.4em;
+    }
+
+    .rafiq-prose ul {
+        list-style: disc;
+    }
+
+    .rafiq-prose ol {
+        list-style: decimal;
+    }
+
+    .rafiq-prose li + li {
+        margin-block-start: 0.4em;
+    }
+
+    .rafiq-prose li::marker {
+        color: var(--color-brand);
+    }
+
+    .rafiq-prose a {
+        color: var(--color-brand);
+        font-weight: 500;
+        text-decoration: underline;
+        text-underline-offset: 4px;
+    }
+
+    .rafiq-prose strong {
+        font-weight: 600;
+    }
+
+    .rafiq-prose blockquote {
+        border-inline-start: 4px solid var(--color-brand);
+        background: var(--color-brand-mist);
+        border-radius: 1rem;
+        padding: 0.75em 1em;
+    }
+
+    .rafiq-prose table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.95rem;
+    }
+
+    .rafiq-prose th,
+    .rafiq-prose td {
+        border: 1px solid var(--color-line);
+        padding: 0.5em 0.75em;
+        text-align: start;
+    }
+
+    .rafiq-prose th {
+        background: var(--color-surface-sunken);
+        font-weight: 600;
+    }
 }

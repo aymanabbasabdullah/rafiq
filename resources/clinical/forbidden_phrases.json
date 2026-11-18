@@ -1,0 +1,8 @@
+{
+    "_notice": "SAFE-010: phrases that must never appear in guidance texts or question wording (Clinical-Safety-Framework §7). Checked on import and by the test suite. Matching ignores case and Arabic diacritics.",
+    "phrases": {
+        "ar": ["تشخيصك هو", "أنت مصاب", "أنت عقيم", "عقيم", "خصوبتك طبيعية", "لا داعي للقلق", "لا تقلق", "حالتك طبيعية", "توقف عن تناول", "نسبة خصوبتك"],
+        "en": ["your diagnosis is", "you have been diagnosed", "you are infertile", "infertile", "your fertility is normal", "nothing to worry about", "don't worry", "you are fine", "stop taking", "fertility score"]
+    },
+    "patterns": ["\\d+\\s*%", "\\d+\\s*(mg|ملغ)"]
+}

@@ -1,0 +1,59 @@
+name: Rafiq CI
+
+on:
+    push:
+        branches: [main, 'feature/**']
+    pull_request:
+
+jobs:
+    tests:
+        name: Quality, Clinical & Safety Checks
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Setup PHP 8.3
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.3'
+                  extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, intl
+                  coverage: none
+
+            - name: Install Composer dependencies
+              run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+            - name: Setup Node.js 22
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '22'
+                  cache: 'npm'
+
+            - name: Install npm dependencies
+              run: npm ci
+
+            - name: Prepare environment
+              run: |
+                  cp .env.example .env
+                  php artisan key:generate
+
+            - name: Check PHP code style (Pint)
+              run: vendor/bin/pint --test
+
+            - name: TypeScript & ESLint checks
+              run: |
+                  npm run typecheck
+                  npm run lint
+
+            - name: Build production frontend assets
+              run: npm run build
+
+            - name: Run PHPUnit test suite
+              run: php artisan test --compact
+
+            - name: Verify Clinical Ruleset RS-2026.1 test cases
+              run: php artisan rafiq:clinical:test RS-2026.1 --files
+
+            - name: Verify AI deterministic safety suite
+              run: php artisan rafiq:ai:eval safety

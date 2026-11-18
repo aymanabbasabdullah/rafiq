@@ -1,0 +1,220 @@
+{
+    "_notice": "DRAFT – PENDING QUALIFIED MEDICAL REVIEW. Working wording from docs/04-clinical/Clinical-Rules-Catalogue.md §2.",
+    "questions": [
+        {
+            "key": "ss_current_pain_or_swelling",
+            "section": "safety",
+            "journeys": ["concern", "conception"],
+            "type": "boolean_unsure",
+            "options": ["yes", "no", "unsure"],
+            "required": true,
+            "show_if": null,
+            "prompt": { "ar": "هل لديك الآن ألم أو تورم في الخصية أو كيس الصفن؟", "en": "Do you have pain or swelling in a testicle or the scrotum right now?" }
+        },
+        {
+            "key": "ss_sudden_severe_pain",
+            "section": "safety",
+            "journeys": ["concern", "conception"],
+            "type": "boolean_unsure",
+            "options": ["yes", "no", "unsure"],
+            "required": true,
+            "show_if": { "q": "ss_current_pain_or_swelling", "op": "in", "value": ["yes", "unsure"] },
+            "prompt": { "ar": "هل بدأ الألم فجأة وهو شديد؟", "en": "Did the pain start suddenly, and is it severe?" }
+        },
+        {
+            "key": "ss_pain_with_nausea_vomiting_abdominal",
+            "section": "safety",
+            "journeys": ["concern", "conception"],
+            "type": "boolean_unsure",
+            "options": ["yes", "no", "unsure"],
+            "required": true,
+            "show_if": { "q": "ss_current_pain_or_swelling", "op": "in", "value": ["yes", "unsure"] },
+            "prompt": { "ar": "هل يصاحب الألم غثيان أو قيء أو ألم في البطن؟", "en": "Do you also have nausea, vomiting or pain in your tummy?" }
+        },
+        {
+            "key": "ss_pain_over_1h_or_at_rest",
+            "section": "safety",
+            "journeys": ["concern", "conception"],
+            "type": "boolean_unsure",
+            "options": ["yes", "no", "unsure"],
+            "required": true,
+            "show_if": { "q": "ss_current_pain_or_swelling", "op": "in", "value": ["yes", "unsure"] },
+            "prompt": { "ar": "هل يستمر الألم أكثر من ساعة أو يستمر وأنت مرتاح؟", "en": "Has the pain lasted more than an hour, or does it continue while you rest?" }
+        },
+        {
+            "key": "ss_fever_with_pain_or_swelling",
+            "section": "safety",
+            "journeys": ["concern", "conception"],
+            "type": "boolean_unsure",
+            "options": ["yes", "no", "unsure"],
+            "required": true,
+            "show_if": { "q": "ss_current_pain_or_swelling", "op": "in", "value": ["yes", "unsure"] },
+            "prompt": { "ar": "هل لديك حرارة (حمّى) مع الألم أو التورم؟", "en": "Do you have a high temperature (fever) with the pain or swelling?" }
+        },
+        {
+            "key": "ss_new_lump_or_change",
+            "section": "safety",
+            "journeys": ["concern", "conception"],
+            "type": "boolean_unsure",
+            "options": ["yes", "no", "unsure"],
+            "required": true,
+            "show_if": null,
+            "prompt": { "ar": "هل لاحظت كتلة جديدة أو تغيراً في حجم أو شكل الخصية؟", "en": "Have you noticed a new lump, or a change in the size or shape of a testicle?" }
+        },
+        {
+            "key": "as_chronic_conditions",
+            "section": "assessment",
+            "journeys": ["concern", "conception"],
+            "type": "multi",
+            "options": ["diabetes", "obesity", "hypertension", "thyroid", "other_chronic", "none", "unknown"],
+            "exclusive": ["none", "unknown"],
+            "unknown_values": ["unknown"],
+            "risk_domains": { "diabetes": "metabolic", "obesity": "metabolic", "hypertension": "metabolic", "thyroid": "metabolic", "other_chronic": "medical_history" },
+            "required": false,
+            "show_if": null,
+            "prompt": { "ar": "هل لديك أي من هذه الحالات المزمنة؟", "en": "Do you have any of these long-term conditions?" }
+        },
+        {
+            "key": "as_repro_history",
+            "section": "assessment",
+            "journeys": ["concern", "conception"],
+            "type": "multi",
+            "options": ["undescended_testis", "varicocele", "testicular_surgery_or_injury", "mumps_after_puberty", "sti_history", "none", "unknown"],
+            "exclusive": ["none", "unknown"],
+            "unknown_values": ["unknown"],
+            "risk_domains": { "undescended_testis": "anatomical", "varicocele": "anatomical", "testicular_surgery_or_injury": "anatomical", "mumps_after_puberty": "infectious", "sti_history": "infectious" },
+            "required": false,
+            "show_if": null,
+            "prompt": { "ar": "هل سبق أن كان لديك أي مما يلي؟", "en": "Have you ever had any of the following?" }
+        },
+        {
+            "key": "as_testosterone_or_steroids",
+            "section": "assessment",
+            "journeys": ["concern", "conception"],
+            "type": "single",
+            "options": ["current", "past", "never", "unknown"],
+            "unknown_values": ["unknown"],
+            "risk_domains": { "current": "medical_history", "past": "medical_history" },
+            "required": false,
+            "show_if": null,
+            "prompt": { "ar": "هل تستخدم أو استخدمت تستوستيرون أو ستيرويدات بنائية؟", "en": "Do you use, or have you used, testosterone or anabolic steroids?" }
+        },
+        {
+            "key": "as_chemo_radiotherapy",
+            "section": "assessment",
+            "journeys": ["concern", "conception"],
+            "type": "single",
+            "options": ["planned", "past", "never", "unknown"],
+            "unknown_values": ["unknown"],
+            "risk_domains": { "planned": "medical_history", "past": "medical_history" },
+            "required": false,
+            "show_if": null,
+            "prompt": { "ar": "هل تلقيت أو ستتلقى علاجاً كيميائياً أو إشعاعياً؟", "en": "Have you had, or are you due to have, chemotherapy or radiotherapy?" }
+        },
+        {
+            "key": "as_long_term_medication",
+            "section": "assessment",
+            "journeys": ["concern", "conception"],
+            "type": "boolean_unsure",
+            "options": ["yes", "no", "unsure"],
+            "unknown_values": ["unsure"],
+            "risk_domains": { "yes": "medical_history" },
+            "required": false,
+            "show_if": null,
+            "prompt": { "ar": "هل تتناول أدوية بشكل منتظم لفترة طويلة؟", "en": "Do you take any medicines regularly over a long period?" }
+        },
+        {
+            "key": "as_smoking",
+            "section": "assessment",
+            "journeys": ["concern", "conception"],
+            "type": "single",
+            "options": ["current", "former", "never"],
+            "risk_domains": { "current": "lifestyle" },
+            "required": false,
+            "show_if": null,
+            "prompt": { "ar": "هل تدخن (أي نوع من التبغ)؟", "en": "Do you smoke (any kind of tobacco)?" }
+        },
+        {
+            "key": "as_lifestyle",
+            "section": "assessment",
+            "journeys": ["concern", "conception"],
+            "type": "multi",
+            "options": ["frequent_heat", "inactive", "alcohol", "recreational_drugs", "poor_sleep_or_stress", "weight_concern", "none", "prefer_not"],
+            "exclusive": ["none", "prefer_not"],
+            "risk_domains": { "frequent_heat": "lifestyle", "inactive": "lifestyle", "alcohol": "lifestyle", "recreational_drugs": "lifestyle", "poor_sleep_or_stress": "lifestyle", "weight_concern": "metabolic" },
+            "required": false,
+            "show_if": null,
+            "prompt": { "ar": "(اختياري) هل ينطبق عليك أي مما يلي في حياتك اليومية؟ إجاباتك لا تُحفظ.", "en": "(Optional) Do any of these apply to your daily life? Your answers are not stored." }
+        },
+        {
+            "key": "as_occupational_exposure",
+            "section": "assessment",
+            "journeys": ["concern", "conception"],
+            "type": "multi",
+            "options": ["high_heat", "pesticides_chemicals", "heavy_metals", "radiation", "none", "unknown"],
+            "exclusive": ["none", "unknown"],
+            "unknown_values": ["unknown"],
+            "risk_domains": { "high_heat": "lifestyle", "pesticides_chemicals": "lifestyle", "heavy_metals": "lifestyle", "radiation": "lifestyle" },
+            "required": false,
+            "show_if": null,
+            "prompt": { "ar": "هل يعرّضك عملك لأي مما يلي بشكل منتظم؟", "en": "Does your work regularly expose you to any of the following?" }
+        },
+        {
+            "key": "as_sexual_urinary_symptoms",
+            "section": "assessment",
+            "journeys": ["concern", "conception"],
+            "type": "multi",
+            "options": ["erection_difficulty", "ejaculation_problem", "burning_or_discharge", "blood_in_semen_or_urine", "low_libido", "none"],
+            "exclusive": ["none"],
+            "risk_domains": { "erection_difficulty": "medical_history", "ejaculation_problem": "medical_history", "burning_or_discharge": "infectious", "blood_in_semen_or_urine": "medical_history", "low_libido": "medical_history" },
+            "required": false,
+            "show_if": null,
+            "prompt": { "ar": "هل تعاني من أي مما يلي؟", "en": "Do you have any of the following?" }
+        },
+        {
+            "key": "as_family_history",
+            "section": "assessment",
+            "journeys": ["concern", "conception"],
+            "type": "multi",
+            "options": ["infertility", "testicular_cancer", "genetic_condition", "none", "unknown"],
+            "exclusive": ["none", "unknown"],
+            "unknown_values": ["unknown"],
+            "risk_domains": { "infertility": "medical_history", "testicular_cancer": "medical_history", "genetic_condition": "medical_history" },
+            "required": false,
+            "show_if": null,
+            "prompt": { "ar": "هل في عائلتك المباشرة أي مما يلي؟", "en": "Does anyone in your close family have any of the following?" }
+        },
+        {
+            "key": "as_trying_duration",
+            "section": "assessment",
+            "journeys": ["conception"],
+            "type": "band",
+            "options": ["not_trying", "lt_6m", "6_12m", "gt_12m"],
+            "required": false,
+            "show_if": null,
+            "prompt": { "ar": "منذ متى تحاولان الإنجاب دون وسائل منع؟", "en": "How long have you been trying for a baby without contraception?" }
+        },
+        {
+            "key": "as_partner_age_band",
+            "section": "assessment",
+            "journeys": ["conception"],
+            "type": "band",
+            "options": ["lt_35", "gte_35", "prefer_not"],
+            "unknown_values": ["prefer_not"],
+            "required": false,
+            "show_if": null,
+            "prompt": { "ar": "(اختياري) الفئة العمرية لشريكتك", "en": "(Optional) Your partner's age group" }
+        },
+        {
+            "key": "as_previous_tests",
+            "section": "assessment",
+            "journeys": ["concern", "conception"],
+            "type": "single",
+            "options": ["none", "done_told_abnormal", "done_told_normal", "done_unsure"],
+            "risk_domains": { "done_told_abnormal": "test_results", "done_unsure": "test_results" },
+            "required": false,
+            "show_if": null,
+            "prompt": { "ar": "هل أجريت سابقاً فحوصاً للخصوبة (مثل تحليل السائل المنوي)؟", "en": "Have you had fertility tests before (such as a semen analysis)?" }
+        }
+    ]
+}

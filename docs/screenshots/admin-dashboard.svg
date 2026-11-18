@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" width="1200" height="720">
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#0b3b36" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="720" rx="18" fill="#f4f7f6" stroke="#d6dedb" stroke-width="2"/>
+  <rect width="1200" height="44" rx="18" fill="#ffffff"/>
+  <rect y="24" width="1200" height="20" fill="#ffffff"/>
+  <line x1="0" y1="44" x2="1200" y2="44" stroke="#d6dedb" stroke-width="1"/>
+  <circle cx="28" cy="22" r="6" fill="#f87171"/>
+  <circle cx="48" cy="22" r="6" fill="#fbbf24"/>
+  <circle cx="68" cy="22" r="6" fill="#34d399"/>
+  <rect x="380" y="10" width="440" height="24" rx="12" fill="#f1f5f3"/>
+  <text x="600" y="26" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#4b5a60" text-anchor="middle">https://rafiq.test/admin — لوحة تحكم رفيق (الحوكمة الطبية والإحصاءات الآمنة)</text>
+
+  <!-- Right Sidebar (RTL Admin Navigation) -->
+  <rect x="940" y="45" width="260" height="675" fill="#0b3b36"/>
+  <rect x="1136" y="68" width="36" height="36" rx="10" fill="#0f6b62"/>
+  <text x="1154" y="92" font-family="Tahoma, Segoe UI, sans-serif" font-size="18" font-weight="bold" fill="#ffffff" text-anchor="middle">ر</text>
+  <text x="1122" y="92" font-family="Tahoma, Segoe UI, sans-serif" font-size="18" font-weight="bold" fill="#ffffff" text-anchor="end">إدارة رفيق</text>
+
+  <rect x="960" y="128" width="220" height="42" rx="10" fill="#0f6b62"/>
+  <text x="1160" y="154" font-family="Tahoma, Segoe UI, sans-serif" font-size="14" font-weight="bold" fill="#ffffff" text-anchor="end">لوحة المعلومات الرئيسية</text>
+
+  <text x="1160" y="204" font-family="Tahoma, Segoe UI, sans-serif" font-size="14" fill="#cbe5df" text-anchor="end">المقالات ومركز المعرفة</text>
+  <text x="1160" y="244" font-family="Tahoma, Segoe UI, sans-serif" font-size="14" fill="#cbe5df" text-anchor="end">المسرد وبنك أسئلة الطبيب</text>
+  <text x="1160" y="284" font-family="Tahoma, Segoe UI, sans-serif" font-size="14" fill="#cbe5df" text-anchor="end">القواعد السريرية (RS-2026.1)</text>
+  <text x="1160" y="324" font-family="Tahoma, Segoe UI, sans-serif" font-size="14" fill="#cbe5df" text-anchor="end">إصدارات القواعد والاعتماد</text>
+  <text x="1160" y="364" font-family="Tahoma, Segoe UI, sans-serif" font-size="14" fill="#cbe5df" text-anchor="end">إعدادات المساعد الذكي (AI)</text>
+  <text x="1160" y="404" font-family="Tahoma, Segoe UI, sans-serif" font-size="14" fill="#cbe5df" text-anchor="end">الإحصاءات الآمنة (Analytics)</text>
+  <text x="1160" y="444" font-family="Tahoma, Segoe UI, sans-serif" font-size="14" fill="#cbe5df" text-anchor="end">الحسابات والأدوار (2FA)</text>
+  <text x="1160" y="484" font-family="Tahoma, Segoe UI, sans-serif" font-size="14" fill="#cbe5df" text-anchor="end">سجل التدقيق غير القابل للتعديل</text>
+
+  <!-- Main Content Area -->
+  <text x="900" y="96" font-family="Tahoma, Segoe UI, sans-serif" font-size="24" font-weight="bold" fill="#1f2a2e" text-anchor="end">لوحة التحكم والحوكمة السريرية</text>
+  <text x="900" y="122" font-family="Tahoma, Segoe UI, sans-serif" font-size="13.5" fill="#4b5a60" text-anchor="end">مبدأ العينين الأربع (Four-Eyes) مفعل · التحقق الثنائي إلزامي · لا توجد أي بيانات شخصية للزوار</text>
+
+  <!-- 4 Stat Cards -->
+  <rect x="700" y="148" width="200" height="106" rx="16" fill="#ffffff" stroke="#d6dedb" filter="url(#shadow)"/>
+  <text x="880" y="178" font-family="Tahoma, Segoe UI, sans-serif" font-size="12.5" fill="#4b5a60" text-anchor="end">الإصدار السريري النشط</text>
+  <text x="880" y="216" font-family="Segoe UI, sans-serif" font-size="24" font-weight="bold" fill="#0f6b62" text-anchor="end">RS-2026.1</text>
+  <text x="880" y="238" font-family="Tahoma, Segoe UI, sans-serif" font-size="11.5" fill="#0f6b62" text-anchor="end">✓ معتمد ومنشور (45/45 اختبار)</text>
+
+  <rect x="480" y="148" width="200" height="106" rx="16" fill="#ffffff" stroke="#d6dedb" filter="url(#shadow)"/>
+  <text x="660" y="178" font-family="Tahoma, Segoe UI, sans-serif" font-size="12.5" fill="#4b5a60" text-anchor="end">المحتوى المعتمد والمنشور</text>
+  <text x="660" y="216" font-family="Segoe UI, sans-serif" font-size="24" font-weight="bold" fill="#1f2a2e" text-anchor="end">100%</text>
+  <text x="660" y="238" font-family="Tahoma, Segoe UI, sans-serif" font-size="11.5" fill="#0f6b62" text-anchor="end">✓ مقالات + مسرد + بنك الأسئلة</text>
+
+  <rect x="260" y="148" width="200" height="106" rx="16" fill="#ffffff" stroke="#d6dedb" filter="url(#shadow)"/>
+  <text x="440" y="178" font-family="Tahoma, Segoe UI, sans-serif" font-size="12.5" fill="#4b5a60" text-anchor="end">المساعد الذكي (Rafiq AI)</text>
+  <text x="440" y="216" font-family="Tahoma, Segoe UI, sans-serif" font-size="22" font-weight="bold" fill="#0f6b62" text-anchor="end">مفعّل وآمن</text>
+  <text x="440" y="238" font-family="Tahoma, Segoe UI, sans-serif" font-size="11.5" fill="#4b5a60" text-anchor="end">تقييم الأمان الحتمي: 35/35</text>
+
+  <rect x="40" y="148" width="200" height="106" rx="16" fill="#ffffff" stroke="#d6dedb" filter="url(#shadow)"/>
+  <text x="220" y="178" font-family="Tahoma, Segoe UI, sans-serif" font-size="12.5" fill="#4b5a60" text-anchor="end">إكمال التقييم ≤ 6 دقائق</text>
+  <text x="220" y="216" font-family="Segoe UI, sans-serif" font-size="24" font-weight="bold" fill="#1f2a2e" text-anchor="end">95.3%</text>
+  <text x="220" y="238" font-family="Tahoma, Segoe UI, sans-serif" font-size="11.5" fill="#4b5a60" text-anchor="end">إخفاء تلقائي للأعداد &lt; 5</text>
+
+  <!-- Clinical Rules & DiffViewer Panel -->
+  <rect x="480" y="278" width="420" height="404" rx="18" fill="#ffffff" stroke="#d6dedb" filter="url(#shadow)"/>
+  <text x="876" y="314" font-family="Tahoma, Segoe UI, sans-serif" font-size="17" font-weight="bold" fill="#1f2a2e" text-anchor="end">محرك القواعد السريرية الحتمي (20 قاعدة)</text>
+
+  <rect x="504" y="334" width="372" height="68" rx="12" fill="#fef3f2"/>
+  <text x="860" y="358" font-family="Segoe UI, Tahoma, sans-serif" font-size="13" font-weight="bold" fill="#b42318" text-anchor="end">CR-001 / CR-002 — التواء الخصية المحتمل (P0 طوارئ)</text>
+  <text x="860" y="382" font-family="Tahoma, Segoe UI, sans-serif" font-size="12" fill="#4b5a60" text-anchor="end">ألم مفاجئ وشديد ⇐ إيقاف التقييم فوراً وتوجيه للطوارئ</text>
+
+  <rect x="504" y="414" width="372" height="68" rx="12" fill="#fffbeb"/>
+  <text x="860" y="438" font-family="Segoe UI, Tahoma, sans-serif" font-size="13" font-weight="bold" fill="#92400e" text-anchor="end">CR-004 / SAFE-006 — فحص عاجل خلال 24-48 ساعة (P1)</text>
+  <text x="860" y="462" font-family="Tahoma, Segoe UI, sans-serif" font-size="12" fill="#4b5a60" text-anchor="end">ألم مع غثيان أو حرارة أو إجابة «لست متأكداً» على سؤال خطر</text>
+
+  <rect x="504" y="494" width="372" height="68" rx="12" fill="#f4f8f6"/>
+  <text x="860" y="518" font-family="Segoe UI, Tahoma, sans-serif" font-size="13" font-weight="bold" fill="#0f6b62" text-anchor="end">CR-008..CR-018 — تقييم الخصوبة ونمط الحياة (P2–P4)</text>
+  <text x="860" y="542" font-family="Tahoma, Segoe UI, sans-serif" font-size="12" fill="#4b5a60" text-anchor="end">توجيه مخصص: رعاية ذاتية، أولية، مسالك/ذكورة، أو خصوبة</text>
+
+  <rect x="504" y="578" width="372" height="82" rx="12" fill="#e6f4f1"/>
+  <text x="860" y="604" font-family="Tahoma, Segoe UI, sans-serif" font-size="13" font-weight="bold" fill="#0b4f48" text-anchor="end">مقارن الفروق المرئي (DiffViewer) وسير الاعتماد</text>
+  <text x="860" y="628" font-family="Tahoma, Segoe UI, sans-serif" font-size="12" fill="#1f2a2e" text-anchor="end">مقارنة سطراً بسطر مع آخر نسخة معتمدة + فحص العبارات المحظورة</text>
+
+  <!-- Audit Log & RBAC Panel -->
+  <rect x="40" y="278" width="420" height="404" rx="18" fill="#ffffff" stroke="#d6dedb" filter="url(#shadow)"/>
+  <text x="436" y="314" font-family="Tahoma, Segoe UI, sans-serif" font-size="17" font-weight="bold" fill="#1f2a2e" text-anchor="end">سجل التدقيق غير القابل للتعديل (Audit Log)</text>
+
+  <rect x="64" y="334" width="372" height="54" rx="10" fill="#f8faf9" stroke="#e2e8f0"/>
+  <text x="420" y="356" font-family="Consolas, monospace" font-size="12" font-weight="bold" fill="#0f6b62" text-anchor="end">clinical.release.published — RS-2026.1</text>
+  <text x="420" y="376" font-family="Tahoma, Segoe UI, sans-serif" font-size="11.5" fill="#4b5a60" text-anchor="end">بصمة IP مشفرة (HMAC-SHA256) · تنقية تلقائية للمفاتيح الحساسة</text>
+
+  <rect x="64" y="400" width="372" height="54" rx="10" fill="#f8faf9" stroke="#e2e8f0"/>
+  <text x="420" y="422" font-family="Consolas, monospace" font-size="12" font-weight="bold" fill="#0f6b62" text-anchor="end">article.translation.approved — four-eyes</text>
+  <text x="420" y="442" font-family="Tahoma, Segoe UI, sans-serif" font-size="11.5" fill="#4b5a60" text-anchor="end">اعتمد بواسطة مراجع طبي موثق مختلف عن المؤلف والمحرر</text>
+
+  <rect x="64" y="466" width="372" height="54" rx="10" fill="#f8faf9" stroke="#e2e8f0"/>
+  <text x="420" y="488" font-family="Consolas, monospace" font-size="12" font-weight="bold" fill="#0f6b62" text-anchor="end">ai.configuration.activated — CorePrompt v1</text>
+  <text x="420" y="508" font-family="Tahoma, Segoe UI, sans-serif" font-size="11.5" fill="#4b5a60" text-anchor="end">اجتاز 35/35 اختبار أمان حتمي قبل التفعيل</text>
+
+  <rect x="64" y="536" width="372" height="124" rx="12" fill="#f4f8f6"/>
+  <text x="420" y="562" font-family="Tahoma, Segoe UI, sans-serif" font-size="13.5" font-weight="bold" fill="#1f2a2e" text-anchor="end">الأدوار الثلاثة المحمية بـ 2FA (TOTP):</text>
+  <text x="420" y="588" font-family="Tahoma, Segoe UI, sans-serif" font-size="12.5" fill="#4b5a60" text-anchor="end">• مدير النظام (Super Admin): الحسابات، النشر، إعدادات الـ AI</text>
+  <text x="420" y="612" font-family="Tahoma, Segoe UI, sans-serif" font-size="12.5" fill="#4b5a60" text-anchor="end">• محرر المحتوى (Content Editor): تحرير المقالات والمسرد والأسئلة</text>
+  <text x="420" y="636" font-family="Tahoma, Segoe UI, sans-serif" font-size="12.5" fill="#4b5a60" text-anchor="end">• مراجع طبي موثق (Medical Reviewer): الاعتماد الطبي فقط</text>
+</svg>
